@@ -106,7 +106,7 @@ export default function PlayerBar() {
       <audio ref={audioRef} preload="auto" />
 
       {/* Desktop Player */}
-      <div className="hidden md:flex fixed bottom-0 left-0 right-0 z-50 h-20 bg-[var(--surface)] border-t border-[var(--border)] items-center px-4 gap-4">
+      <div className="hidden md:flex fixed bottom-0 left-56 right-0 z-50 h-20 bg-[var(--surface)] border-t border-[var(--border)] items-center px-4 gap-4">
         {/* Track info */}
         <div className="flex items-center gap-3 w-64 min-w-0 shrink-0">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-[var(--surface-hover)] shrink-0">

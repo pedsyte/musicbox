@@ -82,8 +82,8 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
 
       {/* Genre pills */}
       {!compact && track.genres && track.genres.length > 0 && (
-        <div className="hidden md:flex gap-1 shrink-0">
-          {track.genres.slice(0, 2).map(g => (
+        <div className="hidden md:flex gap-1 shrink-0 flex-wrap">
+          {track.genres.map(g => (
             <span key={g.id} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-hover)] text-[var(--text-dim)]">{g.name}</span>
           ))}
         </div>
