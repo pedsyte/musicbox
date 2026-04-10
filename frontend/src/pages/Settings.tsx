@@ -1,0 +1,112 @@
+import { useAuthStore } from '@/stores/authStore'
+import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+
+export default function Settings() {
+  const { user, logout, updateSettings } = useAuthStore()
+  const navigate = useNavigate()
+  const [theme, setTheme] = useState(user?.theme || 'dark')
+  const [showWaveform, setShowWaveform] = useState(user?.show_waveform ?? true)
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [msg, setMsg] = useState('')
+
+  useEffect(() => {
+    if (!user) navigate('/login')
+  }, [user])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  const handleTheme = async (v: string) => {
+    setTheme(v)
+    document.documentElement.setAttribute('data-theme', v)
+    await updateSettings({ theme: v })
+  }
+
+  const handleWaveform = async (v: boolean) => {
+    setShowWaveform(v)
+    await updateSettings({ show_waveform: v })
+  }
+
+  const handlePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!oldPassword || !newPassword) return
+    try {
+      await updateSettings({ old_password: oldPassword, new_password: newPassword })
+      setMsg('Пароль изменён')
+      setOldPassword('')
+      setNewPassword('')
+    } catch {
+      setMsg('Ошибка смены пароля')
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
+  if (!user) return null
+
+  return (
+    <div className="p-4 md:p-6 max-w-lg mx-auto space-y-6">
+      <h1 className="text-xl font-bold text-[var(--text)]">Настройки</h1>
+
+      {/* Profile */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-2xl font-bold">
+            {user.username[0].toUpperCase()}
+          </div>
+          <div>
+            <p className="text-base font-medium text-[var(--text)]">{user.username}</p>
+            <p className="text-xs text-[var(--text-dim)]">{user.is_admin ? 'Администратор' : 'Пользователь'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Theme */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-[var(--text)]">Тема</h2>
+        <div className="flex gap-2">
+          {[{ v: 'dark', l: '🌙 Тёмная' }, { v: 'light', l: '☀️ Светлая' }].map(t => (
+            <button key={t.v} onClick={() => handleTheme(t.v)}
+              className={`flex-1 px-4 py-3 rounded-lg text-sm border transition ${theme === t.v ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+              {t.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Waveform */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5">
+        <label className="flex items-center justify-between cursor-pointer">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text)]">Форма волны в плеере</p>
+            <p className="text-xs text-[var(--text-dim)]">Показывать waveform вместо линейного прогресса</p>
+          </div>
+          <input type="checkbox" checked={showWaveform} onChange={e => handleWaveform(e.target.checked)}
+            className="w-5 h-5 accent-[var(--accent)]" />
+        </label>
+      </div>
+
+      {/* Password */}
+      <form onSubmit={handlePassword} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-[var(--text)]">Смена пароля</h2>
+        {msg && <p className="text-xs text-[var(--accent)]">{msg}</p>}
+        <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Текущий пароль"
+          className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
+        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Новый пароль"
+          className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
+        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">Сменить пароль</button>
+      </form>
+
+      {/* Logout */}
+      <button onClick={handleLogout} className="w-full py-3 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm transition">
+        Выйти из аккаунта
+      </button>
+    </div>
+  )
+}

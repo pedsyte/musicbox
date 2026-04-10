@@ -1,0 +1,123 @@
+import { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { api } from '@/lib/api'
+import type { Track } from '@/lib/types'
+import { usePlayerStore } from '@/stores/playerStore'
+import { useAuthStore } from '@/stores/authStore'
+import Tooltip from '@/components/Tooltip'
+import Waveform from '@/components/Waveform'
+import { formatTime } from '@/lib/utils'
+
+export default function TrackPage() {
+  const { id } = useParams()
+  const [track, setTrack] = useState<Track | null>(null)
+  const [peaks, setPeaks] = useState<number[]>([])
+  const [loading, setLoading] = useState(true)
+  const { play, currentTrack, isPlaying, currentTime, duration, seek, playNext, addToQueue } = usePlayerStore()
+  const { user } = useAuthStore()
+  const [isFav, setIsFav] = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      api.get(`/api/tracks/${id}`),
+      api.get(`/api/tracks/${id}/waveform`).catch(() => ({ data: { peaks: [] } })),
+    ]).then(([trackRes, waveRes]) => {
+      setTrack(trackRes.data)
+      setPeaks(waveRes.data.peaks || [])
+      setIsFav(trackRes.data.is_favorite ?? false)
+    }).finally(() => setLoading(false))
+  }, [id])
+
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>
+  if (!track) return <div className="text-center py-16 text-[var(--text-dim)]">Трек не найден</div>
+
+  const isCurrent = currentTrack?.id === track.id
+  const progress = isCurrent && duration > 0 ? currentTime / duration : 0
+
+  const toggleFav = async () => {
+    if (!user) return
+    try {
+      if (isFav) await api.delete(`/api/favorites/${track.id}`)
+      else await api.post(`/api/favorites/${track.id}`)
+      setIsFav(!isFav)
+    } catch {}
+  }
+
+  return (
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="w-48 h-48 md:w-56 md:h-56 rounded-2xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] shrink-0 shadow-lg mx-auto md:mx-0">
+          {track.cover_path ? (
+            <img src={track.cover_path} alt={track.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-purple-600/20 to-fuchsia-600/20">🎵</div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">Трек</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-1">{track.title}</h1>
+          <p className="text-lg text-[var(--text-dim)] mb-3">{track.artist}</p>
+
+          {track.genres && track.genres.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {track.genres.map(g => (
+                <Link key={g.id} to={`/browse?genres=${g.id}`}
+                  className="px-2.5 py-1 text-xs rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition">
+                  {g.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <p className="text-sm text-[var(--text-dim)] mb-4">Длительность: {formatTime(track.duration_seconds)}</p>
+
+          <div className="flex flex-wrap gap-2">
+            <Tooltip text={isCurrent && isPlaying ? 'Пауза' : 'Воспроизвести'}>
+              <button onClick={() => play(track)}
+                className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition flex items-center gap-2">
+                {isCurrent && isPlaying ? '⏸' : '▶'} {isCurrent && isPlaying ? 'Пауза' : 'Играть'}
+              </button>
+            </Tooltip>
+            {user && (
+              <Tooltip text={isFav ? 'Убрать из избранного' : 'В избранное'}>
+                <button onClick={toggleFav}
+                  className={`w-10 h-10 rounded-full border flex items-center justify-center transition ${isFav ? 'border-red-400 text-red-400' : 'border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)]'}`}>
+                  {isFav ? '❤️' : '🤍'}
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip text="Играть следующим">
+              <button onClick={() => playNext(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">⏭</button>
+            </Tooltip>
+            <Tooltip text="Добавить в очередь">
+              <button onClick={() => addToQueue(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">+</button>
+            </Tooltip>
+            <Tooltip text="Скачать MP3">
+              <a href={`/api/tracks/${track.id}/download?format=mp3`}
+                className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">⬇</a>
+            </Tooltip>
+          </div>
+        </div>
+      </div>
+
+      {/* Waveform */}
+      {peaks.length > 0 && (
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4">
+          <p className="text-xs text-[var(--text-dim)] mb-2">Форма волны</p>
+          <Waveform peaks={peaks} progress={progress} onSeek={isCurrent ? seek : undefined} height={80} />
+        </div>
+      )}
+
+      {/* Lyrics */}
+      {track.lyrics && (
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--text)] mb-3">Текст</h2>
+          <div className="text-sm text-[var(--text-dim)] whitespace-pre-wrap leading-relaxed">{track.lyrics}</div>
+        </div>
+      )}
+    </div>
+  )
+}
