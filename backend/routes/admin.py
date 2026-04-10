@@ -266,9 +266,9 @@ async def get_stats(
     playlists_count = (await db.execute(select(func.count(Playlist.id)))).scalar() or 0
 
     return {
-        "tracks": tracks_count,
-        "users": users_count,
-        "genres": genres_count,
+        "total_tracks": tracks_count,
+        "total_users": users_count,
+        "total_genres": genres_count,
         "total_plays": total_plays,
-        "playlists": playlists_count,
+        "total_playlists": playlists_count,
     }

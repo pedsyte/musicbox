@@ -37,6 +37,7 @@ class Track(Base):
     lyrics = Column(Text, nullable=True)
     waveform_peaks = Column(JSON, nullable=True)
     play_count = Column(Integer, default=0, nullable=False)
+    download_count = Column(Integer, default=0, nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     genres = relationship("Genre", secondary="track_genres", back_populates="tracks", lazy="selectin")
@@ -98,3 +99,12 @@ class Favorite(Base):
 
     user = relationship("User", back_populates="favorites")
     track = relationship("Track", lazy="selectin")
+
+
+class TrackEvent(Base):
+    __tablename__ = "track_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    track_id = Column(UUID(as_uuid=True), ForeignKey("tracks.id", ondelete="CASCADE"), nullable=False, index=True)
+    event_type = Column(String(20), nullable=False)  # 'play', 'download', 'favorite', 'playlist_add'
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)

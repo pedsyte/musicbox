@@ -70,7 +70,7 @@ export default function PlayerBar() {
   // Load waveform peaks
   useEffect(() => {
     if (!currentTrack) { setPeaks([]); return }
-    api.get(`/tracks/${currentTrack.id}/waveform`).then(r => setPeaks(r.data.peaks || [])).catch(() => setPeaks([]))
+    api.get(`/api/tracks/${currentTrack.id}/waveform`).then(r => setPeaks(r.data.peaks || [])).catch(() => setPeaks([]))
   }, [currentTrack?.id])
 
   // MediaSession API

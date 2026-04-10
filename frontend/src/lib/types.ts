@@ -8,6 +8,7 @@ export interface Track {
   lyrics?: string | null
   waveform_peaks?: number[] | null
   play_count: number
+  download_count: number
   uploaded_at: string
   genres: Genre[]
   is_favorite: boolean
@@ -60,8 +61,9 @@ export interface AdminStats {
   users: number
   genres: number
   total_plays: number
+  total_genres: number
   playlists: number
 }
 
 export type RepeatMode = 'off' | 'all' | 'one'
-export type SortOption = 'newest' | 'oldest' | 'popular' | 'title'
+export type SortOption = 'newest' | 'oldest' | 'popular' | 'title' | 'artist' | 'duration'

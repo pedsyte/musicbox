@@ -4,22 +4,27 @@ import Header from '@/components/Header'
 import PlayerBar from '@/components/PlayerBar'
 import QueuePanel from '@/components/QueuePanel'
 import MobileNav from '@/components/MobileNav'
+import GenreSidebar from '@/components/GenreSidebar'
 import { usePlayerStore } from '@/stores/playerStore'
 
 export default function Layout() {
   const { currentTrack } = usePlayerStore()
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[var(--bg)]">
       {/* Sidebar (desktop) */}
       <Sidebar />
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
-        <main className={`flex-1 overflow-y-auto ${currentTrack ? 'pb-24 md:pb-20' : 'pb-16 md:pb-0'}`}>
-          <Outlet />
-        </main>
+        <div className="flex-1 flex min-h-0">
+          <main className={`flex-1 overflow-y-auto min-w-0 ${currentTrack ? 'pb-24 md:pb-24' : 'pb-16 md:pb-0'}`}>
+            <Outlet />
+          </main>
+          {/* Genre sidebar (desktop large) */}
+          <GenreSidebar />
+        </div>
       </div>
 
       {/* Player */}

@@ -26,7 +26,7 @@ export default function QueuePanel() {
       {/* Backdrop on mobile */}
       <div className="md:hidden fixed inset-0 z-[60] bg-black/50" onClick={toggleQueue} />
 
-      <div className="fixed top-0 right-0 z-[61] w-full md:w-80 h-full bg-[var(--surface)] border-l border-[var(--border)] shadow-2xl flex flex-col md:top-0 md:bottom-20">
+      <div className="fixed top-0 right-0 z-[61] w-full md:w-80 h-full bg-[var(--surface)] border-l border-[var(--border)] shadow-2xl flex flex-col md:bottom-20 md:h-auto" style={{ maxHeight: 'calc(100vh - 5rem)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
           <h2 className="text-base font-semibold text-[var(--text)]">Очередь</h2>

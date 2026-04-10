@@ -3,11 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '@/lib/api'
 import type { Track, Genre, SortOption } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
-import Tooltip from '@/components/Tooltip'
 
 const SORTS: { value: SortOption; label: string }[] = [
   { value: 'newest', label: 'Новые' },
   { value: 'oldest', label: 'Старые' },
+  { value: 'popular', label: 'Популярные' },
   { value: 'title', label: 'По названию' },
   { value: 'artist', label: 'По артисту' },
   { value: 'duration', label: 'По длительности' },
@@ -36,12 +36,12 @@ export default function Browse() {
     try {
       const p = new URLSearchParams()
       p.set('limit', String(limit))
-      p.set('offset', String((page - 1) * limit))
+      p.set('page', String(page))
       p.set('sort', sort)
       if (q) p.set('search', q)
       if (includeGenres.length) p.set('genre_ids', includeGenres.join(','))
       if (excludeGenres.length) p.set('exclude_genre_ids', excludeGenres.join(','))
-      const res = await api.get(`/api/tracks?${p}`)
+      const res = await api.get('/api/tracks?' + p.toString())
       setTracks(res.data.tracks)
       setTotal(res.data.total)
     } finally {
@@ -58,7 +58,6 @@ export default function Browse() {
     const current = p.get(key)?.split(',').filter(Boolean).map(Number) || []
     const other = p.get(otherKey)?.split(',').filter(Boolean).map(Number) || []
 
-    // Remove from other if present
     const otherFiltered = other.filter(g => g !== id)
     if (otherFiltered.length) p.set(otherKey, otherFiltered.join(','))
     else p.delete(otherKey)
@@ -88,12 +87,10 @@ export default function Browse() {
           {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
 
-        <Tooltip text="Фильтр по жанрам">
-          <button onClick={() => setShowFilters(!showFilters)}
-            className={`px-3 py-2 text-sm rounded-lg border transition ${(includeGenres.length || excludeGenres.length) ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
-            🎭 Жанры {(includeGenres.length + excludeGenres.length) > 0 && `(${includeGenres.length + excludeGenres.length})`}
-          </button>
-        </Tooltip>
+        <button onClick={() => setShowFilters(!showFilters)}
+          className={`px-3 py-2 text-sm rounded-lg border transition ${(includeGenres.length || excludeGenres.length) ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+          🎭 Жанры {(includeGenres.length + excludeGenres.length) > 0 && '(' + (includeGenres.length + excludeGenres.length) + ')'}
+        </button>
 
         {q && (
           <span className="text-sm text-[var(--text-dim)]">
@@ -106,7 +103,7 @@ export default function Browse() {
 
       {/* Genre filters */}
       {showFilters && (
-        <div className="mb-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl">
+        <div className="mb-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl relative z-10">
           <p className="text-xs text-[var(--text-dim)] mb-2">Нажмите — включить, Shift+нажмите — исключить</p>
           <div className="flex flex-wrap gap-1.5">
             {genres.map(genre => {
