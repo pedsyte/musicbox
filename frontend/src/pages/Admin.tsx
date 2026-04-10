@@ -50,16 +50,11 @@ function UploadTab() {
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [lyrics, setLyrics] = useState('')
-  const [genreIds, setGenreIds] = useState<number[]>([])
+  const [genreText, setGenreText] = useState('')
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
-  const [genres, setGenres] = useState<Genre[]>([])
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
-
-  useEffect(() => {
-    api.get('/api/genres').then(res => setGenres(res.data))
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,17 +71,13 @@ function UploadTab() {
       fd.append('audio', audioFile)
       if (coverFile) fd.append('cover', coverFile)
       if (lyrics.trim()) fd.append('lyrics', lyrics.trim())
-      if (genreIds.length) fd.append('genre_ids', genreIds.join(','))
+      if (genreText.trim()) fd.append('genres', genreText.trim())
       await api.post('/api/admin/tracks', fd)
       setMsg('✅ Трек успешно загружен!')
-      setTitle(''); setArtist(''); setLyrics(''); setGenreIds([]); setAudioFile(null); setCoverFile(null)
+      setTitle(''); setArtist(''); setLyrics(''); setGenreText(''); setAudioFile(null); setCoverFile(null)
     } catch (err: any) {
       setMsg(`❌ Ошибка: ${err.response?.data?.detail || err.message}`)
     } finally { setUploading(false) }
-  }
-
-  const toggleGenre = (id: number) => {
-    setGenreIds(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id])
   }
 
   return (
@@ -126,15 +117,9 @@ function UploadTab() {
       </div>
 
       <div>
-        <label className="text-xs text-[var(--text-dim)] mb-1 block">Жанры</label>
-        <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-          {genres.map(g => (
-            <button key={g.id} type="button" onClick={() => toggleGenre(g.id)}
-              className={`px-2.5 py-1 text-xs rounded-full border transition ${genreIds.includes(g.id) ? 'bg-[var(--accent)] text-white border-[var(--accent)]' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
-              {g.name}
-            </button>
-          ))}
-        </div>
+        <label className="text-xs text-[var(--text-dim)] mb-1 block">Жанры (через запятую)</label>
+        <input value={genreText} onChange={e => setGenreText(e.target.value)} placeholder="Pop, Rock, Electronic"
+          className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
       </div>
 
       <button type="submit" disabled={uploading}

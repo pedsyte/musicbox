@@ -24,7 +24,7 @@ async def upload_track(
     title: str = Form(...),
     artist: str = Form("Suno AI"),
     lyrics: Optional[str] = Form(None),
-    genres: str = Form(""),  # comma-separated genre slugs
+    genres: str = Form(""),  # comma-separated genre names (auto-created)
     audio: UploadFile = File(...),
     cover: Optional[UploadFile] = File(None),
     admin: User = Depends(require_admin),
@@ -79,14 +79,18 @@ async def upload_track(
     db.add(track)
     await db.flush()
 
-    # Handle genres
+    # Handle genres — auto-create if not exists
     if genres:
-        genre_slugs = [s.strip().lower() for s in genres.split(",") if s.strip()]
-        for slug in genre_slugs:
+        genre_names = [s.strip() for s in genres.split(",") if s.strip()]
+        for name in genre_names:
+            slug = name.lower().replace(" ", "-").replace("&", "and")
             result = await db.execute(select(Genre).where(Genre.slug == slug))
             genre = result.scalar_one_or_none()
-            if genre:
-                db.add(TrackGenre(track_id=track_id, genre_id=genre.id))
+            if not genre:
+                genre = Genre(name=name, slug=slug)
+                db.add(genre)
+                await db.flush()
+            db.add(TrackGenre(track_id=track_id, genre_id=genre.id))
 
     await db.commit()
     await db.refresh(track)
@@ -150,14 +154,18 @@ async def update_track(
         await db.execute(
             delete(TrackGenre).where(TrackGenre.track_id == track.id)
         )
-        # Add new genres
+        # Add new genres — auto-create if not exists
         if genres:
-            genre_slugs = [s.strip().lower() for s in genres.split(",") if s.strip()]
-            for slug in genre_slugs:
+            genre_names = [s.strip() for s in genres.split(",") if s.strip()]
+            for name in genre_names:
+                slug = name.lower().replace(" ", "-").replace("&", "and")
                 result = await db.execute(select(Genre).where(Genre.slug == slug))
                 genre = result.scalar_one_or_none()
-                if genre:
-                    db.add(TrackGenre(track_id=track.id, genre_id=genre.id))
+                if not genre:
+                    genre = Genre(name=name, slug=slug)
+                    db.add(genre)
+                    await db.flush()
+                db.add(TrackGenre(track_id=track.id, genre_id=genre.id))
 
     await db.commit()
     return {"message": "Track updated"}

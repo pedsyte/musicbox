@@ -14,6 +14,7 @@ async def list_genres(db: AsyncSession = Depends(get_db)):
         select(Genre, func.count(TrackGenre.track_id).label("track_count"))
         .outerjoin(TrackGenre, Genre.id == TrackGenre.genre_id)
         .group_by(Genre.id)
+        .having(func.count(TrackGenre.track_id) > 0)
         .order_by(Genre.name)
     )
     rows = result.all()

@@ -5,9 +5,10 @@ import api from '@/lib/api'
 interface AuthState {
   user: User | null
   token: string | null
-  isLoading: boolean
-  login: (username: string, password: string) => Promise<void>
-  register: (username: string, password: string) => Promise<void>
+  loading: boolean
+  error: string | null
+  login: (username: string, password: string) => Promise<boolean>
+  register: (username: string, password: string) => Promise<boolean>
   logout: () => void
   loadUser: () => Promise<void>
   updateSettings: (settings: Partial<{ theme: string; show_waveform: boolean; old_password: string; new_password: string }>) => Promise<void>
@@ -18,20 +19,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null } catch { return null }
   })(),
   token: localStorage.getItem('token'),
-  isLoading: false,
+  loading: false,
+  error: null,
 
   login: async (username, password) => {
-    const { data } = await api.post('/auth/login', { username, password })
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
-    set({ user: data.user, token: data.token })
+    set({ loading: true, error: null })
+    try {
+      const { data } = await api.post('/api/auth/login', { username, password })
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      set({ user: data.user, token: data.token, loading: false })
+      return true
+    } catch (err: any) {
+      set({ error: err.response?.data?.detail || 'Ошибка входа', loading: false })
+      return false
+    }
   },
 
   register: async (username, password) => {
-    const { data } = await api.post('/auth/register', { username, password })
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
-    set({ user: data.user, token: data.token })
+    set({ loading: true, error: null })
+    try {
+      const { data } = await api.post('/api/auth/register', { username, password })
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      set({ user: data.user, token: data.token, loading: false })
+      return true
+    } catch (err: any) {
+      set({ error: err.response?.data?.detail || 'Ошибка регистрации', loading: false })
+      return false
+    }
   },
 
   logout: () => {
@@ -43,9 +59,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loadUser: async () => {
     const token = localStorage.getItem('token')
     if (!token) return
-    set({ isLoading: true })
+    set({ loading: true })
     try {
-      const { data } = await api.get('/auth/me')
+      const { data } = await api.get('/api/auth/me')
       localStorage.setItem('user', JSON.stringify(data))
       set({ user: data })
     } catch {
@@ -53,12 +69,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.removeItem('user')
       set({ user: null, token: null })
     } finally {
-      set({ isLoading: false })
+      set({ loading: false })
     }
   },
 
   updateSettings: async (settings) => {
-    await api.put('/auth/settings', settings)
+    await api.put('/api/auth/settings', settings)
     const user = get().user
     if (user) {
       const updated = {
