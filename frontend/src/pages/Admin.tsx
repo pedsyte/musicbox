@@ -139,6 +139,7 @@ function TracksTab() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editArtist, setEditArtist] = useState('')
+  const [editGenres, setEditGenres] = useState('')
 
   const fetchTracks = () => {
     setLoading(true)
@@ -147,13 +148,14 @@ function TracksTab() {
 
   useEffect(() => { fetchTracks() }, [])
 
-  const startEdit = (t: Track) => { setEditingId(t.id); setEditTitle(t.title); setEditArtist(t.artist) }
+  const startEdit = (t: Track) => { setEditingId(t.id); setEditTitle(t.title); setEditArtist(t.artist); setEditGenres(t.genres.map(g => g.name).join(', ')) }
 
   const saveEdit = async () => {
     if (!editingId) return
     const fd = new FormData()
     fd.append('title', editTitle.trim())
     fd.append('artist', editArtist.trim())
+    fd.append('genres', editGenres.trim())
     await api.put(`/api/admin/tracks/${editingId}`, fd)
     setEditingId(null)
     fetchTracks()
@@ -176,11 +178,14 @@ function TracksTab() {
               {t.cover_path ? <img src={t.cover_path} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">🎵</div>}
             </div>
             {editingId === t.id ? (
-              <div className="flex-1 flex gap-2 items-center">
-                <input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] flex-1" />
-                <input value={editArtist} onChange={e => setEditArtist(e.target.value)} className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] w-32" />
-                <button onClick={saveEdit} className="text-xs text-green-400 hover:text-green-300">✓</button>
-                <button onClick={() => setEditingId(null)} className="text-xs text-[var(--text-dim)] hover:text-[var(--text)]">✕</button>
+              <div className="flex-1 flex flex-col gap-2">
+                <div className="flex gap-2 items-center">
+                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Название" className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] flex-1" />
+                  <input value={editArtist} onChange={e => setEditArtist(e.target.value)} placeholder="Исполнитель" className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] w-32" />
+                  <button onClick={saveEdit} className="text-xs text-green-400 hover:text-green-300">✓</button>
+                  <button onClick={() => setEditingId(null)} className="text-xs text-[var(--text-dim)] hover:text-[var(--text)]">✕</button>
+                </div>
+                <input value={editGenres} onChange={e => setEditGenres(e.target.value)} placeholder="Жанры через запятую: Pop, Rock, Electronic" className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--text)] w-full" />
               </div>
             ) : (
               <>
