@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '@/lib/api'
 import type { Track, Genre, SortOption } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
+import { pluralize } from '@/lib/utils'
 
 const SORTS: { value: SortOption; label: string }[] = [
   { value: 'newest', label: 'Новые' },
@@ -106,7 +107,7 @@ export default function Browse() {
           </span>
         )}
 
-        <span className="ml-auto text-sm text-[var(--text-dim)]">{total} треков</span>
+        <span className="ml-auto text-sm text-[var(--text-dim)]">{pluralize(total, 'трек', 'трека', 'треков')}</span>
       </div>
 
       {/* Genre filters */}

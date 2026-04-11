@@ -1,4 +1,4 @@
-import type { Track } from '@/lib/types'
+import type { Track, Playlist } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
 import Tooltip from './Tooltip'
@@ -22,17 +22,39 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
   const { user } = useAuthStore()
   const [menuOpen, setMenuOpen] = useState(false)
   const [isFav, setIsFav] = useState(track.is_favorite ?? false)
+  const [playlistsOpen, setPlaylistsOpen] = useState(false)
+  const [myPlaylists, setMyPlaylists] = useState<Playlist[]>([])
   const menuRef = useRef<HTMLDivElement>(null)
 
   const isCurrent = currentTrack?.id === track.id
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+        setPlaylistsOpen(false)
+      }
     }
     if (menuOpen) document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [menuOpen])
+
+  const openPlaylistsSub = async () => {
+    if (!user) return
+    try {
+      const res = await api.get('/api/playlists')
+      setMyPlaylists(res.data)
+    } catch {}
+    setPlaylistsOpen(true)
+  }
+
+  const addToPlaylist = async (playlistId: string) => {
+    try {
+      await api.post(`/api/playlists/${playlistId}/tracks?track_id=${track.id}`)
+    } catch {}
+    setPlaylistsOpen(false)
+    setMenuOpen(false)
+  }
 
   const handlePlay = () => {
     if (tracks) {
@@ -111,6 +133,24 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
           <div className="absolute right-0 top-8 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 overflow-hidden">
             <button onClick={() => { playNext(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Играть следующим</button>
             <button onClick={() => { addToQueue(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Добавить в очередь</button>
+            {user && (
+              <div className="relative">
+                <button onClick={openPlaylistsSub} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition flex items-center justify-between">
+                  Добавить в плейлист <span className="text-xs text-[var(--text-dim)]">›</span>
+                </button>
+                {playlistsOpen && (
+                  <div className="absolute left-full top-0 ml-1 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 max-h-60 overflow-y-auto">
+                    {myPlaylists.length > 0 ? myPlaylists.map(pl => (
+                      <button key={pl.id} onClick={() => addToPlaylist(pl.id)} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition truncate">
+                        📋 {pl.name}
+                      </button>
+                    )) : (
+                      <p className="px-3 py-2 text-sm text-[var(--text-dim)]">Нет плейлистов</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             <Link to={`/track/${track.id}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Страница трека</Link>
             <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} onClose={() => setMenuOpen(false)} />
           </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import type { Playlist } from '@/lib/types'
+import { pluralize } from '@/lib/utils'
 
 export default function Playlists() {
   const { user } = useAuthStore()
@@ -72,7 +73,7 @@ export default function Playlists() {
                   className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition group">
                   <div className="w-full aspect-square rounded-lg bg-[var(--surface-hover)] mb-3 flex items-center justify-center text-4xl">📋</div>
                   <p className="text-sm font-medium text-[var(--text)] truncate">{pl.name}</p>
-                  <p className="text-xs text-[var(--text-dim)]">{pl.track_count} треков · {pl.is_public ? 'Публичный' : 'Приватный'}</p>
+                  <p className="text-xs text-[var(--text-dim)]">{pluralize(pl.track_count ?? 0, 'трек', 'трека', 'треков')} · {pl.is_public ? 'Публичный' : 'Приватный'}</p>
                 </Link>
               ))}
             </div>
@@ -92,7 +93,7 @@ export default function Playlists() {
                 className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition group">
                 <div className="w-full aspect-square rounded-lg bg-[var(--surface-hover)] mb-3 flex items-center justify-center text-4xl">📋</div>
                 <p className="text-sm font-medium text-[var(--text)] truncate">{pl.name}</p>
-                <p className="text-xs text-[var(--text-dim)]">{pl.track_count} треков</p>
+                <p className="text-xs text-[var(--text-dim)]">{pluralize(pl.track_count ?? 0, 'трек', 'трека', 'треков')}</p>
               </Link>
             ))}
           </div>

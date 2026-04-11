@@ -5,6 +5,7 @@ import shutil
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from pydantic import BaseModel
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -18,6 +19,10 @@ from audio import (
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+
+class GenreBody(BaseModel):
+    name: str
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/opt/musicbox/uploads")
 CONVERTED_DIR = os.getenv("CONVERTED_DIR", "/opt/musicbox/converted")
@@ -199,10 +204,11 @@ async def delete_track(
 
 @router.post("/genres")
 async def create_genre(
-    name: str = Form(...),
+    body: GenreBody,
     admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    name = body.name
     slug = name.strip().lower().replace(" ", "-")
     existing = await db.execute(select(Genre).where(Genre.slug == slug))
     if existing.scalar_one_or_none():
@@ -218,10 +224,11 @@ async def create_genre(
 @router.put("/genres/{genre_id}")
 async def update_genre(
     genre_id: int,
-    name: str = Form(...),
+    body: GenreBody,
     admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    name = body.name
     result = await db.execute(select(Genre).where(Genre.id == genre_id))
     genre = result.scalar_one_or_none()
     if not genre:

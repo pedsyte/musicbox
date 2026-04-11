@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { api } from '@/lib/api'
 import type { Track, Genre, AdminStats } from '@/lib/types'
+import { pluralize } from '@/lib/utils'
 import { formatTime } from '@/lib/utils'
 import Tooltip from '@/components/Tooltip'
 
@@ -150,7 +151,10 @@ function TracksTab() {
 
   const saveEdit = async () => {
     if (!editingId) return
-    await api.put(`/api/admin/tracks/${editingId}`, { title: editTitle.trim(), artist: editArtist.trim() })
+    const fd = new FormData()
+    fd.append('title', editTitle.trim())
+    fd.append('artist', editArtist.trim())
+    await api.put(`/api/admin/tracks/${editingId}`, fd)
     setEditingId(null)
     fetchTracks()
   }
@@ -248,7 +252,7 @@ function GenresTab() {
             ) : (
               <>
                 <span className="flex-1 text-sm text-[var(--text)]">{g.name}</span>
-                <span className="text-xs text-[var(--text-dim)]">{g.track_count} треков</span>
+                <span className="text-xs text-[var(--text-dim)]">{pluralize(g.track_count ?? 0, 'трек', 'трека', 'треков')}</span>
                 <button onClick={() => { setEditingId(g.id); setEditName(g.name) }} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)]">✏️</button>
                 <button onClick={() => deleteGenre(g.id)} className="text-xs text-red-400 hover:text-red-300">🗑</button>
               </>

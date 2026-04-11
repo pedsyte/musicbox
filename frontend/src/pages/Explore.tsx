@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api'
 import type { Genre } from '@/lib/types'
+import { pluralize } from '@/lib/utils'
 
 const colorPalette = [
   'from-purple-600/30 to-violet-500/20',
@@ -34,7 +35,7 @@ export default function Explore() {
           <Link key={genre.id} to={`/browse?genres=${genre.id}`}
             className={`p-5 rounded-2xl bg-gradient-to-br ${colorPalette[idx % colorPalette.length]} border border-[var(--border)] hover:border-[var(--accent)]/40 transition group relative overflow-hidden`}>
             <p className="text-base font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition">{genre.name}</p>
-            <p className="text-sm text-[var(--text-dim)] mt-1">{genre.track_count} треков</p>
+            <p className="text-sm text-[var(--text-dim)] mt-1">{pluralize(genre.track_count ?? 0, 'трек', 'трека', 'треков')}</p>
           </Link>
         ))}
       </div>

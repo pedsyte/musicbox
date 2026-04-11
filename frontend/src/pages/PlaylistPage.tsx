@@ -6,6 +6,7 @@ import { usePlayerStore } from '@/stores/playerStore'
 import type { Playlist, Track } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
 import Tooltip from '@/components/Tooltip'
+import { pluralize } from '@/lib/utils'
 
 export default function PlaylistPage() {
   const { id } = useParams()
@@ -81,7 +82,7 @@ export default function PlaylistPage() {
           ) : (
             <h1 className="text-2xl font-bold text-[var(--text)] mb-1">{playlist.name}</h1>
           )}
-          <p className="text-sm text-[var(--text-dim)]">{playlist.track_count} треков</p>
+          <p className="text-sm text-[var(--text-dim)]">{pluralize(playlist.track_count ?? 0, 'трек', 'трека', 'треков')}</p>
 
           <div className="flex flex-wrap gap-2 mt-3">
             {playlist.tracks && playlist.tracks.length > 0 && (

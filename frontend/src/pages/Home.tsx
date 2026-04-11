@@ -3,6 +3,7 @@ import { api } from '@/lib/api'
 import type { Track, Genre, Playlist } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
 import { Link } from 'react-router-dom'
+import { pluralize } from '@/lib/utils'
 
 type Period = 'day' | 'week' | 'month' | 'all'
 
@@ -28,7 +29,7 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
       </div>
       <p className="text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)] transition truncate">{playlist.name}</p>
       <p className="text-xs text-[var(--text-dim)] mt-0.5">
-        {playlist.track_count || 0} треков {playlist.username && `· ${playlist.username}`}
+        {pluralize(playlist.track_count || 0, 'трек', 'трека', 'треков')} {playlist.username && `· ${playlist.username}`}
       </p>
     </Link>
   )
@@ -144,13 +145,25 @@ export default function Home() {
             <Link to="/explore" className="text-sm text-[var(--accent)] hover:underline">Все →</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {genres.map(genre => (
+            {genres.map((genre, idx) => {
+              const colors = [
+                'from-purple-600/30 to-violet-500/20',
+                'from-pink-600/30 to-rose-500/20',
+                'from-blue-600/30 to-cyan-500/20',
+                'from-green-600/30 to-emerald-500/20',
+                'from-orange-600/30 to-amber-500/20',
+                'from-red-600/30 to-pink-500/20',
+                'from-indigo-600/30 to-blue-500/20',
+                'from-teal-600/30 to-cyan-500/20',
+              ]
+              return (
               <Link key={genre.id} to={`/browse?genres=${genre.id}`}
-                className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--accent)]/30 transition group">
+                className={`p-4 rounded-xl bg-gradient-to-br ${colors[idx % colors.length]} border border-[var(--border)] hover:border-[var(--accent)]/30 transition group`}>
                 <p className="text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)] transition">{genre.name}</p>
-                <p className="text-xs text-[var(--text-dim)] mt-1">{genre.track_count} треков</p>
+                <p className="text-xs text-[var(--text-dim)] mt-1">{pluralize(genre.track_count ?? 0, 'трек', 'трека', 'треков')}</p>
               </Link>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}

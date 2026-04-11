@@ -105,7 +105,7 @@ export default function TrackPage() {
       {peaks.length > 0 && (
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4">
           <p className="text-xs text-[var(--text-dim)] mb-2">Форма волны</p>
-          <Waveform peaks={peaks} progress={progress} onSeek={isCurrent ? seek : undefined} height={80} />
+          <Waveform peaks={peaks} currentTime={isCurrent ? currentTime : 0} duration={isCurrent ? duration : track.duration_seconds} onSeek={isCurrent ? seek : () => play(track)} height={80} />
         </div>
       )}
 

@@ -11,11 +11,11 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/opt/musicbox/uploads")
 CONVERTED_DIR = os.getenv("CONVERTED_DIR", "/opt/musicbox/converted")
 
 # Quality hierarchy: higher index = higher quality
-# WAV (uncompressed lossless) > FLAC (compressed lossless) > MP3/OGG (lossy)
+# WAV and FLAC are both lossless (same tier), MP3/OGG are lossy (lower tier)
 FORMAT_QUALITY = {
     "mp3": 1,
     "ogg": 1,
-    "flac": 2,
+    "flac": 3,
     "wav": 3,
 }
 
