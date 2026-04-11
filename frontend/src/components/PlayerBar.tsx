@@ -144,14 +144,14 @@ export default function PlayerBar() {
         <div className="flex-1 flex flex-col items-center gap-1 max-w-2xl">
           <div className="flex items-center gap-3">
             <Tooltip text={shuffle ? 'Перемешивание включено' : 'Перемешать'}>
-              <button onClick={toggleShuffle} className={`p-1 text-sm transition ${shuffle ? 'text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--text)]'}`}>🔀</button>
+              <button onClick={toggleShuffle} className={`p-1 text-sm transition ${shuffle ? '' : 'opacity-40 grayscale hover:opacity-70'}`}>🔀</button>
             </Tooltip>
             <Tooltip text="Предыдущий трек">
               <button onClick={prev} className="p-1 text-lg text-[var(--text-dim)] hover:text-[var(--text)] transition">⏮</button>
             </Tooltip>
             <Tooltip text={isPlaying ? 'Пауза' : 'Воспроизвести'}>
               <button onClick={togglePlay} className="w-9 h-9 rounded-full bg-[var(--text)] text-[var(--bg)] flex items-center justify-center text-lg hover:scale-105 transition">
-                {isPlaying ? '⏸' : '▶'}
+                {isPlaying ? '⏸' : <span className="pl-0.5">▶</span>}
               </button>
             </Tooltip>
             <Tooltip text="Следующий трек">
@@ -198,11 +198,11 @@ export default function PlayerBar() {
             {showQualityMenu && (
               <div className="absolute bottom-full right-0 mb-2 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl py-1 min-w-[140px] z-50">
                 <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-[var(--text-dim)] font-semibold">Качество</div>
-                {['original', ...(['wav', 'flac', 'mp3'].filter(f => f !== (currentTrack.original_format || 'wav')))].filter(q => {
-                  const orig = currentTrack.original_format || 'wav'
+                {['original', ...(['wav', 'flac', 'mp3'].filter(f => f !== (currentTrack.original_format || 'wav').toLowerCase()))].filter(q => {
+                  const orig = (currentTrack.original_format || 'wav').toLowerCase()
                   if (q === 'original') return true
-                  const qualityMap: Record<string, number> = { mp3: 1, ogg: 1, flac: 2, wav: 3 }
-                  return (qualityMap[q] || 0) < (qualityMap[orig] || 0)
+                  const qualityOrder: Record<string, number> = { mp3: 1, ogg: 1, flac: 2, wav: 3 }
+                  return (qualityOrder[q] || 0) < (qualityOrder[orig] || 0)
                 }).map(q => (
                   <button
                     key={q}

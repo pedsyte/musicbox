@@ -1,5 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react'
-import { usePlayerStore } from '@/stores/playerStore'
+import { useEffect, useRef } from 'react'
 
 interface Props {
   peaks: number[]
@@ -19,9 +18,15 @@ export default function Waveform({ peaks, currentTime, duration, onSeek, height 
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || peaks.length === 0) return
+    const container = containerRef.current
+    if (!canvas || !container || peaks.length === 0) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
+
+    // Resolve CSS variables — Canvas API doesn't support var() syntax
+    const styles = getComputedStyle(container)
+    const activeColor = styles.getPropertyValue('--waveform-active').trim() || '#7c3aed'
+    const dimColor = styles.getPropertyValue('--waveform-dim').trim() || '#3a3a3a'
 
     const dpr = window.devicePixelRatio || 1
     const rect = canvas.getBoundingClientRect()
@@ -41,11 +46,7 @@ export default function Waveform({ peaks, currentTime, duration, onSeek, height 
       const x = i * (barWidth + gap)
       const y = (rect.height - barH) / 2
 
-      if (x < progressX) {
-        ctx.fillStyle = 'var(--accent)'
-      } else {
-        ctx.fillStyle = 'var(--waveform-dim)'
-      }
+      ctx.fillStyle = x < progressX ? activeColor : dimColor
       ctx.beginPath()
       ctx.roundRect(x, y, barWidth, barH, 1)
       ctx.fill()
