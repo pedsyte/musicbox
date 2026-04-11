@@ -130,22 +130,22 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
           <button onClick={() => setMenuOpen(!menuOpen)} className="text-[var(--text-dim)] opacity-0 group-hover:opacity-100 hover:text-[var(--text)] transition text-sm px-1">⋯</button>
         </Tooltip>
         {menuOpen && (
-          <div className="absolute right-0 top-8 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 overflow-hidden">
+          <div className="absolute right-0 top-8 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 max-h-80 overflow-y-auto">
             <button onClick={() => { playNext(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Играть следующим</button>
             <button onClick={() => { addToQueue(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Добавить в очередь</button>
             {user && (
-              <div className="relative">
+              <div>
                 <button onClick={openPlaylistsSub} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition flex items-center justify-between">
-                  Добавить в плейлист <span className="text-xs text-[var(--text-dim)]">›</span>
+                  Добавить в плейлист <span className="text-xs text-[var(--text-dim)]">{playlistsOpen ? '▾' : '›'}</span>
                 </button>
                 {playlistsOpen && (
-                  <div className="absolute left-full top-0 ml-1 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 max-h-60 overflow-y-auto">
+                  <div className="max-h-40 overflow-y-auto border-t border-[var(--border)]">
                     {myPlaylists.length > 0 ? myPlaylists.map(pl => (
-                      <button key={pl.id} onClick={() => addToPlaylist(pl.id)} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition truncate">
+                      <button key={pl.id} onClick={() => addToPlaylist(pl.id)} className="w-full text-left pl-6 pr-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] transition truncate">
                         📋 {pl.name}
                       </button>
                     )) : (
-                      <p className="px-3 py-2 text-sm text-[var(--text-dim)]">Нет плейлистов</p>
+                      <p className="pl-6 pr-3 py-1.5 text-xs text-[var(--text-dim)]">Нет плейлистов</p>
                     )}
                   </div>
                 )}

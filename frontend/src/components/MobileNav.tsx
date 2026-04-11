@@ -1,17 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 
-const mobileNavItems = [
-  { path: '/', label: 'Главная', icon: '🏠' },
-  { path: '/browse', label: 'Обзор', icon: '🎵' },
-  { path: '/explore', label: 'Жанры', icon: '🎭' },
-  { path: '/playlists', label: 'Плейлисты', icon: '📋' },
-  { path: '/settings', label: 'Ещё', icon: '☰' },
-]
-
 export default function MobileNav() {
   const { pathname } = useLocation()
   const { user } = useAuthStore()
+
+  const mobileNavItems = [
+    { path: '/', label: 'Главная', icon: '🏠' },
+    { path: '/browse', label: 'Обзор', icon: '🎵' },
+    { path: '/explore', label: 'Жанры', icon: '🎭' },
+    { path: '/playlists', label: 'Плейлисты', icon: '📋' },
+    user ? { path: '/settings', label: 'Ещё', icon: '☰' } : { path: '/login', label: 'Войти', icon: '👤' },
+  ]
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)] border-t border-[var(--border)] px-1 pb-[env(safe-area-inset-bottom)]">
