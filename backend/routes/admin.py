@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 import shutil
 from typing import Optional
 
@@ -9,9 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models import Track, Genre, TrackGenre, User, Playlist
+from models import Track, Genre, TrackGenre, User, Playlist, SiteSetting
 from auth import require_admin
-from audio import get_duration, convert_to_mp3, generate_waveform_peaks
+from audio import (
+    get_duration, convert_to_mp3, generate_waveform_peaks,
+    detect_format, ALLOWED_UPLOAD_EXTENSIONS,
+)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -32,26 +36,24 @@ async def upload_track(
 ):
     track_id = uuid.uuid4()
 
-    # Save WAV
-    wav_filename = f"{track_id}.wav"
-    wav_path = os.path.join(UPLOAD_DIR, "tracks", wav_filename)
-    with open(wav_path, "wb") as f:
+    # Detect original format
+    orig_ext = os.path.splitext(audio.filename or "file.wav")[1].lower().lstrip(".")
+    if orig_ext not in ALLOWED_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Unsupported format: {orig_ext}. Allowed: {', '.join(ALLOWED_UPLOAD_EXTENSIONS)}")
+    original_format = detect_format(audio.filename or "file.wav")
+
+    # Save original file with correct extension
+    orig_filename = f"{track_id}.{orig_ext}"
+    orig_path = os.path.join(UPLOAD_DIR, "tracks", orig_filename)
+    with open(orig_path, "wb") as f:
         content = await audio.read()
         f.write(content)
 
-    # Convert to MP3
-    mp3_filename = f"{track_id}.mp3"
-    mp3_path = os.path.join(CONVERTED_DIR, mp3_filename)
-    success = convert_to_mp3(wav_path, mp3_path)
-    if not success:
-        os.remove(wav_path)
-        raise HTTPException(status_code=500, detail="Failed to convert audio to MP3")
-
     # Get duration
-    duration = get_duration(wav_path)
+    duration = get_duration(orig_path)
 
-    # Generate waveform peaks
-    peaks = generate_waveform_peaks(wav_path)
+    # Generate waveform peaks from original
+    peaks = generate_waveform_peaks(orig_path)
 
     # Save cover
     cover_path = None
@@ -64,14 +66,15 @@ async def upload_track(
             f.write(cover_content)
         cover_path = cover_full_path
 
-    # Create track
+    # Create track — no auto-convert, stream original
     track = Track(
         id=track_id,
         title=title.strip(),
         artist=artist.strip(),
         duration_seconds=duration,
-        file_path=wav_path,
-        mp3_path=mp3_path,
+        file_path=orig_path,
+        mp3_path="",
+        original_format=original_format,
         cover_path=cover_path,
         lyrics=lyrics.strip() if lyrics else None,
         waveform_peaks=peaks,
@@ -272,3 +275,34 @@ async def get_stats(
         "total_plays": total_plays,
         "total_playlists": playlists_count,
     }
+
+
+# --- Site Settings (metadata tags etc.) ---
+
+@router.get("/settings")
+async def get_settings(
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(SiteSetting))
+    settings = {s.key: s.value for s in result.scalars().all()}
+    return settings
+
+
+@router.put("/settings")
+async def update_settings(
+    settings: dict,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    for key, value in settings.items():
+        key = str(key).strip()[:100]
+        value = str(value).strip()
+        existing = await db.execute(select(SiteSetting).where(SiteSetting.key == key))
+        s = existing.scalar_one_or_none()
+        if s:
+            s.value = value
+        else:
+            db.add(SiteSetting(key=key, value=value))
+    await db.commit()
+    return {"message": "Settings updated"}

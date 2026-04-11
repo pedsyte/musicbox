@@ -6,7 +6,7 @@ import type { Track, Genre, AdminStats } from '@/lib/types'
 import { formatTime } from '@/lib/utils'
 import Tooltip from '@/components/Tooltip'
 
-type Tab = 'upload' | 'tracks' | 'genres' | 'stats'
+type Tab = 'upload' | 'tracks' | 'genres' | 'stats' | 'settings'
 
 export default function Admin() {
   const { user } = useAuthStore()
@@ -30,6 +30,7 @@ export default function Admin() {
           { v: 'tracks', l: '🎵 Треки' },
           { v: 'genres', l: '🎭 Жанры' },
           { v: 'stats', l: '📊 Статистика' },
+          { v: 'settings', l: '⚙️ Настройки' },
         ] as { v: Tab; l: string }[]).map(t => (
           <button key={t.v} onClick={() => setTab(t.v)}
             className={`flex-1 px-3 py-2 text-sm rounded-lg transition ${tab === t.v ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
@@ -42,6 +43,7 @@ export default function Admin() {
       {tab === 'tracks' && <TracksTab />}
       {tab === 'genres' && <GenresTab />}
       {tab === 'stats' && <StatsTab />}
+      {tab === 'settings' && <SettingsTab />}
     </div>
   )
 }
@@ -99,8 +101,8 @@ function UploadTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Аудио (WAV) *</label>
-          <input type="file" accept=".wav,audio/wav" onChange={e => setAudioFile(e.target.files?.[0] || null)}
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">Аудио (WAV, MP3, FLAC, OGG) *</label>
+          <input type="file" accept=".wav,.mp3,.flac,.ogg,.aac,.m4a,audio/*" onChange={e => setAudioFile(e.target.files?.[0] || null)}
             className="w-full text-sm text-[var(--text-dim)] file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--accent)] file:text-white file:text-sm file:cursor-pointer" />
         </div>
         <div>
@@ -281,6 +283,108 @@ function StatsTab() {
           <p className="text-xs text-[var(--text-dim)] mt-1">{s.label}</p>
         </div>
       ))}
+    </div>
+  )
+}
+
+
+function SettingsTab() {
+  const [siteUrl, setSiteUrl] = useState('')
+  const [staticMeta, setStaticMeta] = useState<{ key: string; value: string }[]>([])
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  useEffect(() => {
+    api.get('/api/admin/settings').then(res => {
+      const data = res.data
+      setSiteUrl(data.download_metadata_url || '')
+      try {
+        const parsed = JSON.parse(data.download_metadata_static || '{}')
+        const entries = Object.entries(parsed).map(([k, v]) => ({ key: k, value: String(v) }))
+        setStaticMeta(entries.length ? entries : [{ key: '', value: '' }])
+      } catch {
+        setStaticMeta([{ key: '', value: '' }])
+      }
+    })
+  }, [])
+
+  const save = async () => {
+    setSaving(true)
+    setMsg('')
+    try {
+      const staticObj: Record<string, string> = {}
+      staticMeta.forEach(m => { if (m.key.trim()) staticObj[m.key.trim()] = m.value })
+      await api.put('/api/admin/settings', {
+        download_metadata_url: siteUrl,
+        download_metadata_static: JSON.stringify(staticObj),
+      })
+      setMsg('Сохранено!')
+    } catch {
+      setMsg('Ошибка сохранения')
+    } finally {
+      setSaving(false)
+      setTimeout(() => setMsg(''), 3000)
+    }
+  }
+
+  const addMeta = () => setStaticMeta([...staticMeta, { key: '', value: '' }])
+  const removeMeta = (i: number) => setStaticMeta(staticMeta.filter((_, idx) => idx !== i))
+  const updateMeta = (i: number, field: 'key' | 'value', val: string) => {
+    const copy = [...staticMeta]
+    copy[i] = { ...copy[i], [field]: val }
+    setStaticMeta(copy)
+  }
+
+  const inputCls = "w-full bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--accent)]"
+
+  return (
+    <div className="space-y-6">
+      {/* Site URL for metadata */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-[var(--text)]">🌐 URL сайта (добавляется в метаданные)</h3>
+        <p className="text-xs text-[var(--text-dim)]">Будет вписан в comment и url теги скачиваемых файлов</p>
+        <input type="text" value={siteUrl} onChange={e => setSiteUrl(e.target.value)} placeholder="musicbox.gornich.fun" className={inputCls} />
+      </div>
+
+      {/* Static metadata tags */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-[var(--text)]">🏷️ Статические метатеги</h3>
+        <p className="text-xs text-[var(--text-dim)]">Добавляются ко всем скачиваемым трекам. Динамические теги (title, artist, genre) назначаются автоматически.</p>
+        <div className="space-y-2">
+          {staticMeta.map((m, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <input type="text" value={m.key} onChange={e => updateMeta(i, 'key', e.target.value)}
+                placeholder="Ключ (напр. copyright)" className={`${inputCls} flex-1`} />
+              <input type="text" value={m.value} onChange={e => updateMeta(i, 'value', e.target.value)}
+                placeholder="Значение" className={`${inputCls} flex-1`} />
+              <button onClick={() => removeMeta(i)} className="text-red-400 hover:text-red-300 text-lg px-2 shrink-0">✕</button>
+            </div>
+          ))}
+        </div>
+        <button onClick={addMeta} className="text-sm text-[var(--accent)] hover:underline">+ Добавить тег</button>
+      </div>
+
+      {/* Dynamic metadata info */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-2">
+        <h3 className="text-sm font-semibold text-[var(--text)]">🔄 Динамические метатеги (автоматические)</h3>
+        <p className="text-xs text-[var(--text-dim)]">Эти теги добавляются автоматически из данных трека:</p>
+        <div className="grid grid-cols-2 gap-1 text-xs text-[var(--text-dim)]">
+          <span className="text-[var(--text)]">title</span><span>→ Название трека</span>
+          <span className="text-[var(--text)]">artist</span><span>→ Исполнитель</span>
+          <span className="text-[var(--text)]">genre</span><span>→ Жанры (через запятую)</span>
+          <span className="text-[var(--text)]">comment</span><span>→ "Downloaded from {'{URL}'}"</span>
+          <span className="text-[var(--text)]">url</span><span>→ URL сайта</span>
+        </div>
+      </div>
+
+      {/* Save */}
+      <div className="flex items-center gap-3">
+        <button onClick={save} disabled={saving}
+          className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium">
+          {saving ? 'Сохранение...' : 'Сохранить настройки'}
+        </button>
+        {msg && <span className={`text-sm ${msg.includes('Ошибка') ? 'text-red-400' : 'text-green-400'}`}>{msg}</span>}
+      </div>
     </div>
   )
 }

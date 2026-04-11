@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { formatTime } from '@/lib/utils'
 import Tooltip from './Tooltip'
 import Waveform from './Waveform'
+import DownloadMenu from './DownloadMenu'
 import api from '@/lib/api'
 
 export default function PlayerBar() {
@@ -176,7 +177,7 @@ export default function PlayerBar() {
             <button onClick={toggleQueue} className={`p-1 text-sm transition ${showQueue ? 'text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--text)]'}`}>📋</button>
           </Tooltip>
           <Tooltip text="Скачать">
-            <a href={`/api/tracks/${currentTrack.id}/download?format=mp3`} className="p-1 text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition">⬇</a>
+            <DownloadMenu trackId={currentTrack.id} originalFormat={currentTrack.original_format || 'wav'} compact />
           </Tooltip>
         </div>
       </div>

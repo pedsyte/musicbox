@@ -9,6 +9,7 @@ export interface Track {
   waveform_peaks?: number[] | null
   play_count: number
   download_count: number
+  original_format: string
   uploaded_at: string
   genres: Genre[]
   is_favorite: boolean

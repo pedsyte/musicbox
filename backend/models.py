@@ -32,7 +32,8 @@ class Track(Base):
     artist = Column(String(200), default="Suno AI", nullable=False)
     duration_seconds = Column(Float, default=0, nullable=False)
     file_path = Column(String(500), nullable=False)
-    mp3_path = Column(String(500), nullable=False)
+    mp3_path = Column(String(500), nullable=True)
+    original_format = Column(String(10), default="wav", nullable=False)
     cover_path = Column(String(500), nullable=True)
     lyrics = Column(Text, nullable=True)
     waveform_peaks = Column(JSON, nullable=True)
@@ -108,3 +109,10 @@ class TrackEvent(Base):
     track_id = Column(UUID(as_uuid=True), ForeignKey("tracks.id", ondelete="CASCADE"), nullable=False, index=True)
     event_type = Column(String(20), nullable=False)  # 'play', 'download', 'favorite', 'playlist_add'
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
+class SiteSetting(Base):
+    __tablename__ = "site_settings"
+
+    key = Column(String(100), primary_key=True)
+    value = Column(Text, nullable=False)

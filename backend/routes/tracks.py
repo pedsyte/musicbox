@@ -6,13 +6,16 @@ from typing import Optional
 from uuid import UUID
 from datetime import datetime, timedelta
 import os
+import tempfile
+import json
 
 from fastapi.responses import FileResponse
 
 from database import get_db
-from models import Track, Genre, TrackGenre, TrackEvent, PlaylistTrack
+from models import Track, Genre, TrackGenre, TrackEvent, PlaylistTrack, SiteSetting
 from auth import get_current_user, require_user
 from models import User, Favorite
+from audio import convert_audio, get_available_download_formats, FORMAT_MIME, CONVERTED_DIR
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
 
@@ -27,6 +30,7 @@ def track_to_dict(track: Track, is_favorite: bool = False) -> dict:
         "has_lyrics": bool(track.lyrics),
         "play_count": track.play_count,
         "download_count": track.download_count,
+        "original_format": track.original_format or "wav",
         "uploaded_at": track.uploaded_at.isoformat(),
         "genres": [{"id": g.id, "name": g.name, "slug": g.slug} for g in track.genres],
         "is_favorite": is_favorite,
@@ -225,17 +229,18 @@ async def get_track(
 
 @router.get("/{track_id}/stream")
 async def stream_track(track_id: UUID, db: AsyncSession = Depends(get_db)):
-    from fastapi import Request
-    from starlette.requests import Request as StarletteRequest
-
     result = await db.execute(select(Track).where(Track.id == track_id))
     track = result.scalar_one_or_none()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
 
-    file_path = track.mp3_path
+    # Serve original file
+    file_path = track.file_path
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Audio file not found")
+
+    fmt = track.original_format or "wav"
+    mime = FORMAT_MIME.get(fmt, "application/octet-stream")
 
     # Increment play count + log event
     track.play_count += 1
@@ -244,7 +249,7 @@ async def stream_track(track_id: UUID, db: AsyncSession = Depends(get_db)):
 
     return FileResponse(
         file_path,
-        media_type="audio/mpeg",
+        media_type=mime,
         headers={"Accept-Ranges": "bytes"},
     )
 
@@ -258,40 +263,101 @@ async def get_waveform(track_id: UUID, db: AsyncSession = Depends(get_db)):
     return {"peaks": track.waveform_peaks or []}
 
 
-@router.get("/{track_id}/download")
-async def download_track(
-    track_id: UUID,
-    format: str = Query("mp3", regex="^(wav|mp3)$"),
-    db: AsyncSession = Depends(get_db),
-):
+@router.get("/{track_id}/formats")
+async def get_track_formats(track_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Track).where(Track.id == track_id))
     track = result.scalar_one_or_none()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
+    orig = track.original_format or "wav"
+    return {
+        "original": orig,
+        "formats": get_available_download_formats(orig),
+    }
 
-    if format == "wav":
-        file_path = track.file_path
-        media_type = "audio/wav"
-        ext = "wav"
-    else:
-        file_path = track.mp3_path
-        media_type = "audio/mpeg"
-        ext = "mp3"
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
+@router.get("/{track_id}/download")
+async def download_track(
+    track_id: UUID,
+    format: str = Query("original"),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Track).options(selectinload(Track.genres)).where(Track.id == track_id)
+    )
+    track = result.scalar_one_or_none()
+    if not track:
+        raise HTTPException(status_code=404, detail="Track not found")
+
+    orig_format = track.original_format or "wav"
+
+    # "original" means download in original format
+    if format == "original":
+        format = orig_format
+
+    # Validate format is allowed
+    available = get_available_download_formats(orig_format)
+    if format not in available:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Format '{format}' not available. Allowed: {', '.join(available)}"
+        )
+
+    # Build metadata tags
+    metadata = {}
+
+    # Load static metadata from site settings
+    settings_result = await db.execute(select(SiteSetting))
+    settings = {s.key: s.value for s in settings_result.scalars().all()}
+    static_meta_json = settings.get("download_metadata_static", "{}")
+    try:
+        static_meta = json.loads(static_meta_json)
+    except (json.JSONDecodeError, TypeError):
+        static_meta = {}
+
+    # Apply static metadata first
+    for key, value in static_meta.items():
+        if value:
+            metadata[key] = str(value)
+
+    # Dynamic metadata (overrides static if same key)
+    metadata["title"] = track.title
+    metadata["artist"] = track.artist
+    if track.genres:
+        metadata["genre"] = ", ".join(g.name for g in track.genres)
+
+    # Add website comment from settings
+    site_url = settings.get("download_metadata_url", "")
+    if site_url:
+        metadata["comment"] = f"Downloaded from {site_url}"
+        metadata["url"] = site_url
+
+    safe_title = "".join(c for c in track.title if c.isalnum() or c in " -_").strip()
+    filename = f"{safe_title} - {track.artist}.{format}"
+    mime = FORMAT_MIME.get(format, "application/octet-stream")
+
+    # If requesting original format, still need to rewrite metadata
+    # Always convert/re-encode to inject clean metadata
+    tmp_dir = os.path.join(CONVERTED_DIR, "tmp")
+    os.makedirs(tmp_dir, exist_ok=True)
+    tmp_path = os.path.join(tmp_dir, f"{track.id}_{format}.{format}")
+
+    success = convert_audio(track.file_path, tmp_path, format, metadata)
+    if not success:
+        raise HTTPException(status_code=500, detail="Conversion failed")
 
     # Track download
     track.download_count += 1
     db.add(TrackEvent(track_id=track.id, event_type="download"))
     await db.commit()
 
-    safe_title = "".join(c for c in track.title if c.isalnum() or c in " -_").strip()
-    filename = f"{safe_title} - {track.artist}.{ext}"
+    # Use RFC 5987 encoding for unicode filenames
+    from urllib.parse import quote
+    encoded_fn = quote(filename)
 
     return FileResponse(
-        file_path,
-        media_type=media_type,
+        tmp_path,
+        media_type=mime,
         filename=filename,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_fn}"},
     )

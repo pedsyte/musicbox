@@ -2,6 +2,7 @@ import type { Track } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
 import Tooltip from './Tooltip'
+import DownloadMenu from './DownloadMenu'
 import { formatTime } from '@/lib/utils'
 import { useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
@@ -111,7 +112,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
             <button onClick={() => { playNext(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Играть следующим</button>
             <button onClick={() => { addToQueue(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Добавить в очередь</button>
             <Link to={`/track/${track.id}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Страница трека</Link>
-            <a href={`/api/tracks/${track.id}/download?format=mp3`} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition" onClick={() => setMenuOpen(false)}>Скачать MP3</a>
+            <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} onClose={() => setMenuOpen(false)} />
           </div>
         )}
       </div>

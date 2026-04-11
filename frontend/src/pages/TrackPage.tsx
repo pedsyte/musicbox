@@ -6,6 +6,7 @@ import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
 import Tooltip from '@/components/Tooltip'
 import Waveform from '@/components/Waveform'
+import DownloadMenu from '@/components/DownloadMenu'
 import { formatTime } from '@/lib/utils'
 
 export default function TrackPage() {
@@ -95,10 +96,7 @@ export default function TrackPage() {
             <Tooltip text="Добавить в очередь">
               <button onClick={() => addToQueue(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">+</button>
             </Tooltip>
-            <Tooltip text="Скачать MP3">
-              <a href={`/api/tracks/${track.id}/download?format=mp3`}
-                className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">⬇</a>
-            </Tooltip>
+            <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} compact />
           </div>
         </div>
       </div>
