@@ -62,6 +62,18 @@ async def my_playlists(
             for row in covers_result.all()
         ]
 
+        # Get first 5 track previews
+        preview_result = await db.execute(
+            select(Track.title, Track.artist)
+            .join(PlaylistTrack, Track.id == PlaylistTrack.track_id)
+            .where(PlaylistTrack.playlist_id == p.id)
+            .order_by(PlaylistTrack.position)
+            .limit(5)
+        )
+        preview_tracks = [
+            {"title": row[0], "artist": row[1]} for row in preview_result.all()
+        ]
+
         items.append({
             "id": str(p.id),
             "name": p.name,
@@ -69,6 +81,7 @@ async def my_playlists(
             "is_public": p.is_public,
             "track_count": count,
             "covers": covers,
+            "preview_tracks": preview_tracks,
             "created_at": p.created_at.isoformat(),
         })
     return items
@@ -103,6 +116,18 @@ async def public_playlists(db: AsyncSession = Depends(get_db)):
             for row in covers_result.all()
         ]
 
+        # Get first 5 track previews
+        preview_result = await db.execute(
+            select(Track.title, Track.artist)
+            .join(PlaylistTrack, Track.id == PlaylistTrack.track_id)
+            .where(PlaylistTrack.playlist_id == p.id)
+            .order_by(PlaylistTrack.position)
+            .limit(5)
+        )
+        preview_tracks = [
+            {"title": row[0], "artist": row[1]} for row in preview_result.all()
+        ]
+
         items.append({
             "id": str(p.id),
             "name": p.name,
@@ -111,6 +136,7 @@ async def public_playlists(db: AsyncSession = Depends(get_db)):
             "username": p.user.username if p.user else None,
             "track_count": count,
             "covers": covers,
+            "preview_tracks": preview_tracks,
             "created_at": p.created_at.isoformat(),
         })
     return items

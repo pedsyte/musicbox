@@ -32,6 +32,7 @@ export interface Playlist {
   is_owner?: boolean
   track_count?: number
   covers?: (string | null)[]
+  preview_tracks?: { title: string; artist: string }[]
   tracks?: Track[]
   created_at: string
 }
