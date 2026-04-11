@@ -61,7 +61,7 @@ export default function QueuePanel() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-[var(--text)] truncate">{currentTrack.title}</p>
-                  <p className="text-xs text-[var(--text-dim)] truncate">{currentTrack.artist}</p>
+                  <a href={`/browse?artist=${encodeURIComponent(currentTrack.artist)}`} className="text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition block">{currentTrack.artist}</a>
                 </div>
                 <span className="text-xs text-[var(--text-dim)]">{formatTime(currentTrack.duration_seconds)}</span>
               </div>
@@ -93,7 +93,7 @@ export default function QueuePanel() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm text-[var(--text)] truncate">{track.title}</p>
-                      <p className="text-xs text-[var(--text-dim)] truncate">{track.artist}</p>
+                      <a href={`/browse?artist=${encodeURIComponent(track.artist)}`} className="text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition block">{track.artist}</a>
                     </div>
                     <span className="text-xs text-[var(--text-dim)]">{formatTime(track.duration_seconds)}</span>
                     <div className="hidden group-hover:flex items-center gap-1">

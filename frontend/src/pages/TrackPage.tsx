@@ -59,7 +59,7 @@ export default function TrackPage() {
         <div className="flex-1 min-w-0">
           <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">Трек</p>
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-1">{track.title}</h1>
-          <p className="text-lg text-[var(--text-dim)] mb-3">{track.artist}</p>
+          <a href={`/browse?artist=${encodeURIComponent(track.artist)}`} className="text-lg text-[var(--text-dim)] mb-3 hover:text-[var(--accent)] hover:underline transition block">{track.artist}</a>
 
           {track.genres && track.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-4">

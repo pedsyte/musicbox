@@ -120,7 +120,7 @@ export default function PlayerBar() {
             <Tooltip text={currentTrack.title}>
               <p className="text-sm font-medium text-[var(--text)] truncate">{currentTrack.title}</p>
             </Tooltip>
-            <p className="text-xs text-[var(--text-dim)] truncate">{currentTrack.artist}</p>
+            <a href={`/browse?artist=${encodeURIComponent(currentTrack.artist)}`} className="text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition block">{currentTrack.artist}</a>
           </div>
         </div>
 

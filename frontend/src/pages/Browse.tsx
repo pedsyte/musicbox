@@ -22,6 +22,7 @@ export default function Browse() {
   const [page, setPage] = useState(1)
 
   const q = params.get('q') || ''
+  const artistFilter = params.get('artist') || ''
   const sort = (params.get('sort') as SortOption) || 'newest'
   const includeGenres = params.get('genres')?.split(',').filter(Boolean).map(Number) || []
   const excludeGenres = params.get('exclude')?.split(',').filter(Boolean).map(Number) || []
@@ -39,6 +40,7 @@ export default function Browse() {
       p.set('page', String(page))
       p.set('sort', sort)
       if (q) p.set('search', q)
+      if (artistFilter) p.set('artist', artistFilter)
       if (includeGenres.length) p.set('genre_ids', includeGenres.join(','))
       if (excludeGenres.length) p.set('exclude_genre_ids', excludeGenres.join(','))
       const res = await api.get('/api/tracks?' + p.toString())
@@ -47,7 +49,7 @@ export default function Browse() {
     } finally {
       setLoading(false)
     }
-  }, [q, sort, includeGenres.join(','), excludeGenres.join(','), page])
+  }, [q, artistFilter, sort, includeGenres.join(','), excludeGenres.join(','), page])
 
   useEffect(() => { fetchTracks() }, [fetchTracks])
 
@@ -78,7 +80,13 @@ export default function Browse() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-xl font-bold text-[var(--text)] mb-4">Обзор треков</h1>
+      <h1 className="text-xl font-bold text-[var(--text)] mb-4">
+        {artistFilter ? `Треки: ${artistFilter}` : 'Обзор треков'}
+      </h1>
+      {artistFilter && (
+        <button onClick={() => { const p = new URLSearchParams(params); p.delete('artist'); setParams(p) }}
+          className="mb-4 text-sm text-[var(--accent)] hover:underline">← Все треки</button>
+      )}
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2 mb-4">

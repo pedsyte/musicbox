@@ -39,6 +39,7 @@ async def list_tracks(
     exclude_genre_ids: Optional[str] = Query(None, description="Comma-separated genre IDs to exclude"),
     genres: Optional[str] = Query(None, description="Comma-separated genre slugs to include"),
     exclude: Optional[str] = Query(None, description="Comma-separated genre slugs to exclude"),
+    artist: Optional[str] = Query(None, description="Exact artist name filter"),
     search: Optional[str] = Query(None),
     sort: str = Query("newest"),
     page: int = Query(1, ge=1),
@@ -77,6 +78,10 @@ async def list_tracks(
             excl_genre_ids = select(Genre.id).where(Genre.slug.in_(exclude_slugs))
             excl_track_ids = select(TrackGenre.track_id).where(TrackGenre.genre_id.in_(excl_genre_ids)).distinct()
             query = query.where(Track.id.notin_(excl_track_ids))
+
+    # Artist exact filter
+    if artist:
+        query = query.where(Track.artist == artist)
 
     # Search
     if search:

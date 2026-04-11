@@ -77,7 +77,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       {/* Info */}
       <div className="min-w-0 flex-1">
         <Link to={`/track/${track.id}`} className={`block text-sm font-medium truncate ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text)]'} hover:underline`}>{track.title}</Link>
-        {showArtist && <p className="text-xs text-[var(--text-dim)] truncate">{track.artist}</p>}
+        {showArtist && <Link to={`/browse?artist=${encodeURIComponent(track.artist)}`} className="block text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition">{track.artist}</Link>}
       </div>
 
       {/* Genre pills */}
