@@ -15,7 +15,7 @@ from database import get_db
 from models import Track, Genre, TrackGenre, TrackEvent, PlaylistTrack, SiteSetting
 from auth import get_current_user, require_user
 from models import User, Favorite
-from audio import convert_audio, get_available_download_formats, FORMAT_MIME, CONVERTED_DIR
+from audio import convert_audio, get_available_download_formats, FORMAT_MIME, CONVERTED_DIR, STREAM_QUALITIES
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
 
@@ -228,19 +228,49 @@ async def get_track(
 
 
 @router.get("/{track_id}/stream")
-async def stream_track(track_id: UUID, db: AsyncSession = Depends(get_db)):
+async def stream_track(
+    track_id: UUID,
+    quality: str = Query("original"),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(Track).where(Track.id == track_id))
     track = result.scalar_one_or_none()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
 
-    # Serve original file
-    file_path = track.file_path
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Audio file not found")
+    orig_format = track.original_format or "wav"
 
-    fmt = track.original_format or "wav"
-    mime = FORMAT_MIME.get(fmt, "application/octet-stream")
+    # Validate quality option
+    allowed_qualities = STREAM_QUALITIES.get(orig_format, ["original"])
+    if quality not in allowed_qualities:
+        quality = "original"
+
+    if quality == "original" or quality == orig_format:
+        # Serve original file
+        file_path = track.file_path
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Audio file not found")
+        mime = FORMAT_MIME.get(orig_format, "application/octet-stream")
+    else:
+        # Serve converted/cached file
+        cache_dir = os.path.join(CONVERTED_DIR, "stream_cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        cached_path = os.path.join(cache_dir, f"{track.id}.{quality}")
+
+        if not os.path.exists(cached_path):
+            # Convert and cache
+            success = convert_audio(track.file_path, cached_path, quality)
+            if not success:
+                # Fallback to original
+                file_path = track.file_path
+                mime = FORMAT_MIME.get(orig_format, "application/octet-stream")
+                track.play_count += 1
+                db.add(TrackEvent(track_id=track.id, event_type="play"))
+                await db.commit()
+                return FileResponse(file_path, media_type=mime, headers={"Accept-Ranges": "bytes"})
+
+        file_path = cached_path
+        mime = FORMAT_MIME.get(quality, "application/octet-stream")
 
     # Increment play count + log event
     track.play_count += 1
@@ -252,6 +282,17 @@ async def stream_track(track_id: UUID, db: AsyncSession = Depends(get_db)):
         media_type=mime,
         headers={"Accept-Ranges": "bytes"},
     )
+
+
+@router.get("/{track_id}/stream-qualities")
+async def get_stream_qualities(track_id: UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Track).where(Track.id == track_id))
+    track = result.scalar_one_or_none()
+    if not track:
+        raise HTTPException(status_code=404, detail="Track not found")
+    orig = track.original_format or "wav"
+    qualities = STREAM_QUALITIES.get(orig, ["original"])
+    return {"original_format": orig, "qualities": qualities}
 
 
 @router.get("/{track_id}/waveform")
@@ -273,6 +314,7 @@ async def get_track_formats(track_id: UUID, db: AsyncSession = Depends(get_db)):
     return {
         "original": orig,
         "formats": get_available_download_formats(orig),
+        "stream_qualities": STREAM_QUALITIES.get(orig, ["original"]),
     }
 
 

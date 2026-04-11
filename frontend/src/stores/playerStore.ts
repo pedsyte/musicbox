@@ -15,6 +15,7 @@ interface PlayerState {
   queueSource: string
   showQueue: boolean
   showMobilePlayer: boolean
+  streamQuality: string
 
   play: (track: Track, queue?: Track[], source?: string) => void
   pause: () => void
@@ -30,6 +31,7 @@ interface PlayerState {
   toggleShuffle: () => void
   toggleQueue: () => void
   setShowMobilePlayer: (v: boolean) => void
+  setStreamQuality: (q: string) => void
   playNext: (track: Track) => void
   addToQueue: (track: Track) => void
   removeFromQueue: (index: number) => void
@@ -62,6 +64,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   queueSource: '',
   showQueue: false,
   showMobilePlayer: false,
+  streamQuality: localStorage.getItem('streamQuality') || 'original',
 
   play: (track, queue, source) => {
     const state = get()
@@ -157,6 +160,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   toggleQueue: () => set(s => ({ showQueue: !s.showQueue })),
   setShowMobilePlayer: (v) => set({ showMobilePlayer: v }),
+  setStreamQuality: (q) => {
+    localStorage.setItem('streamQuality', q)
+    set({ streamQuality: q })
+  },
 
   playNext: (track) => {
     set(s => ({ queue: [track, ...s.queue.filter(t => t.id !== track.id)] }))

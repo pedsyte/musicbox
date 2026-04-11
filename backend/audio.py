@@ -11,6 +11,7 @@ UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/opt/musicbox/uploads")
 CONVERTED_DIR = os.getenv("CONVERTED_DIR", "/opt/musicbox/converted")
 
 # Quality hierarchy: higher index = higher quality
+# WAV (uncompressed lossless) > FLAC (compressed lossless) > MP3/OGG (lossy)
 FORMAT_QUALITY = {
     "mp3": 1,
     "ogg": 1,
@@ -27,6 +28,17 @@ FORMAT_MIME = {
 
 ALLOWED_UPLOAD_EXTENSIONS = {"wav", "mp3", "flac", "ogg", "aac", "m4a", "wma"}
 
+# Stream quality options available per original format
+STREAM_QUALITIES = {
+    "wav": ["original", "flac", "mp3"],
+    "flac": ["original", "mp3"],
+    "mp3": ["original"],
+    "ogg": ["original"],
+    "aac": ["original", "mp3"],
+    "m4a": ["original", "mp3"],
+    "wma": ["original", "mp3"],
+}
+
 
 def detect_format(filename: str) -> str:
     """Detect audio format from filename extension."""
@@ -36,15 +48,12 @@ def detect_format(filename: str) -> str:
 
 
 def get_available_download_formats(original_format: str) -> list[str]:
-    """Return list of formats available for download (original + lower quality)."""
+    """Return list of formats available for download (original + strictly lower quality)."""
     orig_quality = FORMAT_QUALITY.get(original_format, 0)
-    formats = []
-    # Always include original
-    if original_format not in formats:
-        formats.append(original_format)
-    # Add lower-or-equal quality formats
+    formats = [original_format]
+    # Add only STRICTLY lower quality formats
     for fmt, quality in sorted(FORMAT_QUALITY.items(), key=lambda x: -x[1]):
-        if quality <= orig_quality and fmt != original_format:
+        if quality < orig_quality and fmt != original_format:
             formats.append(fmt)
     return formats
 
