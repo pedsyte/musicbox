@@ -25,7 +25,7 @@ export default function Admin() {
       <h1 className="text-xl font-bold text-[var(--text)]">⚙️ Панель управления</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[var(--surface)] rounded-xl border border-[var(--border)] p-1">
+      <div className="flex gap-1 bg-[var(--surface)] rounded-xl border border-[var(--border)] p-1 overflow-x-auto">
         {([
           { v: 'upload', l: '📤 Загрузить' },
           { v: 'tracks', l: '🎵 Треки' },
@@ -34,7 +34,7 @@ export default function Admin() {
           { v: 'settings', l: '⚙️ Настройки' },
         ] as { v: Tab; l: string }[]).map(t => (
           <button key={t.v} onClick={() => setTab(t.v)}
-            className={`flex-1 px-3 py-2 text-sm rounded-lg transition ${tab === t.v ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+            className={`flex-1 shrink-0 px-3 py-2 text-sm rounded-lg transition whitespace-nowrap ${tab === t.v ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
             {t.l}
           </button>
         ))}
@@ -142,7 +142,7 @@ function TracksTab() {
 
   const fetchTracks = () => {
     setLoading(true)
-    api.get('/api/tracks?limit=200').then(res => setTracks(res.data.tracks)).finally(() => setLoading(false))
+    api.get('/api/tracks?limit=100').then(res => setTracks(res.data.tracks)).finally(() => setLoading(false))
   }
 
   useEffect(() => { fetchTracks() }, [])

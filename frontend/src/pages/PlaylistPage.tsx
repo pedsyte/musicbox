@@ -30,7 +30,7 @@ export default function PlaylistPage() {
 
   useEffect(() => { setLoading(true); fetchPlaylist() }, [id])
 
-  const isOwner = user && playlist && user.id === playlist.user_id
+  const isOwner = user && playlist && (playlist.is_owner || user.id === playlist.user_id)
 
   const saveEdit = async () => {
     if (!editName.trim()) return
@@ -82,7 +82,7 @@ export default function PlaylistPage() {
           ) : (
             <h1 className="text-2xl font-bold text-[var(--text)] mb-1">{playlist.name}</h1>
           )}
-          <p className="text-sm text-[var(--text-dim)]">{pluralize(playlist.track_count ?? 0, 'трек', 'трека', 'треков')}</p>
+          <p className="text-sm text-[var(--text-dim)]">{pluralize(playlist.track_count ?? playlist.tracks?.length ?? 0, 'трек', 'трека', 'треков')}</p>
 
           <div className="flex flex-wrap gap-2 mt-3">
             {playlist.tracks && playlist.tracks.length > 0 && (

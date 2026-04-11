@@ -31,17 +31,17 @@ export default function Header() {
       {/* Navigation arrows (desktop) */}
       <div className="hidden md:flex items-center gap-1">
         <Tooltip text="Назад">
-          <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text-dim)] hover:text-[var(--text)] transition text-sm">←</button>
+          <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text)] opacity-60 hover:opacity-100 transition text-base">←</button>
         </Tooltip>
         <Tooltip text="Вперёд">
-          <button onClick={() => navigate(1)} className="w-8 h-8 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text-dim)] hover:text-[var(--text)] transition text-sm">→</button>
+          <button onClick={() => navigate(1)} className="w-8 h-8 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text)] opacity-60 hover:opacity-100 transition text-base">→</button>
         </Tooltip>
       </div>
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex-1 max-w-md">
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] text-sm">🔍</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-dim)] text-base">🔍</span>
           <input
             ref={inputRef}
             type="text"
@@ -63,7 +63,7 @@ export default function Header() {
           </>
         ) : (
           <Tooltip text="Настройки">
-            <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold hover:opacity-90 transition">
+            <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold hover:scale-110 hover:brightness-110 transition">
               {user.username[0].toUpperCase()}
             </button>
           </Tooltip>

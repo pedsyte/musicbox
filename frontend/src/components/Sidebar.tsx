@@ -16,10 +16,12 @@ export default function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 bg-[var(--surface)] border-r border-[var(--border)] h-full">
       {/* Logo */}
-      <Link to="/" className="flex items-center gap-2 px-5 py-5">
+      <Link to="/" className="flex items-center gap-2 px-5 py-5 hover:opacity-80 transition">
         <span className="text-2xl">🎧</span>
         <span className="text-lg font-bold text-[var(--text)]">MusicBox</span>
       </Link>
+
+      <div className="mx-4 mb-2 border-b border-[var(--border)]" />
 
       {/* Nav */}
       <nav className="flex-1 px-3 space-y-1">
