@@ -95,7 +95,7 @@ export default function Home() {
           </div>
         </div>
         {popular.length > 0 ? (
-          <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
             {popular.map((track, idx) => (
               <TrackCard key={track.id} track={track} tracks={popular} idx={idx} />
             ))}
@@ -114,7 +114,7 @@ export default function Home() {
             <h2 className="text-lg font-semibold text-[var(--text)]">✨ Новинки</h2>
             <Link to="/browse?sort=newest" className="text-sm text-[var(--accent)] hover:underline">Все →</Link>
           </div>
-          <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
             {newTracks.map((track, idx) => (
               <TrackCard key={track.id} track={track} tracks={newTracks} idx={idx} />
             ))}

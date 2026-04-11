@@ -107,7 +107,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       {!compact && track.genres && track.genres.length > 0 && (
         <div className="hidden md:flex gap-1 shrink-0 flex-wrap">
           {track.genres.map(g => (
-            <span key={g.id} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-hover)] text-[var(--text-dim)]">{g.name}</span>
+            <Link key={g.id} to={`/browse?genres=${g.id}`} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-hover)] text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition" onClick={e => e.stopPropagation()}>{g.name}</Link>
           ))}
         </div>
       )}

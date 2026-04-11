@@ -104,7 +104,7 @@ export default function PlaylistPage() {
 
       {/* Tracks */}
       {playlist.tracks && playlist.tracks.length > 0 ? (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
           {playlist.tracks.map((track, idx) => (
             <div key={track.id} className="flex items-center">
               <div className="flex-1"><TrackCard track={track} tracks={playlist.tracks} idx={idx} /></div>

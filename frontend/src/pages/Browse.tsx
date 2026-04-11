@@ -136,7 +136,7 @@ export default function Browse() {
           <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : tracks.length > 0 ? (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden">
+        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
           {tracks.map((track, idx) => (
             <TrackCard key={track.id} track={track} tracks={tracks} idx={idx} />
           ))}
