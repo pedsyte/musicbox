@@ -14,6 +14,7 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import Settings from '@/pages/Settings'
 import Admin from '@/pages/Admin'
+import Extension from '@/pages/Extension'
 import NotFound from '@/pages/NotFound'
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/extension" element={<Extension />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

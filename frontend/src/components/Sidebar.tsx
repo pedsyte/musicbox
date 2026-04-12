@@ -7,6 +7,7 @@ const navItems = [
   { path: '/browse', label: 'Обзор', icon: '🎵' },
   { path: '/explore', label: 'Жанры', icon: '🎭' },
   { path: '/playlists', label: 'Плейлисты', icon: '📋' },
+  { path: '/extension', label: 'Расширение', icon: '🧩' },
 ]
 
 export default function Sidebar() {

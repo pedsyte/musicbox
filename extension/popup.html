@@ -10,7 +10,7 @@
   <div id="login-overlay" class="login-overlay hidden">
     <div class="login-logo">🎵</div>
     <div class="login-title">MusicBox</div>
-    <div class="login-subtitle">Войди для доступа к избранному</div>
+    <div class="login-subtitle">Войди для доступа к избранному и плейлистам</div>
     <div class="login-form">
       <input type="text" id="login-username" placeholder="Логин" autocomplete="username">
       <input type="password" id="login-password" placeholder="Пароль" autocomplete="current-password">
@@ -21,6 +21,19 @@
         <button id="btn-cancel-login" class="btn-link">Отмена</button>
       </div>
     </div>
+  </div>
+
+  <!-- Playlist View (overlay) -->
+  <div id="playlist-view" class="playlist-view hidden">
+    <div class="playlist-view-header">
+      <button id="btn-back-from-playlist" class="btn-icon">←</button>
+      <div class="playlist-view-info">
+        <div id="pv-name" class="pv-name"></div>
+        <div id="pv-count" class="pv-count"></div>
+      </div>
+      <button id="btn-play-playlist" class="btn-small">▶ Играть</button>
+    </div>
+    <div id="playlist-tracks" class="track-list"></div>
   </div>
 
   <!-- Header -->
@@ -38,14 +51,25 @@
   </div>
 
   <!-- Tabs -->
-  <div class="tabs">
+  <div class="tabs" id="main-tabs">
     <div class="tab active" data-tab="all">Все</div>
-    <div class="tab" data-tab="favorites" id="tab-favorites" style="display:none">♥ Избранное</div>
+    <div class="tab" data-tab="popular">🔥 Топ</div>
+    <div class="tab" data-tab="genres">🎭</div>
+    <div class="tab" data-tab="playlists">📋</div>
+    <div class="tab" data-tab="favorites" id="tab-favorites" style="display:none">♥</div>
   </div>
 
-  <!-- Track List -->
-  <div id="track-list" class="track-list">
-    <div class="empty">Загрузка...</div>
+  <!-- Genre chips (hidden by default) -->
+  <div id="genre-chips" class="genre-chips hidden"></div>
+
+  <!-- Content area -->
+  <div id="content-area" class="content-area">
+    <!-- track-list for tracks tabs -->
+    <div id="track-list" class="track-list">
+      <div class="empty">Загрузка...</div>
+    </div>
+    <!-- playlist-list for playlists tab -->
+    <div id="playlist-list" class="playlist-grid hidden"></div>
   </div>
 
   <!-- Player -->
