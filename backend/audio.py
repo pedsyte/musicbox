@@ -105,7 +105,8 @@ def convert_audio(input_path: str, output_path: str, output_format: str,
 
         # Format-specific encoding
         if output_format == "mp3":
-            cmd.extend(["-codec:a", "libmp3lame", "-b:a", "320k"])
+            cmd.extend(["-codec:a", "libmp3lame", "-b:a", "320k",
+                        "-id3v2_version", "3", "-write_id3v1", "0"])
         elif output_format == "flac":
             cmd.extend(["-codec:a", "flac"])
         elif output_format == "ogg":
@@ -116,7 +117,9 @@ def convert_audio(input_path: str, output_path: str, output_format: str,
             cmd.extend(["-codec:a", "copy"])
 
         cmd.append(output_path)
-        subprocess.run(cmd, capture_output=True, timeout=120)
+        env = os.environ.copy()
+        env["LC_ALL"] = "en_US.UTF-8"
+        subprocess.run(cmd, capture_output=True, timeout=120, env=env)
         return os.path.exists(output_path)
     except Exception:
         return False
