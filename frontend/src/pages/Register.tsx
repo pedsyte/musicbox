@@ -23,7 +23,7 @@ export default function Register() {
     <div className="flex items-center justify-center min-h-[60vh] p-4">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <div className="text-center mb-6">
-          <img src="/logo.png" alt="MusicBox" className="w-14 h-14 mx-auto" />
+          <img src="/logo.png" alt="MusicBox" className="w-20 h-20 mx-auto" />
           <h1 className="text-xl font-bold text-[var(--text)] mt-2">Регистрация</h1>
         </div>
 

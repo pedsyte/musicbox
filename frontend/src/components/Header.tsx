@@ -26,7 +26,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 bg-[var(--bg)]/80 backdrop-blur-xl border-b border-[var(--border)] px-4 md:px-6 h-14 flex items-center gap-4">
       {/* Mobile logo */}
-      <img src="/logo.png" alt="MusicBox" className="md:hidden w-7 h-7" />
+      <img src="/logo.png" alt="MusicBox" className="md:hidden w-9 h-9" />
 
       {/* Navigation arrows (desktop) */}
       <div className="hidden md:flex items-center gap-1">
