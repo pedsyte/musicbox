@@ -15,7 +15,7 @@ from models import Track, Genre, TrackGenre, User, Playlist, SiteSetting
 from auth import require_admin
 from audio import (
     get_duration, convert_to_mp3, generate_waveform_peaks,
-    detect_format, ALLOWED_UPLOAD_EXTENSIONS,
+    detect_format, extract_embedded_cover, ALLOWED_UPLOAD_EXTENSIONS,
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -71,6 +71,11 @@ async def upload_track(
             cover_content = await cover.read()
             f.write(cover_content)
         cover_path = cover_full_path
+    else:
+        # Try to extract embedded cover from audio file
+        embedded_cover_path = os.path.join(UPLOAD_DIR, "covers", f"{track_id}.jpg")
+        if extract_embedded_cover(orig_path, embedded_cover_path):
+            cover_path = embedded_cover_path
 
     # Create track — no auto-convert, stream original
     track = Track(

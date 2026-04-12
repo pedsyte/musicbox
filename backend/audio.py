@@ -91,6 +91,22 @@ def convert_to_mp3(wav_path: str, mp3_path: str) -> bool:
         return False
 
 
+def extract_embedded_cover(audio_path: str, output_path: str) -> bool:
+    """Extract embedded cover art from audio file using ffmpeg."""
+    try:
+        result = subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", audio_path,
+                "-an", "-vcodec", "copy",
+                output_path,
+            ],
+            capture_output=True, timeout=30,
+        )
+        return os.path.exists(output_path) and os.path.getsize(output_path) > 0
+    except Exception:
+        return False
+
+
 def convert_audio(input_path: str, output_path: str, output_format: str,
                   metadata: Optional[dict] = None) -> bool:
     """Convert audio to specified format with optional metadata tags."""
