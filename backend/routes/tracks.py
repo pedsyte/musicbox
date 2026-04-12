@@ -27,6 +27,7 @@ def track_to_dict(track: Track, is_favorite: bool = False) -> dict:
         "artist": track.artist,
         "duration_seconds": track.duration_seconds,
         "cover_path": f"/uploads/covers/{os.path.basename(track.cover_path)}" if track.cover_path else None,
+        "description": track.description,
         "has_lyrics": bool(track.lyrics),
         "play_count": track.play_count,
         "download_count": track.download_count,
@@ -222,6 +223,7 @@ async def get_track(
         is_fav = fav.scalar_one_or_none() is not None
 
     data = track_to_dict(track, is_fav)
+    data["description"] = track.description
     data["lyrics"] = track.lyrics
     data["waveform_peaks"] = track.waveform_peaks
     return data

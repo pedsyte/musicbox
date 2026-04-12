@@ -35,6 +35,7 @@ class Track(Base):
     mp3_path = Column(String(500), nullable=True)
     original_format = Column(String(10), default="wav", nullable=False)
     cover_path = Column(String(500), nullable=True)
+    description = Column(String(500), nullable=True)
     lyrics = Column(Text, nullable=True)
     waveform_peaks = Column(JSON, nullable=True)
     play_count = Column(Integer, default=0, nullable=False)

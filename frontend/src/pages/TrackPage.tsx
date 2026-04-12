@@ -170,6 +170,10 @@ export default function TrackPage() {
 
           <p className="text-sm text-[var(--text-dim)] mb-4">Длительность: {formatTime(track.duration_seconds)}</p>
 
+          {track.description && (
+            <p className="text-sm text-[var(--text-dim)] mb-4 italic">{track.description}</p>
+          )}
+
           <div className="flex flex-wrap gap-2">
             <Tooltip text={isCurrent && isPlaying ? 'Пауза' : 'Воспроизвести'}>
               <button onClick={() => play(track)}

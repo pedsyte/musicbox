@@ -270,6 +270,8 @@ chrome.runtime.onMessage.addListener((msg) => {
       }
       break;
     case 'ERROR':
+      // Ignore benign Chrome play/pause race condition
+      if (msg.error && msg.error.includes('interrupted by a call to pause')) break;
       console.error('[bg] audio error:', msg.error);
       state.playing = false;
       // Auto-skip on error when in radio mode

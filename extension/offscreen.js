@@ -47,6 +47,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         }).catch(e => {
           if (cancelled) return;
           playAbort = null;
+          // Ignore benign Chrome play/pause race
+          if (e.message && e.message.includes('interrupted by a call to pause')) return;
           chrome.runtime.sendMessage({
             target: 'background',
             type: 'ERROR',

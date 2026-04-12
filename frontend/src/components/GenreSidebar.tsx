@@ -24,34 +24,51 @@ export default function GenreSidebar() {
 
   if (genres.length === 0) return null
 
+  const sorted = [...genres].sort((a, b) => a.name.localeCompare(b.name, 'ru'))
   const activeGenre = new URLSearchParams(search).get('genres')
 
+  // Group by first letter
+  const grouped: Record<string, Genre[]> = {}
+  for (const g of sorted) {
+    const letter = g.name[0].toUpperCase()
+    if (!grouped[letter]) grouped[letter] = []
+    grouped[letter].push(g)
+  }
+  const letters = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'ru'))
+
   return (
-    <aside className="hidden lg:flex flex-col w-52 shrink-0 border-l border-[var(--border)] bg-[var(--surface)] h-full overflow-y-auto">
+    <aside className="hidden lg:flex flex-col w-64 shrink-0 border-l border-[var(--border)] bg-[var(--surface)] h-full overflow-y-auto">
       <div className="p-4 border-b border-[var(--border)]">
         <h3 className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider">Жанры</h3>
       </div>
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        {genres.map((g, i) => {
-          const isActive = activeGenre === String(g.id)
-          return (
-            <Link
-              key={g.id}
-              to={`/browse?genres=${g.id}`}
-              className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition ${
-                isActive
-                  ? 'bg-[var(--accent)]/15 text-[var(--accent)] font-medium'
-                  : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]'
-              }`}
-            >
-              <span className="truncate">{g.name}</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${colors[i % colors.length]}`}>
-                {g.track_count}
-              </span>
-            </Link>
-          )
-        })}
-      </nav>
+      <div className="flex-1 p-3 overflow-y-auto space-y-3">
+        {letters.map(letter => (
+          <div key={letter}>
+            <div className="text-[10px] font-bold text-[var(--accent)] uppercase mb-1 px-1">{letter}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {grouped[letter].map((g, i) => {
+                const isActive = activeGenre === String(g.id)
+                return (
+                  <Link
+                    key={g.id}
+                    to={`/browse?genres=${g.id}`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition ${
+                      isActive
+                        ? 'bg-[var(--accent)]/15 text-[var(--accent)] font-medium'
+                        : 'bg-[var(--surface-hover)] text-[var(--text-dim)] hover:bg-[var(--accent)]/10 hover:text-[var(--text)]'
+                    }`}
+                  >
+                    <span className="truncate">{g.name}</span>
+                    <span className={`text-[9px] px-1 py-0.5 rounded-full ${colors[i % colors.length]}`}>
+                      {g.track_count}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </aside>
   )
 }

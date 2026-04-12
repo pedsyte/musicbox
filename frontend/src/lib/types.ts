@@ -5,6 +5,7 @@ export interface Track {
   duration_seconds: number
   cover_path: string | null
   has_lyrics: boolean
+  description?: string | null
   lyrics?: string | null
   waveform_peaks?: number[] | null
   play_count: number

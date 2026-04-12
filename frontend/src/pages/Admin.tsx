@@ -52,6 +52,7 @@ export default function Admin() {
 function UploadTab() {
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
+  const [description, setDescription] = useState('')
   const [lyrics, setLyrics] = useState('')
   const [genreText, setGenreText] = useState('')
   const [audioFile, setAudioFile] = useState<File | null>(null)
@@ -73,11 +74,12 @@ function UploadTab() {
       fd.append('artist', artist.trim())
       fd.append('audio', audioFile)
       if (coverFile) fd.append('cover', coverFile)
+      if (description.trim()) fd.append('description', description.trim())
       if (lyrics.trim()) fd.append('lyrics', lyrics.trim())
       if (genreText.trim()) fd.append('genres', genreText.trim())
       await api.post('/api/admin/tracks', fd)
       setMsg('✅ Трек успешно загружен!')
-      setTitle(''); setArtist(''); setLyrics(''); setGenreText(''); setAudioFile(null); setCoverFile(null)
+      setTitle(''); setArtist(''); setDescription(''); setLyrics(''); setGenreText(''); setAudioFile(null); setCoverFile(null)
     } catch (err: any) {
       setMsg(`❌ Ошибка: ${err.response?.data?.detail || err.message}`)
     } finally { setUploading(false) }
@@ -111,6 +113,12 @@ function UploadTab() {
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setCoverFile(e.target.files?.[0] || null)}
             className="w-full text-sm text-[var(--text-dim)] file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--surface-hover)] file:text-[var(--text)] file:text-sm file:cursor-pointer" />
         </div>
+      </div>
+
+      <div>
+        <label className="text-xs text-[var(--text-dim)] mb-1 block">Описание (необязательно)</label>
+        <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Короткое описание трека"
+          className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
       </div>
 
       <div>

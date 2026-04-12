@@ -32,6 +32,7 @@ CONVERTED_DIR = os.getenv("CONVERTED_DIR", "/opt/musicbox/converted")
 async def upload_track(
     title: str = Form(...),
     artist: str = Form("Suno AI"),
+    description: Optional[str] = Form(None),
     lyrics: Optional[str] = Form(None),
     genres: str = Form(""),  # comma-separated genre names (auto-created)
     audio: UploadFile = File(...),
@@ -81,6 +82,7 @@ async def upload_track(
         mp3_path="",
         original_format=original_format,
         cover_path=cover_path,
+        description=description.strip() if description else None,
         lyrics=lyrics.strip() if lyrics else None,
         waveform_peaks=peaks,
     )
@@ -126,6 +128,7 @@ async def update_track(
     track_id: str,
     title: Optional[str] = Form(None),
     artist: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
     lyrics: Optional[str] = Form(None),
     genres: Optional[str] = Form(None),
     cover: Optional[UploadFile] = File(None),
@@ -143,6 +146,8 @@ async def update_track(
         track.title = title.strip()
     if artist is not None:
         track.artist = artist.strip()
+    if description is not None:
+        track.description = description.strip() if description else None
     if lyrics is not None:
         track.lyrics = lyrics.strip() if lyrics else None
 
