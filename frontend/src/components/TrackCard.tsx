@@ -1,4 +1,4 @@
-import type { Track, Playlist, Genre } from '@/lib/types'
+import type { Track, Playlist } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
 import Tooltip from './Tooltip'
@@ -24,9 +24,6 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
   const [isFav, setIsFav] = useState(track.is_favorite ?? false)
   const [playlistsOpen, setPlaylistsOpen] = useState(false)
   const [myPlaylists, setMyPlaylists] = useState<Playlist[]>([])
-  const [genresOpen, setGenresOpen] = useState(false)
-  const [allGenres, setAllGenres] = useState<Genre[]>([])
-  const [trackGenreIds, setTrackGenreIds] = useState<Set<number>>(new Set(track.genres?.map(g => g.id) || []))
   const menuRef = useRef<HTMLDivElement>(null)
 
   const isCurrent = currentTrack?.id === track.id
@@ -36,34 +33,11 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
         setPlaylistsOpen(false)
-        setGenresOpen(false)
       }
     }
     if (menuOpen) document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [menuOpen])
-
-  const openGenresSub = async () => {
-    try {
-      const res = await api.get('/api/genres/all')
-      setAllGenres(res.data)
-    } catch {}
-    setGenresOpen(true)
-    setPlaylistsOpen(false)
-  }
-
-  const toggleGenre = async (genreId: number) => {
-    const has = trackGenreIds.has(genreId)
-    try {
-      if (has) {
-        await api.delete(`/api/genres/tracks/${track.id}/${genreId}`)
-        setTrackGenreIds(prev => { const s = new Set(prev); s.delete(genreId); return s })
-      } else {
-        await api.post(`/api/genres/tracks/${track.id}/${genreId}`)
-        setTrackGenreIds(prev => new Set(prev).add(genreId))
-      }
-    } catch {}
-  }
 
   const openPlaylistsSub = async () => {
     if (!user) return
@@ -72,7 +46,6 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       setMyPlaylists(res.data)
     } catch {}
     setPlaylistsOpen(true)
-    setGenresOpen(false)
   }
 
   const addToPlaylist = async (playlistId: string) => {
@@ -173,27 +146,6 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
                       </button>
                     )) : (
                       <p className="pl-6 pr-3 py-1.5 text-xs text-[var(--text-dim)]">Нет плейлистов</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            {user && (
-              <div>
-                <button onClick={openGenresSub} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition flex items-center justify-between">
-                  Жанры <span className="text-xs text-[var(--text-dim)]">{genresOpen ? '▾' : '›'}</span>
-                </button>
-                {genresOpen && (
-                  <div className="max-h-48 overflow-y-auto border-t border-[var(--border)]">
-                    {allGenres.length > 0 ? allGenres.map(g => (
-                      <button key={g.id} onClick={() => toggleGenre(g.id)} className="w-full text-left pl-6 pr-3 py-1.5 text-sm text-[var(--text-dim)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] transition truncate flex items-center gap-2">
-                        <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[10px] ${trackGenreIds.has(g.id) ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'border-[var(--border)]'}`}>
-                          {trackGenreIds.has(g.id) && '✓'}
-                        </span>
-                        {g.name}
-                      </button>
-                    )) : (
-                      <p className="pl-6 pr-3 py-1.5 text-xs text-[var(--text-dim)]">Нет жанров</p>
                     )}
                   </div>
                 )}

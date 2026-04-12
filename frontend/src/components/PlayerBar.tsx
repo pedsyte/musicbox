@@ -180,7 +180,7 @@ export default function PlayerBar() {
         </div>
 
         {/* Right controls */}
-        <div className="flex items-center gap-2 w-48 justify-end shrink-0">
+        <div className="flex items-center gap-2 w-48 justify-end shrink-0 self-end mb-3">
           {/* Stream quality selector */}
           <div ref={qualityRef} className="relative">
             <Tooltip text="Качество воспроизведения">
@@ -198,23 +198,28 @@ export default function PlayerBar() {
             {showQualityMenu && (
               <div className="absolute bottom-full right-0 mb-2 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl py-1 min-w-[140px] z-50">
                 <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-[var(--text-dim)] font-semibold">Качество</div>
-                {['original', ...(['wav', 'flac', 'mp3'].filter(f => f !== (currentTrack.original_format || 'wav').toLowerCase()))].filter(q => {
+                {(() => {
                   const orig = (currentTrack.original_format || 'wav').toLowerCase()
-                  if (q === 'original') return true
-                  const qualityOrder: Record<string, number> = { mp3: 1, ogg: 1, flac: 2, wav: 3 }
-                  return (qualityOrder[q] || 0) < (qualityOrder[orig] || 0)
-                }).map(q => (
-                  <button
-                    key={q}
-                    onClick={() => { setStreamQuality(q); setShowQualityMenu(false) }}
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--surface-hover)] transition flex items-center justify-between ${
-                      streamQuality === q ? 'text-[var(--accent)]' : 'text-[var(--text)]'
-                    }`}
-                  >
-                    <span>{q === 'original' ? `Оригинал (${(currentTrack.original_format || 'wav').toUpperCase()})` : q.toUpperCase()}</span>
-                    {streamQuality === q && <span className="text-xs">✓</span>}
-                  </button>
-                ))}
+                  // Quality tiers: only show formats strictly below original
+                  // wav/flac are both lossless (tier 3), mp3 is lossy (tier 1)
+                  const qualityOrder: Record<string, number> = { mp3: 1, ogg: 1, flac: 3, wav: 3 }
+                  const origTier = qualityOrder[orig] || 3
+                  const options = ['original', ...(['flac', 'mp3'].filter(f =>
+                    f !== orig && (qualityOrder[f] || 0) < origTier
+                  ))]
+                  return options.map(q => (
+                    <button
+                      key={q}
+                      onClick={() => { setStreamQuality(q); setShowQualityMenu(false) }}
+                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--surface-hover)] transition flex items-center justify-between ${
+                        streamQuality === q ? 'text-[var(--accent)]' : 'text-[var(--text)]'
+                      }`}
+                    >
+                      <span>{q === 'original' ? `Оригинал (${orig.toUpperCase()})` : q.toUpperCase()}</span>
+                      {streamQuality === q && <span className="text-xs">✓</span>}
+                    </button>
+                  ))
+                })()}
               </div>
             )}
           </div>

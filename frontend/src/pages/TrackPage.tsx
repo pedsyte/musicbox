@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '@/lib/api'
-import type { Track } from '@/lib/types'
+import type { Track, Genre } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
 import Tooltip from '@/components/Tooltip'
@@ -17,6 +17,11 @@ export default function TrackPage() {
   const { play, currentTrack, isPlaying, currentTime, duration, seek, playNext, addToQueue } = usePlayerStore()
   const { user } = useAuthStore()
   const [isFav, setIsFav] = useState(false)
+  const [genreEditing, setGenreEditing] = useState(false)
+  const [allGenres, setAllGenres] = useState<Genre[]>([])
+  const [trackGenreIds, setTrackGenreIds] = useState<Set<number>>(new Set())
+  const [newGenreName, setNewGenreName] = useState('')
+  const genreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -27,8 +32,20 @@ export default function TrackPage() {
       setTrack(trackRes.data)
       setPeaks(waveRes.data.peaks || [])
       setIsFav(trackRes.data.is_favorite ?? false)
+      setTrackGenreIds(new Set((trackRes.data.genres || []).map((g: Genre) => g.id)))
     }).finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => {
+    if (!genreEditing) return
+    const handler = (e: MouseEvent) => {
+      if (genreRef.current && !genreRef.current.contains(e.target as Node)) {
+        setGenreEditing(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [genreEditing])
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>
   if (!track) return <div className="text-center py-16 text-[var(--text-dim)]">Трек не найден</div>
@@ -42,6 +59,45 @@ export default function TrackPage() {
       if (isFav) await api.delete(`/api/favorites/${track.id}`)
       else await api.post(`/api/favorites/${track.id}`)
       setIsFav(!isFav)
+    } catch {}
+  }
+
+  const openGenreEditor = async () => {
+    try {
+      const res = await api.get('/api/genres/all')
+      setAllGenres(res.data)
+    } catch {}
+    setGenreEditing(true)
+  }
+
+  const toggleGenre = async (genreId: number) => {
+    const has = trackGenreIds.has(genreId)
+    try {
+      if (has) {
+        await api.delete(`/api/genres/tracks/${track.id}/${genreId}`)
+        setTrackGenreIds(prev => { const s = new Set(prev); s.delete(genreId); return s })
+        setTrack(t => t ? { ...t, genres: t.genres?.filter(g => g.id !== genreId) || [] } : t)
+      } else {
+        await api.post(`/api/genres/tracks/${track.id}/${genreId}`)
+        setTrackGenreIds(prev => new Set(prev).add(genreId))
+        const genre = allGenres.find(g => g.id === genreId)
+        if (genre) setTrack(t => t ? { ...t, genres: [...(t.genres || []), genre] } : t)
+      }
+    } catch {}
+  }
+
+  const addNewGenre = async () => {
+    const name = newGenreName.trim()
+    if (!name) return
+    try {
+      const res = await api.post('/api/admin/genres', { name })
+      const genre = res.data
+      setAllGenres(prev => [...prev, genre].sort((a, b) => a.name.localeCompare(b.name)))
+      // Auto-assign to track
+      await api.post(`/api/genres/tracks/${track.id}/${genre.id}`)
+      setTrackGenreIds(prev => new Set(prev).add(genre.id))
+      setTrack(t => t ? { ...t, genres: [...(t.genres || []), genre] } : t)
+      setNewGenreName('')
     } catch {}
   }
 
@@ -62,16 +118,55 @@ export default function TrackPage() {
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-1">{track.title}</h1>
           <a href={`/browse?artist=${encodeURIComponent(track.artist)}`} className="text-lg text-[var(--text-dim)] mb-3 hover:text-[var(--accent)] hover:underline transition block">{track.artist}</a>
 
-          {track.genres && track.genres.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {track.genres.map(g => (
+          {/* Genre pills with admin editor */}
+          <div className="relative mb-4" ref={genreRef}>
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {track.genres && track.genres.length > 0 ? track.genres.map(g => (
                 <Link key={g.id} to={`/browse?genres=${g.id}`}
                   className="px-2.5 py-1 text-xs rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition">
                   {g.name}
                 </Link>
-              ))}
+              )) : (
+                <span className="text-xs text-[var(--text-dim)]">Нет жанров</span>
+              )}
+              {user?.is_admin && (
+                <Tooltip text="Редактировать жанры">
+                  <button onClick={genreEditing ? () => setGenreEditing(false) : openGenreEditor}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${genreEditing ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--surface)]'}`}>
+                    ✏️
+                  </button>
+                </Tooltip>
+              )}
             </div>
-          )}
+
+            {genreEditing && user?.is_admin && (
+              <div className="mt-2 p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl space-y-2">
+                <p className="text-xs text-[var(--text-dim)] font-medium">Выбрать жанры:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {allGenres.map(g => (
+                    <button key={g.id} onClick={() => toggleGenre(g.id)}
+                      className={`px-2.5 py-1 text-xs rounded-full border transition ${
+                        trackGenreIds.has(g.id)
+                          ? 'bg-[var(--accent)] border-[var(--accent)] text-white'
+                          : 'bg-[var(--surface-hover)] border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+                      }`}>
+                      {trackGenreIds.has(g.id) ? `✕ ${g.name}` : `+ ${g.name}`}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center pt-1">
+                  <input
+                    value={newGenreName}
+                    onChange={e => setNewGenreName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addNewGenre()}
+                    placeholder="Новый жанр..."
+                    className="flex-1 bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent)]"
+                  />
+                  <button onClick={addNewGenre} className="px-3 py-1.5 bg-[var(--accent)] text-white rounded-lg text-xs hover:opacity-90 transition">Добавить</button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <p className="text-sm text-[var(--text-dim)] mb-4">Длительность: {formatTime(track.duration_seconds)}</p>
 

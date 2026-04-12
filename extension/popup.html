@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="login-overlay hidden">
+    <div class="login-logo">🎵</div>
+    <div class="login-title">MusicBox</div>
+    <div class="login-subtitle">Войди для доступа к избранному</div>
+    <div class="login-form">
+      <input type="text" id="login-username" placeholder="Логин" autocomplete="username">
+      <input type="password" id="login-password" placeholder="Пароль" autocomplete="current-password">
+      <div id="login-error"></div>
+      <div class="login-actions">
+        <button id="btn-do-login" class="btn-primary">Войти</button>
+        <button id="btn-guest" class="btn-ghost">Слушать без входа</button>
+        <button id="btn-cancel-login" class="btn-link">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <span class="logo-icon">🎵</span>
+      <span>MusicBox</span>
+    </div>
+    <div id="user-area"></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="🔍 Поиск треков...">
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="all">Все</div>
+    <div class="tab" data-tab="favorites" id="tab-favorites" style="display:none">♥ Избранное</div>
+  </div>
+
+  <!-- Track List -->
+  <div id="track-list" class="track-list">
+    <div class="empty">Загрузка...</div>
+  </div>
+
+  <!-- Player -->
+  <div id="player" class="player hidden">
+    <div class="player-main">
+      <div id="player-cover"></div>
+      <div class="player-info">
+        <div id="player-title"></div>
+        <div id="player-artist"></div>
+      </div>
+      <div class="player-controls">
+        <button id="btn-prev" title="Назад">⏮</button>
+        <button id="btn-play" title="Играть">▶</button>
+        <button id="btn-next" title="Далее">⏭</button>
+      </div>
+    </div>
+    <div class="player-progress">
+      <span id="time-current" class="time">0:00</span>
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
+      <span id="time-total" class="time">0:00</span>
+    </div>
+    <div class="player-bottom">
+      <div class="player-toggles">
+        <button id="btn-shuffle" title="Перемешать">🔀</button>
+        <button id="btn-radio" title="Радио — авто-следующий">📻</button>
+      </div>
+      <div class="volume-control">
+        <span class="volume-icon">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="80">
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

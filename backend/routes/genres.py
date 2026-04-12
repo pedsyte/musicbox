@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from models import Genre, TrackGenre, Track
-from auth import require_user
+from auth import require_admin
 
 router = APIRouter(prefix="/api/genres", tags=["genres"])
 
@@ -44,7 +44,7 @@ async def all_genres(db: AsyncSession = Depends(get_db)):
 async def add_genre_to_track(
     track_id: str,
     genre_id: int,
-    user=Depends(require_user),
+    user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     track = await db.get(Track, track_id)
@@ -71,7 +71,7 @@ async def add_genre_to_track(
 async def remove_genre_from_track(
     track_id: str,
     genre_id: int,
-    user=Depends(require_user),
+    user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     track = await db.get(Track, track_id)
