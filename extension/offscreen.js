@@ -2,6 +2,7 @@
 
 const audio = new Audio();
 let lastUpdate = 0;
+let playAbort = null;
 
 audio.addEventListener('ended', () => {
   chrome.runtime.sendMessage({ target: 'background', type: 'ENDED' });
@@ -32,15 +33,27 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
   switch (msg.type) {
     case 'PLAY':
+      // Abort previous play to avoid "play() interrupted by pause()" race
+      if (playAbort) playAbort();
+      audio.pause();
       audio.src = msg.url;
       audio.volume = msg.volume ?? 0.8;
-      audio.play().catch(e => {
-        chrome.runtime.sendMessage({
-          target: 'background',
-          type: 'ERROR',
-          error: e.message,
+      {
+        let cancelled = false;
+        playAbort = () => { cancelled = true; };
+        audio.play().then(() => {
+          if (cancelled) return;
+          playAbort = null;
+        }).catch(e => {
+          if (cancelled) return;
+          playAbort = null;
+          chrome.runtime.sendMessage({
+            target: 'background',
+            type: 'ERROR',
+            error: e.message,
+          });
         });
-      });
+      }
       break;
     case 'PAUSE':
       audio.pause();
