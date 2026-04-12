@@ -18,7 +18,7 @@ export default function Sidebar() {
     <aside className="hidden md:flex flex-col w-56 shrink-0 bg-[var(--surface)] border-r border-[var(--border)] h-full">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 px-5 py-5 hover:opacity-80 transition">
-        <span className="text-2xl">🎧</span>
+        <img src="/logo.png" alt="MusicBox" className="w-8 h-8" />
         <span className="text-lg font-bold text-[var(--text)]">MusicBox</span>
       </Link>
 

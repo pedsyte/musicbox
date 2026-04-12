@@ -52,7 +52,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-600/30 via-violet-500/20 to-fuchsia-600/30 p-6 md:p-10">
         <div className="relative z-10">
-          <h1 className="text-2xl md:text-4xl font-bold text-[var(--text)] mb-2">🎧 MusicBox</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-[var(--text)] mb-2 flex items-center gap-3"><img src="/logo.png" alt="" className="w-10 h-10 md:w-12 md:h-12" /> MusicBox</h1>
           <p className="text-[var(--text-dim)] text-sm md:text-base max-w-lg">Твоя коллекция AI-музыки. Слушай, создавай плейлисты и наслаждайся звуком.</p>
           <div className="flex gap-3 mt-4">
             <Link to="/browse" className="px-5 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition">Слушать</Link>

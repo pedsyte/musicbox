@@ -18,7 +18,7 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-[60vh] p-4">
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <div className="text-center mb-6">
-          <span className="text-4xl">🎧</span>
+          <img src="/logo.png" alt="MusicBox" className="w-14 h-14 mx-auto" />
           <h1 className="text-xl font-bold text-[var(--text)] mt-2">Вход в MusicBox</h1>
         </div>
 
