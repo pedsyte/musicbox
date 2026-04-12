@@ -1,6 +1,7 @@
-/* ===== MusicBox Extension — Popup UI v2 ===== */
+/* ===== MusicBox Extension — Popup UI v3 ===== */
 
 const API = 'https://musicbox.gornich.fun';
+const SITE = 'https://musicbox.gornich.fun';
 
 let port = null;
 let currentState = {};
@@ -9,11 +10,21 @@ let playlists = [];
 let genres = [];
 let activeGenre = null;
 let currentTab = 'all';
+let currentSort = 'newest';
 let searchTimeout = null;
 let playlistViewTracks = [];
 
+// Genre filter state: { slug: 'include' | 'exclude' }
+let genreFilter = {};
+
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+
+/* ---------- Open site links ---------- */
+
+function openSite(path = '/') {
+  chrome.tabs.create({ url: `${SITE}${path}` });
+}
 
 /* ---------- Connect to background ---------- */
 
@@ -53,8 +64,16 @@ async function apiFetch(path) {
 async function fetchTracks(search = '') {
   showLoading('#track-list');
   try {
-    const params = new URLSearchParams({ limit: '100', sort: 'newest' });
+    const params = new URLSearchParams({ limit: '100', sort: currentSort });
     if (search) params.set('search', search);
+
+    // Apply genre filters
+    const included = Object.entries(genreFilter).filter(([, v]) => v === 'include').map(([k]) => k);
+    const excluded = Object.entries(genreFilter).filter(([, v]) => v === 'exclude').map(([k]) => k);
+    if (activeGenre) params.set('genres', activeGenre);
+    else if (included.length) params.set('genres', included.join(','));
+    if (excluded.length) params.set('exclude', excluded.join(','));
+
     const res = await apiFetch(`/api/tracks?${params}`);
     if (!res.ok) throw new Error(res.statusText);
     const data = await res.json();
@@ -95,16 +114,19 @@ async function fetchGenres() {
     if (!res.ok) throw new Error(res.statusText);
     genres = await res.json();
     renderGenreChips();
+    renderGenreFilterPanel();
   } catch (_) {
     genres = [];
     renderGenreChips();
+    renderGenreFilterPanel();
   }
 }
 
 async function fetchTracksByGenre(genreSlug) {
   showLoading('#track-list');
   try {
-    const res = await apiFetch(`/api/tracks?genres=${genreSlug}&limit=100&sort=popular`);
+    const params = new URLSearchParams({ genres: genreSlug, limit: '100', sort: currentSort });
+    const res = await apiFetch(`/api/tracks?${params}`);
     if (!res.ok) throw new Error(res.statusText);
     const data = await res.json();
     tracks = data.tracks || [];
@@ -116,16 +138,12 @@ async function fetchTracksByGenre(genreSlug) {
 
 async function fetchPlaylists() {
   try {
-    // Fetch both user playlists and public playlists
     const [userRes, publicRes] = await Promise.all([
       currentState.loggedIn ? apiFetch('/api/playlists') : Promise.resolve(null),
       apiFetch('/api/playlists/public'),
     ]);
-
     const userPlaylists = userRes && userRes.ok ? await userRes.json() : [];
     const publicPlaylists = publicRes.ok ? await publicRes.json() : [];
-
-    // Merge: user playlists first, then public ones not already in user list
     const userIds = new Set(userPlaylists.map(p => p.id));
     playlists = [...userPlaylists, ...publicPlaylists.filter(p => !userIds.has(p.id))];
     renderPlaylistGrid();
@@ -138,8 +156,7 @@ async function fetchPlaylistTracks(playlistId) {
   try {
     const res = await apiFetch(`/api/playlists/${playlistId}`);
     if (!res.ok) throw new Error(res.statusText);
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch (e) {
     return null;
   }
@@ -152,6 +169,7 @@ function showTracksView() {
   $('#playlist-list').classList.add('hidden');
   $('#playlist-view').classList.add('hidden');
   $('#search-input').parentElement.classList.remove('hidden');
+  $('#sort-bar').classList.remove('hidden');
 }
 
 function showPlaylistsView() {
@@ -159,6 +177,7 @@ function showPlaylistsView() {
   $('#playlist-list').classList.remove('hidden');
   $('#playlist-view').classList.add('hidden');
   $('#search-input').parentElement.classList.add('hidden');
+  $('#sort-bar').classList.add('hidden');
 }
 
 function showPlaylistDetail() {
@@ -173,7 +192,7 @@ function showLoading(sel) {
   $(sel).innerHTML = '<div class="empty loading-dots">Загрузка</div>';
 }
 
-/* ---------- Genre chips ---------- */
+/* ---------- Genre chips (genres tab) ---------- */
 
 function renderGenreChips() {
   const container = $('#genre-chips');
@@ -202,6 +221,63 @@ function renderGenreChips() {
       }
     };
   });
+}
+
+/* ---------- Genre filter panel (include/exclude) ---------- */
+
+function renderGenreFilterPanel() {
+  const container = $('#gf-chips');
+  if (!container) return;
+  if (!genres.length) {
+    container.innerHTML = '<span style="color:var(--text-dim)">Загрузка жанров...</span>';
+    return;
+  }
+  container.innerHTML = genres.map(g => {
+    const state = genreFilter[g.slug] || '';
+    const cls = state === 'include' ? ' gf-include' : state === 'exclude' ? ' gf-exclude' : '';
+    return `<button class="gf-chip${cls}" data-slug="${esc(g.slug)}">${esc(g.name)}</button>`;
+  }).join('');
+
+  container.querySelectorAll('.gf-chip').forEach(btn => {
+    btn.onclick = (e) => {
+      const slug = btn.dataset.slug;
+      if (e.shiftKey) {
+        // Shift+click = toggle exclude
+        if (genreFilter[slug] === 'exclude') delete genreFilter[slug];
+        else genreFilter[slug] = 'exclude';
+      } else {
+        // Click = toggle include
+        if (genreFilter[slug] === 'include') delete genreFilter[slug];
+        else genreFilter[slug] = 'include';
+      }
+      renderGenreFilterPanel();
+    };
+  });
+}
+
+function toggleGenreFilterPanel() {
+  const panel = $('#genre-filter-panel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden') && genres.length === 0) {
+    fetchGenres();
+  }
+}
+
+function applyGenreFilter() {
+  $('#genre-filter-panel').classList.add('hidden');
+  updateFilterBtnState();
+  reloadCurrentTab();
+}
+
+function resetGenreFilter() {
+  genreFilter = {};
+  renderGenreFilterPanel();
+  updateFilterBtnState();
+}
+
+function updateFilterBtnState() {
+  const active = Object.keys(genreFilter).length > 0;
+  $('#btn-genre-filter').classList.toggle('active', active);
 }
 
 /* ---------- Render: Playlist grid ---------- */
@@ -269,18 +345,14 @@ function renderHeader() {
       currentState.loggedIn = false;
       currentState.user = null;
       renderHeader();
-      if (currentTab === 'favorites') {
-        switchTab('all');
-      }
+      if (currentTab === 'favorites') switchTab('all');
     };
     $('#tab-favorites').style.display = '';
   } else {
     area.innerHTML = '<button id="btn-login" class="btn-small">Войти</button>';
     $('#btn-login').onclick = showLogin;
     $('#tab-favorites').style.display = 'none';
-    if (currentTab === 'favorites') {
-      switchTab('all');
-    }
+    if (currentTab === 'favorites') switchTab('all');
   }
 }
 
@@ -297,17 +369,25 @@ function renderTrackList(containerSel, trackArray) {
     const active = currentState.currentTrack?.id === t.id;
     const cover = t.cover_path ? `${API}${t.cover_path}` : '';
     const dur = fmt(t.duration_seconds);
-    const genreTags = (t.genres || []).slice(0, 2).map(g => `<span class="track-genre">${esc(g.name)}</span>`).join('');
+    const genreTags = (t.genres || []).slice(0, 2).map(g =>
+      `<span class="track-genre clickable" data-genre-slug="${esc(g.slug)}">${esc(g.name)}</span>`
+    ).join('');
+    const artistLink = t.artist
+      ? `<span class="track-artist clickable" data-artist="${esc(t.artist)}">${esc(t.artist)}</span>`
+      : '<span class="track-artist">Unknown</span>';
     return `
       <div class="track-row${active ? ' active' : ''}" data-idx="${i}" data-container="${containerSel}">
-        <div class="track-cover">
+        <div class="track-cover" data-play="1">
           ${cover ? `<img src="${cover}" loading="lazy" alt="">` : '<div class="no-cover">♪</div>'}
           <div class="play-overlay">${active && currentState.playing ? '⏸' : '▶'}</div>
         </div>
         <div class="track-info">
-          <div class="track-title">${esc(t.title)}</div>
+          <div class="track-title-row">
+            <span class="track-title">${esc(t.title)}</span>
+            <button class="btn-open-site" data-track-id="${t.id}" title="Открыть на сайте">↗</button>
+          </div>
           <div class="track-meta">
-            <span class="track-artist">${esc(t.artist || 'Unknown')}</span>
+            ${artistLink}
             ${genreTags}
           </div>
         </div>
@@ -315,20 +395,62 @@ function renderTrackList(containerSel, trackArray) {
       </div>`;
   }).join('');
 
+  // Play/pause on cover click or row click
   list.querySelectorAll('.track-row').forEach(row => {
-    row.onclick = () => {
-      const src = row.dataset.container === '#playlist-tracks' ? playlistViewTracks : tracks;
-      const track = src[+row.dataset.idx];
-      if (!track) return;
-      if (currentState.currentTrack?.id === track.id && currentState.playing) {
-        port.postMessage({ type: 'PAUSE' });
-      } else if (currentState.currentTrack?.id === track.id) {
-        port.postMessage({ type: 'RESUME' });
-      } else {
-        port.postMessage({ type: 'PLAY', track, playlist: src });
-      }
+    row.querySelector('.track-cover').onclick = (e) => {
+      e.stopPropagation();
+      playTrackFromRow(row);
+    };
+    row.onclick = (e) => {
+      if (e.target.closest('.clickable, .btn-open-site')) return;
+      playTrackFromRow(row);
     };
   });
+
+  // Track -> open on site
+  list.querySelectorAll('.btn-open-site').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      openSite(`/track/${btn.dataset.trackId}`);
+    };
+  });
+
+  // Artist name -> open site filtered by artist
+  list.querySelectorAll('.track-artist.clickable').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      openSite(`/browse?artist=${encodeURIComponent(el.dataset.artist)}`);
+    };
+  });
+
+  // Genre tag -> filter by genre in extension
+  list.querySelectorAll('.track-genre.clickable').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const slug = el.dataset.genreSlug;
+      if (currentTab !== 'genres') {
+        currentTab = 'genres';
+        $$('#main-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'genres'));
+        $('#genre-chips').classList.remove('hidden');
+        showTracksView();
+      }
+      activeGenre = slug;
+      fetchGenres().then(() => fetchTracksByGenre(slug));
+    };
+  });
+}
+
+function playTrackFromRow(row) {
+  const src = row.dataset.container === '#playlist-tracks' ? playlistViewTracks : tracks;
+  const track = src[+row.dataset.idx];
+  if (!track) return;
+  if (currentState.currentTrack?.id === track.id && currentState.playing) {
+    port.postMessage({ type: 'PAUSE' });
+  } else if (currentState.currentTrack?.id === track.id) {
+    port.postMessage({ type: 'RESUME' });
+  } else {
+    port.postMessage({ type: 'PLAY', track, playlist: src });
+  }
 }
 
 /* ---------- Update active track highlight ---------- */
@@ -415,17 +537,15 @@ function switchTab(tab) {
   activeGenre = null;
   $$('#main-tabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === currentTab));
 
-  // Show/hide genre chips
   if (tab === 'genres') {
     $('#genre-chips').classList.remove('hidden');
     showTracksView();
     fetchGenres();
-    fetchTracks(); // show all tracks initially under genres
+    fetchTracks();
   } else {
     $('#genre-chips').classList.add('hidden');
   }
 
-  // Show/hide search
   if (tab === 'playlists') {
     showPlaylistsView();
     fetchPlaylists();
@@ -437,6 +557,16 @@ function switchTab(tab) {
   if (tab === 'all') fetchTracks($('#search-input').value);
   if (tab === 'popular') fetchPopular();
   if (tab === 'favorites') fetchFavorites();
+}
+
+function reloadCurrentTab() {
+  if (currentTab === 'all') fetchTracks($('#search-input').value);
+  else if (currentTab === 'popular') fetchPopular();
+  else if (currentTab === 'favorites') fetchFavorites();
+  else if (currentTab === 'genres') {
+    if (activeGenre) fetchTracksByGenre(activeGenre);
+    else fetchTracks();
+  }
 }
 
 /* ---------- Helpers ---------- */
@@ -464,6 +594,9 @@ function plural(n) {
 /* ---------- Init ---------- */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Logo click -> open site
+  $('#logo-link').onclick = () => openSite('/');
+
   // Search
   $('#search-input').addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
@@ -472,6 +605,18 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (currentTab === 'genres' && !activeGenre) fetchTracks(e.target.value);
     }, 300);
   });
+
+  // Sort
+  $('#sort-select').addEventListener('change', (e) => {
+    currentSort = e.target.value;
+    reloadCurrentTab();
+  });
+
+  // Genre filter button
+  $('#btn-genre-filter').onclick = () => toggleGenreFilterPanel();
+  $('#btn-close-gf').onclick = () => $('#genre-filter-panel').classList.add('hidden');
+  $('#btn-gf-reset').onclick = () => { resetGenreFilter(); reloadCurrentTab(); };
+  $('#btn-gf-apply').onclick = () => applyGenreFilter();
 
   // Tabs
   $$('#main-tabs .tab').forEach(tab => {
@@ -507,6 +652,17 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#login-username').onkeydown = (e) => { if (e.key === 'Enter') $('#login-password').focus(); };
   $('#btn-cancel-login').onclick = hideLogin;
   $('#btn-guest').onclick = hideLogin;
+
+  // Player track title click -> open on site
+  $('#player-title').onclick = () => {
+    if (currentState.currentTrack?.id) openSite(`/track/${currentState.currentTrack.id}`);
+  };
+  $('#player-artist').onclick = () => {
+    if (currentState.currentTrack?.artist) openSite(`/browse?artist=${encodeURIComponent(currentState.currentTrack.artist)}`);
+  };
+
+  // Preload genres for filter panel
+  fetchGenres();
 
   // Connect & fetch
   connect();

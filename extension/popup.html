@@ -38,7 +38,7 @@
 
   <!-- Header -->
   <div class="header">
-    <div class="logo">
+    <div class="logo" id="logo-link" title="Открыть MusicBox на сайте">
       <img src="icons/icon16.png" alt="" width="16" height="16" class="logo-icon-img">
       <span>MusicBox</span>
     </div>
@@ -59,8 +59,35 @@
     <div class="tab" data-tab="favorites" id="tab-favorites" style="display:none">♥</div>
   </div>
 
+  <!-- Sort bar (hidden on playlists) -->
+  <div id="sort-bar" class="sort-bar">
+    <select id="sort-select">
+      <option value="newest">Новые</option>
+      <option value="oldest">Старые</option>
+      <option value="popular">Популярные</option>
+      <option value="title">По названию</option>
+      <option value="artist">По автору</option>
+      <option value="duration">По длительности</option>
+    </select>
+    <button id="btn-genre-filter" class="btn-filter" title="Фильтр жанров">🎭 Фильтр</button>
+  </div>
+
   <!-- Genre chips (hidden by default) -->
   <div id="genre-chips" class="genre-chips hidden"></div>
+
+  <!-- Genre filter panel (include/exclude) -->
+  <div id="genre-filter-panel" class="genre-filter-panel hidden">
+    <div class="gf-header">
+      <span class="gf-title">Фильтр жанров</span>
+      <button id="btn-close-gf" class="btn-icon">✕</button>
+    </div>
+    <div class="gf-hint">Клик = включить, Shift+клик = исключить</div>
+    <div id="gf-chips" class="gf-chips"></div>
+    <div class="gf-actions">
+      <button id="btn-gf-reset" class="btn-ghost-sm">Сброс</button>
+      <button id="btn-gf-apply" class="btn-apply-sm">Применить</button>
+    </div>
+  </div>
 
   <!-- Content area -->
   <div id="content-area" class="content-area">
