@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import type { Genre, TagCategory } from '@/lib/types'
 
@@ -15,6 +16,7 @@ const colors = [
 ]
 
 export default function GenreSidebar() {
+  const { t } = useTranslation()
   const [genres, setGenres] = useState<Genre[]>([])
   const [tagCategories, setTagCategories] = useState<TagCategory[]>([])
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
@@ -97,7 +99,7 @@ export default function GenreSidebar() {
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 border-l border-[var(--border)] bg-[var(--surface)] h-full overflow-y-auto">
       <div className="p-4 border-b border-[var(--border)]">
-        <h3 className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider">Фильтры</h3>
+        <h3 className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider">{t('sidebar.filters')}</h3>
       </div>
       <div className="flex-1 overflow-y-auto">
 
@@ -106,7 +108,7 @@ export default function GenreSidebar() {
           <button onClick={() => toggle('genres')}
             className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-hover)] transition">
             <span className="flex items-center gap-2">
-              🎭 Жанры
+              {t('sidebar.genresTitle')}
               {genreActiveCount > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)]">{genreActiveCount}</span>}
             </span>
             <span className="text-[var(--text-dim)] text-xs">{isCollapsed('genres') ? '▸' : '▾'}</span>
@@ -131,7 +133,7 @@ export default function GenreSidebar() {
                             <span className={'text-[9px] px-1 py-0.5 rounded-full ' + colors[i % colors.length]}>{g.track_count}</span>
                           </Link>
                           <button onClick={() => addGenreToFilter(g.id)}
-                            title={isIncluded ? 'Убрать из фильтра' : 'Добавить в фильтр'}
+                            title={isIncluded ? t('sidebar.removeFilter') : t('sidebar.addFilter')}
                             className={'px-2 py-1 text-[10px] transition border-l ' + (
                               isIncluded
                                 ? 'border-[var(--accent)]/30 text-[var(--accent)] hover:bg-[var(--accent)]/25'
@@ -179,7 +181,7 @@ export default function GenreSidebar() {
                             {tag.track_count ? <span className={'text-[9px] px-1 py-0.5 rounded-full ' + colors[(ci * 3 + ti) % colors.length]}>{tag.track_count}</span> : null}
                           </Link>
                           <button onClick={() => addTagToFilter(tag.id)}
-                            title={isActive ? 'Убрать из фильтра' : 'Добавить в фильтр'}
+                            title={isActive ? t('sidebar.removeFilter') : t('sidebar.addFilter')}
                             className={'px-2 py-1 text-[10px] transition border-l ' + (
                               isActive
                                 ? 'border-[var(--accent)]/30 text-[var(--accent)] hover:bg-[var(--accent)]/25'

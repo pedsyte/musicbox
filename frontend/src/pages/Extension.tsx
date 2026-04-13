@@ -1,57 +1,29 @@
 import { useState } from 'react'
-
-const features = [
-  { icon: '🎧', title: 'Фоновое воспроизведение', desc: 'Музыка играет даже когда popup закрыт. Не нужна открытая вкладка.' },
-  { icon: '📋', title: 'Плейлисты', desc: 'Просматривай свои и публичные плейлисты. Играй целиком одним кликом.' },
-  { icon: '🎭', title: 'Жанры', desc: 'Фильтруй треки по жанрам — выбери настроение в один клик.' },
-  { icon: '🔥', title: 'Топ треков', desc: 'Самые популярные треки всегда под рукой.' },
-  { icon: '❤️', title: 'Избранное', desc: 'Войди в аккаунт и слушай свои любимые треки.' },
-  { icon: '📻', title: 'Радио режим', desc: 'Автоматически включает следующий трек. Бесконечная музыка.' },
-  { icon: '🔀', title: 'Перемешивание', desc: 'Случайный порядок — каждый раз новый плейлист.' },
-  { icon: '🔍', title: 'Поиск', desc: 'Быстрый поиск по названию и исполнителю.' },
-]
-
-const steps = [
-  {
-    num: '1',
-    title: 'Скачай расширение',
-    desc: 'Нажми кнопку выше — загрузится ZIP-архив с расширением.',
-    icon: '📥',
-  },
-  {
-    num: '2',
-    title: 'Распакуй архив',
-    desc: 'Распакуй скачанный musicbox-extension.zip в любую удобную папку на компьютере.',
-    icon: '📂',
-  },
-  {
-    num: '3',
-    title: 'Открой расширения в Chrome',
-    desc: <>Перейди по адресу <code className="inline-code">chrome://extensions/</code> или нажми <strong>⋮ → Расширения → Управление расширениями</strong>.</>,
-    icon: '🧩',
-  },
-  {
-    num: '4',
-    title: 'Включи режим разработчика',
-    desc: 'В правом верхнем углу страницы расширений включи переключатель «Режим разработчика».',
-    icon: '🔧',
-  },
-  {
-    num: '5',
-    title: 'Загрузи расширение',
-    desc: 'Нажми «Загрузить распакованное расширение» и выбери папку, куда распаковал архив.',
-    icon: '📤',
-  },
-  {
-    num: '6',
-    title: 'Готово! Слушай музыку',
-    desc: 'Иконка 🎵 появится на панели браузера. Кликай — и наслаждайся музыкой!',
-    icon: '🎵',
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 export default function Extension() {
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null)
+  const { t } = useTranslation()
+
+  const features = [
+    { icon: '🎧', title: t('extension.feat_bg'), desc: t('extension.feat_bg_desc') },
+    { icon: '📋', title: t('extension.feat_playlists'), desc: t('extension.feat_playlists_desc') },
+    { icon: '🎭', title: t('extension.feat_genres'), desc: t('extension.feat_genres_desc') },
+    { icon: '🔥', title: t('extension.feat_top'), desc: t('extension.feat_top_desc') },
+    { icon: '❤️', title: t('extension.feat_favs'), desc: t('extension.feat_favs_desc') },
+    { icon: '📻', title: t('extension.feat_radio'), desc: t('extension.feat_radio_desc') },
+    { icon: '🔀', title: t('extension.feat_shuffle'), desc: t('extension.feat_shuffle_desc') },
+    { icon: '🔍', title: t('extension.feat_search'), desc: t('extension.feat_search_desc') },
+  ]
+
+  const steps = [
+    { num: '1', title: t('extension.step1_title'), desc: t('extension.step1_desc'), icon: '📥' },
+    { num: '2', title: t('extension.step2_title'), desc: t('extension.step2_desc'), icon: '📂' },
+    { num: '3', title: t('extension.step3_title'), desc: t('extension.step3_desc'), icon: '🧩' },
+    { num: '4', title: t('extension.step4_title'), desc: t('extension.step4_desc'), icon: '🔧' },
+    { num: '5', title: t('extension.step5_title'), desc: t('extension.step5_desc'), icon: '📤' },
+    { num: '6', title: t('extension.step6_title'), desc: t('extension.step6_desc'), icon: '🎵' },
+  ]
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-12">
@@ -59,7 +31,7 @@ export default function Extension() {
       {/* Hero */}
       <div className="text-center space-y-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-sm font-medium">
-          <span>🧩</span> Расширение для Chrome
+          <span>🧩</span> {t('extension.title')}
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold text-[var(--text)]">
@@ -67,8 +39,7 @@ export default function Extension() {
         </h1>
 
         <p className="text-lg text-[var(--text-dim)] max-w-xl mx-auto">
-          Мини-плеер прямо в браузере. Слушай музыку без открытой вкладки —
-          как настоящее десктопное приложение.
+          {t('extension.subtitle')}
         </p>
 
         <div className="flex items-center justify-center gap-4 pt-2">
@@ -78,7 +49,7 @@ export default function Extension() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--accent)] text-white font-semibold text-base hover:opacity-90 transition shadow-lg shadow-[var(--accent)]/25"
           >
             <span className="text-xl">📥</span>
-            Скачать расширение
+            {t('extension.downloadBtn')}
           </a>
           <span className="text-sm text-[var(--text-dim)]">v1.0 · 12 KB · Chrome / Edge / Brave</span>
         </div>
@@ -153,7 +124,7 @@ export default function Extension() {
 
       {/* Features */}
       <div>
-        <h2 className="text-2xl font-bold text-[var(--text)] text-center mb-8">Возможности</h2>
+        <h2 className="text-2xl font-bold text-[var(--text)] text-center mb-8">{t('extension.features')}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {features.map((f, i) => (
             <div
@@ -176,8 +147,8 @@ export default function Extension() {
 
       {/* Installation Steps */}
       <div>
-        <h2 className="text-2xl font-bold text-[var(--text)] text-center mb-2">Как установить</h2>
-        <p className="text-center text-[var(--text-dim)] mb-8">6 простых шагов — займёт меньше минуты</p>
+        <h2 className="text-2xl font-bold text-[var(--text)] text-center mb-2">{t('extension.howToInstall')}</h2>
+        <p className="text-center text-[var(--text-dim)] mb-8">{t('extension.howToInstallHint')}</p>
 
         <div className="space-y-4">
           {steps.map((step) => (
@@ -199,7 +170,7 @@ export default function Extension() {
 
       {/* Browser compatibility */}
       <div className="text-center space-y-4 pb-8">
-        <h2 className="text-2xl font-bold text-[var(--text)]">Совместимость</h2>
+        <h2 className="text-2xl font-bold text-[var(--text)]">{t('extension.compatibility')}</h2>
         <div className="flex justify-center gap-8">
           {[
             { name: 'Chrome', icon: '🌐', ok: true },
@@ -215,14 +186,14 @@ export default function Extension() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-[var(--text-dim)]">Работает во всех Chromium-браузерах (Manifest V3)</p>
+        <p className="text-xs text-[var(--text-dim)]">{t('extension.compatibilityHint')}</p>
 
         <a
           href="/uploads/musicbox-extension.zip"
           download
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--accent)] text-white font-semibold text-base hover:opacity-90 transition mt-4"
         >
-          📥 Скачать MusicBox Player
+          {t('extension.downloadFinal')}
         </a>
       </div>
     </div>

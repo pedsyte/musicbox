@@ -1,20 +1,21 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import type { Track, Genre, SortOption, TagCategory } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
-import { pluralize } from '@/lib/utils'
-
-const SORTS: { value: SortOption; label: string }[] = [
-  { value: 'newest', label: 'Новые' },
-  { value: 'oldest', label: 'Старые' },
-  { value: 'popular', label: 'Популярные' },
-  { value: 'title', label: 'По названию' },
-  { value: 'artist', label: 'По артисту' },
-  { value: 'duration', label: 'По длительности' },
-]
 
 export default function Browse() {
+  const { t } = useTranslation()
+  const SORTS: { value: SortOption; label: string }[] = [
+    { value: 'newest', label: t('browse.newest') },
+    { value: 'oldest', label: t('browse.oldest') },
+    { value: 'popular', label: t('browse.popular') },
+    { value: 'title', label: t('browse.byTitle') },
+    { value: 'artist', label: t('browse.byArtist') },
+    { value: 'duration', label: t('browse.byDuration') },
+  ]
+
   const [params, setParams] = useSearchParams()
   const [tracks, setTracks] = useState<Track[]>([])
   const [genres, setGenres] = useState<Genre[]>([])
@@ -86,11 +87,11 @@ export default function Browse() {
   return (
     <div className="p-4 md:p-6">
       <h1 className="text-xl font-bold text-[var(--text)] mb-4">
-        {artistFilter ? `Треки: ${artistFilter}` : 'Обзор треков'}
+        {artistFilter ? t('browse.tracksBy', { artist: artistFilter }) : t('browse.browseTitle')}
       </h1>
       {artistFilter && (
         <button onClick={() => { const p = new URLSearchParams(params); p.delete('artist'); setParams(p) }}
-          className="mb-4 text-sm text-[var(--accent)] hover:underline">← Все треки</button>
+          className="mb-4 text-sm text-[var(--accent)] hover:underline">{t('browse.allTracks')}</button>
       )}
 
       {/* Controls */}
@@ -102,7 +103,7 @@ export default function Browse() {
 
         <button onClick={() => setShowFilters(!showFilters)}
           className={`px-3 py-2 text-sm rounded-lg border transition ${excludeGenres.length ? 'border-red-500/50 text-red-400 bg-red-500/10' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
-          🚫 Исключить жанры {excludeGenres.length > 0 && '(' + excludeGenres.length + ')'}
+          🚫 {t('browse.excludeGenres')} {excludeGenres.length > 0 && '(' + excludeGenres.length + ')'}
         </button>
 
         {includeGenres.length > 0 && (
@@ -118,7 +119,7 @@ export default function Browse() {
               )
             })}
             <button onClick={() => { const p = new URLSearchParams(params); p.delete('genres'); setParams(p) }}
-              className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] transition">Сбросить</button>
+              className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] transition">{t('browse.reset')}</button>
           </div>
         )}
 
@@ -136,23 +137,23 @@ export default function Browse() {
               )
             })}
             <button onClick={() => { const p = new URLSearchParams(params); p.delete('tags'); setParams(p) }}
-              className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] transition">Сбросить теги</button>
+              className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] transition">{t('browse.resetTags')}</button>
           </div>
         )}
 
         {q && (
           <span className="text-sm text-[var(--text-dim)]">
-            Поиск: <span className="text-[var(--text)]">{q}</span>
+            {t('browse.searchLabel')} <span className="text-[var(--text)]">{q}</span>
           </span>
         )}
 
-        <span className="ml-auto text-sm text-[var(--text-dim)]">{pluralize(total, 'трек', 'трека', 'треков')}</span>
+        <span className="ml-auto text-sm text-[var(--text-dim)]">{total} {t('common.track', { count: total })}</span>
       </div>
 
       {/* Genre filters */}
       {showFilters && (
         <div className="mb-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl relative z-10">
-          <p className="text-xs text-[var(--text-dim)] mb-2">Нажмите на жанр, чтобы исключить его из результатов</p>
+          <p className="text-xs text-[var(--text-dim)] mb-2">{t('browse.excludeHint')}</p>
           <div className="flex flex-wrap gap-1.5">
             {genres.map(genre => {
               const isExcluded = excludeGenres.includes(genre.id)
@@ -182,7 +183,7 @@ export default function Browse() {
       ) : (
         <div className="text-center py-16 text-[var(--text-dim)]">
           <p className="text-3xl mb-2">🔍</p>
-          <p>Треки не найдены</p>
+          <p>{t('browse.noTracks')}</p>
         </div>
       )}
 

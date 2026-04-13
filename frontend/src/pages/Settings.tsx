@@ -1,10 +1,13 @@
 import { useAuthStore } from '@/stores/authStore'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { languages } from '@/i18n'
 
 export default function Settings() {
   const { user, logout, updateSettings } = useAuthStore()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
   const [theme, setTheme] = useState(user?.theme || 'dark')
   const [showWaveform, setShowWaveform] = useState(user?.show_waveform ?? true)
   const [oldPassword, setOldPassword] = useState('')
@@ -35,11 +38,11 @@ export default function Settings() {
     if (!oldPassword || !newPassword) return
     try {
       await updateSettings({ old_password: oldPassword, new_password: newPassword })
-      setMsg('Пароль изменён')
+      setMsg(t('settings.passwordChanged'))
       setOldPassword('')
       setNewPassword('')
     } catch {
-      setMsg('Ошибка смены пароля')
+      setMsg(t('settings.passwordError'))
     }
   }
 
@@ -52,7 +55,7 @@ export default function Settings() {
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-6">
-      <h1 className="text-xl font-bold text-[var(--text)]">Настройки</h1>
+      <h1 className="text-xl font-bold text-[var(--text)]">{t('settings.title')}</h1>
 
       {/* Profile */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-4">
@@ -62,19 +65,33 @@ export default function Settings() {
           </div>
           <div>
             <p className="text-base font-medium text-[var(--text)]">{user.username}</p>
-            <p className="text-xs text-[var(--text-dim)]">{user.is_admin ? 'Администратор' : 'Пользователь'}</p>
+            <p className="text-xs text-[var(--text-dim)]">{user.is_admin ? t('settings.administrator') : t('settings.user')}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Language */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-[var(--text)]">{t('settings.language')}</h2>
+        <div className="grid grid-cols-3 gap-2">
+          {languages.map(lang => (
+            <button key={lang.code} onClick={() => i18n.changeLanguage(lang.code)}
+              className={`px-3 py-2.5 rounded-lg text-sm border transition flex items-center justify-center gap-2 ${i18n.language === lang.code ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+              <span>{lang.flag}</span>
+              <span>{lang.name}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Theme */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-[var(--text)]">Тема</h2>
+        <h2 className="text-sm font-semibold text-[var(--text)]">{t('settings.theme')}</h2>
         <div className="flex gap-2">
-          {[{ v: 'dark', l: '🌙 Тёмная' }, { v: 'light', l: '☀️ Светлая' }].map(t => (
-            <button key={t.v} onClick={() => handleTheme(t.v)}
-              className={`flex-1 px-4 py-3 rounded-lg text-sm border transition ${theme === t.v ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
-              {t.l}
+          {[{ v: 'dark', l: t('settings.dark') }, { v: 'light', l: t('settings.light') }].map(opt => (
+            <button key={opt.v} onClick={() => handleTheme(opt.v)}
+              className={`flex-1 px-4 py-3 rounded-lg text-sm border transition ${theme === opt.v ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+              {opt.l}
             </button>
           ))}
         </div>
@@ -84,8 +101,8 @@ export default function Settings() {
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Форма волны в плеере</p>
-            <p className="text-xs text-[var(--text-dim)]">Показывать waveform вместо линейного прогресса</p>
+            <p className="text-sm font-semibold text-[var(--text)]">{t('settings.waveform')}</p>
+            <p className="text-xs text-[var(--text-dim)]">{t('settings.waveformDesc')}</p>
           </div>
           <input type="checkbox" checked={showWaveform} onChange={e => handleWaveform(e.target.checked)}
             className="w-5 h-5 accent-[var(--accent)]" />
@@ -94,18 +111,18 @@ export default function Settings() {
 
       {/* Password */}
       <form onSubmit={handlePassword} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-[var(--text)]">Смена пароля</h2>
+        <h2 className="text-sm font-semibold text-[var(--text)]">{t('settings.changePassword')}</h2>
         {msg && <p className="text-xs text-[var(--accent)]">{msg}</p>}
-        <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Текущий пароль"
+        <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder={t('settings.oldPassword')}
           className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
-        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Новый пароль"
+        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder={t('settings.newPassword')}
           className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
-        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">Сменить пароль</button>
+        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">{t('settings.changePasswordBtn')}</button>
       </form>
 
       {/* Logout */}
       <button onClick={handleLogout} className="w-full py-3 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm transition">
-        Выйти из аккаунта
+        {t('settings.logout')}
       </button>
     </div>
   )

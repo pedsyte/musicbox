@@ -1,6 +1,7 @@
 import type { Track, Playlist } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 import DownloadMenu from './DownloadMenu'
 import { formatTime } from '@/lib/utils'
@@ -20,6 +21,7 @@ interface Props {
 export default function TrackCard({ track, tracks, idx, showArtist = true, showCover = true, compact = false }: Props) {
   const { play, currentTrack, isPlaying, playNext, addToQueue } = usePlayerStore()
   const { user } = useAuthStore()
+  const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [isFav, setIsFav] = useState(track.is_favorite ?? false)
   const [playlistsOpen, setPlaylistsOpen] = useState(false)
@@ -117,7 +119,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
 
       {/* Fav */}
       {user && (
-        <Tooltip text={isFav ? 'Убрать из избранного' : 'В избранное'}>
+        <Tooltip text={isFav ? t('track.removeFav') : t('track.addFav')}>
           <button onClick={toggleFav} className={`text-sm transition ${isFav ? 'text-red-400' : 'text-[var(--text-dim)] opacity-0 group-hover:opacity-100'} hover:scale-110`}>
             {isFav ? '❤️' : '🤍'}
           </button>
@@ -126,17 +128,17 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
 
       {/* Context menu */}
       <div className="relative" ref={menuRef}>
-        <Tooltip text="Ещё">
+        <Tooltip text={t('trackCard.more')}>
           <button onClick={() => setMenuOpen(!menuOpen)} className="text-[var(--text-dim)] opacity-0 group-hover:opacity-100 hover:text-[var(--text)] transition text-sm px-1">⋯</button>
         </Tooltip>
         {menuOpen && (
           <div className="absolute right-0 top-8 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 max-h-80 overflow-y-auto">
-            <button onClick={() => { playNext(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Играть следующим</button>
-            <button onClick={() => { addToQueue(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Добавить в очередь</button>
+            <button onClick={() => { playNext(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">{t('trackCard.playNext')}</button>
+            <button onClick={() => { addToQueue(track); setMenuOpen(false) }} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">{t('trackCard.addToQueue')}</button>
             {user && (
               <div>
                 <button onClick={openPlaylistsSub} className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition flex items-center justify-between">
-                  Добавить в плейлист <span className="text-xs text-[var(--text-dim)]">{playlistsOpen ? '▾' : '›'}</span>
+                  {t('trackCard.addToPlaylist')} <span className="text-xs text-[var(--text-dim)]">{playlistsOpen ? '▾' : '›'}</span>
                 </button>
                 {playlistsOpen && (
                   <div className="max-h-40 overflow-y-auto border-t border-[var(--border)]">
@@ -145,13 +147,13 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
                         📋 {pl.name}
                       </button>
                     )) : (
-                      <p className="pl-6 pr-3 py-1.5 text-xs text-[var(--text-dim)]">Нет плейлистов</p>
+                      <p className="pl-6 pr-3 py-1.5 text-xs text-[var(--text-dim)]">{t('trackCard.noPlaylists')}</p>
                     )}
                   </div>
                 )}
               </div>
             )}
-            <Link to={`/track/${track.slug}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Страница трека</Link>
+            <Link to={`/track/${track.slug}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">{t('track.trackPage')}</Link>
             <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} onClose={() => setMenuOpen(false)} />
           </div>
         )}

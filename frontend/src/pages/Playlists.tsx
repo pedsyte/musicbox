@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import type { Playlist } from '@/lib/types'
@@ -8,6 +9,7 @@ import PlaylistCard from '@/components/PlaylistCard'
 export default function Playlists() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [myPlaylists, setMyPlaylists] = useState<Playlist[]>([])
   const [publicPlaylists, setPublicPlaylists] = useState<Playlist[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,23 +48,23 @@ export default function Playlists() {
       {user && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-[var(--text)]">Мои плейлисты</h2>
+            <h2 className="text-lg font-semibold text-[var(--text)]">{t('playlists.my')}</h2>
             <button onClick={() => setShowCreate(!showCreate)}
-              className="text-sm text-[var(--accent)] hover:underline">+ Создать</button>
+              className="text-sm text-[var(--accent)] hover:underline">{t('playlists.create')}</button>
           </div>
 
           {showCreate && (
             <form onSubmit={createPlaylist} className="mb-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[200px]">
-                <label className="text-xs text-[var(--text-dim)] mb-1 block">Название</label>
-                <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Мой плейлист"
+                <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('playlists.nameLabel')}</label>
+                <input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t('playlists.namePlaceholder')}
                   className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
               </div>
               <label className="flex items-center gap-2 text-sm text-[var(--text-dim)]">
                 <input type="checkbox" checked={newPublic} onChange={e => setNewPublic(e.target.checked)} className="accent-[var(--accent)]" />
-                Публичный
+                {t('playlists.public')}
               </label>
-              <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">Создать</button>
+              <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">{t('playlists.createBtn')}</button>
             </form>
           )}
 
@@ -73,14 +75,14 @@ export default function Playlists() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-[var(--text-dim)]">У вас пока нет плейлистов</p>
+            <p className="text-sm text-[var(--text-dim)]">{t('playlists.empty')}</p>
           )}
         </section>
       )}
 
       {/* Public playlists */}
       <section>
-        <h2 className="text-lg font-semibold text-[var(--text)] mb-3">Публичные плейлисты</h2>
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-3">{t('playlists.publicSection')}</h2>
         {publicPlaylists.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {publicPlaylists.map(pl => (
@@ -88,7 +90,7 @@ export default function Playlists() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-[var(--text-dim)]">Публичных плейлистов пока нет</p>
+          <p className="text-sm text-[var(--text-dim)]">{t('playlists.publicEmpty')}</p>
         )}
       </section>
     </div>

@@ -1,4 +1,5 @@
 import { usePlayerStore } from '@/stores/playerStore'
+import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 import { formatTime } from '@/lib/utils'
 import { useRef } from 'react'
@@ -6,6 +7,7 @@ import type { Track } from '@/lib/types'
 
 export default function QueuePanel() {
   const { showQueue, toggleQueue, currentTrack, queue, queueSource, clearQueue, removeFromQueue, reorderQueue, play } = usePlayerStore()
+  const { t } = useTranslation()
   const dragIdx = useRef<number | null>(null)
   const dragOverIdx = useRef<number | null>(null)
 
@@ -29,12 +31,12 @@ export default function QueuePanel() {
       <div className="fixed top-0 right-0 z-[61] w-full md:w-80 h-full bg-[var(--surface)] border-l border-[var(--border)] shadow-2xl flex flex-col md:bottom-20 md:h-auto" style={{ maxHeight: 'calc(100vh - 5rem)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h2 className="text-base font-semibold text-[var(--text)]">Очередь</h2>
+          <h2 className="text-base font-semibold text-[var(--text)]">{t('queue.title')}</h2>
           <div className="flex items-center gap-2">
-            <Tooltip text="Очистить очередь">
-              <button onClick={clearQueue} className="text-xs text-[var(--text-dim)] hover:text-[var(--text)] transition px-2 py-1 rounded hover:bg-[var(--surface-hover)]">Очистить</button>
+            <Tooltip text={t('queue.clearTooltip')}>
+              <button onClick={clearQueue} className="text-xs text-[var(--text-dim)] hover:text-[var(--text)] transition px-2 py-1 rounded hover:bg-[var(--surface-hover)]">{t('queue.clear')}</button>
             </Tooltip>
-            <Tooltip text="Закрыть">
+            <Tooltip text={t('queue.close')}>
               <button onClick={toggleQueue} className="text-[var(--text-dim)] hover:text-[var(--text)] text-xl leading-none">✕</button>
             </Tooltip>
           </div>
@@ -50,7 +52,7 @@ export default function QueuePanel() {
           {/* Now Playing */}
           {currentTrack && (
             <div className="px-4 pt-3 pb-1">
-              <p className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">Сейчас играет</p>
+              <p className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">{t('queue.nowPlaying')}</p>
               <div className="flex items-center gap-3 p-2 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/30">
                 <div className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
                   {currentTrack.cover_path ? (
@@ -71,7 +73,7 @@ export default function QueuePanel() {
           {/* Up Next */}
           {queue.length > 0 && (
             <div className="px-4 pt-3 pb-20 md:pb-4">
-              <p className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">Далее ({queue.length})</p>
+              <p className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">{t('queue.next', { count: queue.length })}</p>
               <div className="space-y-1">
                 {queue.map((track, idx) => (
                   <div key={`${track.id}-${idx}`}
@@ -81,7 +83,7 @@ export default function QueuePanel() {
                     onDrop={handleDrop}
                     className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--surface-hover)] group transition cursor-grab active:cursor-grabbing"
                   >
-                    <Tooltip text="Перетащить для изменения порядка">
+                    <Tooltip text={t('queue.dragTooltip')}>
                       <span className="text-[var(--text-dim)] text-sm cursor-grab">≡</span>
                     </Tooltip>
                     <div className="w-8 h-8 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
@@ -97,10 +99,10 @@ export default function QueuePanel() {
                     </div>
                     <span className="text-xs text-[var(--text-dim)]">{formatTime(track.duration_seconds)}</span>
                     <div className="hidden group-hover:flex items-center gap-1">
-                      <Tooltip text="Воспроизвести">
+                      <Tooltip text={t('queue.playTooltip')}>
                         <button onClick={() => play(track)} className="text-xs hover:text-[var(--accent)] transition">▶</button>
                       </Tooltip>
-                      <Tooltip text="Убрать из очереди">
+                      <Tooltip text={t('queue.removeTooltip')}>
                         <button onClick={() => removeFromQueue(idx)} className="text-xs hover:text-red-400 transition">✕</button>
                       </Tooltip>
                     </div>
@@ -112,7 +114,7 @@ export default function QueuePanel() {
 
           {queue.length === 0 && (
             <div className="px-4 py-8 text-center text-sm text-[var(--text-dim)]">
-              Очередь пуста
+              {t('queue.empty')}
             </div>
           )}
         </div>

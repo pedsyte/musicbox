@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import type { Track, Genre, Tag, TagCategory, Comment } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
@@ -7,10 +8,11 @@ import { useAuthStore } from '@/stores/authStore'
 import Tooltip from '@/components/Tooltip'
 import Waveform from '@/components/Waveform'
 import DownloadMenu from '@/components/DownloadMenu'
-import { formatTime, pluralize } from '@/lib/utils'
+import { formatTime } from '@/lib/utils'
 
 export default function TrackPage() {
   const { slug } = useParams()
+  const { t, i18n } = useTranslation()
   const [track, setTrack] = useState<Track | null>(null)
   const [peaks, setPeaks] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,7 +82,7 @@ export default function TrackPage() {
   }, [tagEditing])
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>
-  if (!track) return <div className="text-center py-16 text-[var(--text-dim)]">Трек не найден</div>
+  if (!track) return <div className="text-center py-16 text-[var(--text-dim)]">{t('track.notFound')}</div>
 
   const isCurrent = currentTrack?.id === track.id
 
@@ -175,13 +177,13 @@ export default function TrackPage() {
   const tagsByCategory: Record<string, { icon: string | null; name: string; tags: Tag[] }> = {}
   for (const tag of (track.tags || [])) {
     const key = tag.category_slug || 'other'
-    if (!tagsByCategory[key]) tagsByCategory[key] = { icon: tag.category_icon || null, name: tag.category_name || 'Прочее', tags: [] }
+    if (!tagsByCategory[key]) tagsByCategory[key] = { icon: tag.category_icon || null, name: tag.category_name || t('track.other'), tags: [] }
     tagsByCategory[key].tags.push(tag)
   }
 
   const formatDate = (iso: string) => {
     const d = new Date(iso)
-    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
+    return d.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })
   }
 
   const formatCommentDate = (iso: string) => {
@@ -189,13 +191,13 @@ export default function TrackPage() {
     const now = new Date()
     const diff = now.getTime() - d.getTime()
     const mins = Math.floor(diff / 60000)
-    if (mins < 1) return 'только что'
-    if (mins < 60) return `${mins} мин. назад`
+    if (mins < 1) return t('track.justNow')
+    if (mins < 60) return t('track.minsAgo', { count: mins })
     const hours = Math.floor(mins / 60)
-    if (hours < 24) return `${hours} ч. назад`
+    if (hours < 24) return t('track.hoursAgo', { count: hours })
     const days = Math.floor(hours / 24)
-    if (days < 7) return `${days} дн. назад`
-    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+    if (days < 7) return t('track.daysAgo', { count: days })
+    return d.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })
   }
 
   return (
@@ -211,7 +213,7 @@ export default function TrackPage() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">Трек</p>
+          <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">{t('track.label')}</p>
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-1">{track.title}</h1>
           <a href={`/browse?artist=${encodeURIComponent(track.artist)}`}
             className="text-lg text-[var(--text-dim)] mb-3 hover:text-[var(--accent)] hover:underline transition block">{track.artist}</a>
@@ -230,10 +232,10 @@ export default function TrackPage() {
                   {g.name}
                 </Link>
               )) : (
-                <span className="text-xs text-[var(--text-dim)]">Нет жанров</span>
+                <span className="text-xs text-[var(--text-dim)]">{t('track.noGenres')}</span>
               )}
               {user?.is_admin && (
-                <Tooltip text="Редактировать жанры">
+                <Tooltip text={t('track.editGenres')}>
                   <button onClick={genreEditing ? () => setGenreEditing(false) : openGenreEditor}
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${genreEditing ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--surface)]'}`}>
                     ✏️
@@ -244,7 +246,7 @@ export default function TrackPage() {
 
             {genreEditing && user?.is_admin && (
               <div className="mt-2 p-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl space-y-2">
-                <p className="text-xs text-[var(--text-dim)] font-medium">Выбрать жанры:</p>
+                <p className="text-xs text-[var(--text-dim)] font-medium">{t('track.selectGenres')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {allGenres.map(g => (
                     <button key={g.id} onClick={() => toggleGenre(g.id)}
@@ -259,9 +261,9 @@ export default function TrackPage() {
                 </div>
                 <div className="flex gap-2 items-center pt-1">
                   <input value={newGenreName} onChange={e => setNewGenreName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addNewGenre()} placeholder="Новый жанр..."
+                    onKeyDown={e => e.key === 'Enter' && addNewGenre()} placeholder={t('track.newGenrePlaceholder')}
                     className="flex-1 bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-xs text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent)]" />
-                  <button onClick={addNewGenre} className="px-3 py-1.5 bg-[var(--accent)] text-white rounded-lg text-xs hover:opacity-90 transition">Добавить</button>
+                  <button onClick={addNewGenre} className="px-3 py-1.5 bg-[var(--accent)] text-white rounded-lg text-xs hover:opacity-90 transition">{t('track.add')}</button>
                 </div>
               </div>
             )}
@@ -270,32 +272,32 @@ export default function TrackPage() {
           {/* Meta info row */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--text-dim)] mb-4">
             <span>⏱ {formatTime(track.duration_seconds)}</span>
-            <span>▶ {pluralize(track.play_count, 'прослушивание', 'прослушивания', 'прослушиваний')}</span>
-            <span>📥 {pluralize(track.download_count, 'скачивание', 'скачивания', 'скачиваний')}</span>
+            <span>▶ {track.play_count} {t('track.plays')}</span>
+            <span>📥 {track.download_count} {t('track.downloads')}</span>
             <span>📅 {formatDate(track.uploaded_at)}</span>
             <span className="uppercase">🎧 {track.original_format || 'wav'}</span>
           </div>
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-2">
-            <Tooltip text={isCurrent && isPlaying ? 'Пауза' : 'Воспроизвести'}>
+            <Tooltip text={isCurrent && isPlaying ? t('track.pauseBtn') : t('track.playBtn')}>
               <button onClick={() => play(track)}
                 className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition flex items-center gap-2">
-                {isCurrent && isPlaying ? '⏸' : '▶'} {isCurrent && isPlaying ? 'Пауза' : 'Играть'}
+                {isCurrent && isPlaying ? '⏸' : '▶'} {isCurrent && isPlaying ? t('track.pauseBtn') : t('track.playBtn')}
               </button>
             </Tooltip>
             {user && (
-              <Tooltip text={isFav ? 'Убрать из избранного' : 'В избранное'}>
+              <Tooltip text={isFav ? t('track.removeFav') : t('track.addFav')}>
                 <button onClick={toggleFav}
                   className={`w-10 h-10 rounded-full border flex items-center justify-center transition ${isFav ? 'border-red-400 text-red-400' : 'border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)]'}`}>
                   {isFav ? '❤️' : '🤍'}
                 </button>
               </Tooltip>
             )}
-            <Tooltip text="Играть следующим">
+            <Tooltip text={t('track.playNext')}>
               <button onClick={() => playNext(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">⏭</button>
             </Tooltip>
-            <Tooltip text="Добавить в очередь">
+            <Tooltip text={t('track.addToQueue')}>
               <button onClick={() => addToQueue(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">+</button>
             </Tooltip>
             <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} compact />
@@ -306,7 +308,7 @@ export default function TrackPage() {
       {/* Waveform */}
       {peaks.length > 0 && (
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4">
-          <p className="text-xs text-[var(--text-dim)] mb-2">Форма волны</p>
+          <p className="text-xs text-[var(--text-dim)] mb-2">{t('track.waveform')}</p>
           <Waveform peaks={peaks} currentTime={isCurrent ? currentTime : 0} duration={isCurrent ? duration : track.duration_seconds} onSeek={isCurrent ? seek : () => play(track)} height={80} />
         </div>
       )}
@@ -314,9 +316,9 @@ export default function TrackPage() {
       {/* Tags / Characteristics */}
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5" ref={tagRef}>
         <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-sm font-semibold text-[var(--text)]">🏷️ Характеристики</h2>
+          <h2 className="text-sm font-semibold text-[var(--text)]">{t('track.characteristics')}</h2>
           {user?.is_admin && (
-            <Tooltip text="Редактировать характеристики">
+            <Tooltip text={t('track.editTags')}>
               <button onClick={tagEditing ? () => setTagEditing(false) : openTagEditor}
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${tagEditing ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--surface-hover)]'}`}>
                 ✏️
@@ -345,12 +347,12 @@ export default function TrackPage() {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[var(--text-dim)]">{user?.is_admin ? 'Нет характеристик. Нажмите ✏️ чтобы добавить.' : 'Нет характеристик'}</p>
+          <p className="text-xs text-[var(--text-dim)]">{user?.is_admin ? t('track.noTagsAdmin') : t('track.noTags')}</p>
         )}
 
         {tagEditing && user?.is_admin && (
           <div className="mt-3 p-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl space-y-3">
-            <p className="text-xs text-[var(--text-dim)] font-medium">Выбрать характеристики:</p>
+            <p className="text-xs text-[var(--text-dim)] font-medium">{t('track.selectTags')}</p>
             {allTagCategories.map(cat => (
               <div key={cat.id}>
                 <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon || '🏷️'} {cat.name}</p>
@@ -375,7 +377,7 @@ export default function TrackPage() {
       {/* Lyrics */}
       {track.lyrics && (
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--text)] mb-3">📝 Текст</h2>
+          <h2 className="text-sm font-semibold text-[var(--text)] mb-3">{t('track.lyrics')}</h2>
           <div className="text-sm text-[var(--text-dim)] whitespace-pre-wrap leading-relaxed">{track.lyrics}</div>
         </div>
       )}
@@ -383,7 +385,7 @@ export default function TrackPage() {
       {/* Comments */}
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5">
         <h2 className="text-sm font-semibold text-[var(--text)] mb-4">
-          💬 Комментарии {commentTotal > 0 && <span className="text-[var(--text-dim)] font-normal">({commentTotal})</span>}
+          {t('track.comments')} {commentTotal > 0 && <span className="text-[var(--text-dim)] font-normal">({commentTotal})</span>}
         </h2>
 
         {/* Comment form */}
@@ -396,7 +398,7 @@ export default function TrackPage() {
               <textarea
                 value={commentText}
                 onChange={e => setCommentText(e.target.value)}
-                placeholder="Напишите комментарий..."
+                placeholder={t('track.commentPlaceholder')}
                 rows={2}
                 maxLength={1000}
                 className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent)] resize-none"
@@ -407,14 +409,14 @@ export default function TrackPage() {
                   onClick={sendComment}
                   disabled={!commentText.trim() || commentSending}
                   className="px-4 py-1.5 bg-[var(--accent)] text-white rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition">
-                  {commentSending ? '...' : 'Отправить'}
+                  {commentSending ? '...' : t('track.commentSend')}
                 </button>
               </div>
             </div>
           </div>
         ) : (
           <p className="text-xs text-[var(--text-dim)] mb-4">
-            <Link to="/login" className="text-[var(--accent)] hover:underline">Войдите</Link>, чтобы оставить комментарий
+            <Link to="/login" className="text-[var(--accent)] hover:underline">{t('auth.loginBtn')}</Link>, {t('track.commentLoginPrompt')}
           </p>
         )}
 
@@ -441,7 +443,7 @@ export default function TrackPage() {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[var(--text-dim)] text-center py-4">Пока нет комментариев. Будьте первым!</p>
+          <p className="text-xs text-[var(--text-dim)] text-center py-4">{t('track.commentEmpty')}</p>
         )}
       </div>
     </div>

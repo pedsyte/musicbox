@@ -1,18 +1,20 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 
 const navItems = [
-  { path: '/', label: 'Главная', icon: '🏠' },
-  { path: '/browse', label: 'Обзор', icon: '🎵' },
-  { path: '/explore', label: 'Жанры', icon: '🎭' },
-  { path: '/playlists', label: 'Плейлисты', icon: '📋' },
-  { path: '/extension', label: 'Расширение', icon: '🧩' },
+  { path: '/', labelKey: 'nav.home', icon: '🏠' },
+  { path: '/browse', labelKey: 'nav.browse', icon: '🎵' },
+  { path: '/explore', labelKey: 'nav.genres', icon: '🎭' },
+  { path: '/playlists', labelKey: 'nav.playlists', icon: '📋' },
+  { path: '/extension', labelKey: 'nav.extension', icon: '🧩' },
 ]
 
 export default function Sidebar() {
   const { pathname } = useLocation()
   const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 bg-[var(--surface)] border-r border-[var(--border)] h-full">
@@ -33,7 +35,7 @@ export default function Sidebar() {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${active ? 'bg-[var(--accent)]/15 text-[var(--accent)] font-medium' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]'}`}
             >
               <span>{item.icon}</span>
-              <span>{item.label}</span>
+              <span>{t(item.labelKey)}</span>
             </Link>
           )
         })}
@@ -43,20 +45,20 @@ export default function Sidebar() {
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${pathname === '/favorites' ? 'bg-[var(--accent)]/15 text-[var(--accent)] font-medium' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]'}`}
           >
             <span>❤️</span>
-            <span>Избранное</span>
+            <span>{t('nav.favorites')}</span>
           </Link>
         )}
 
         {user?.is_admin && (
           <>
             <div className="pt-4 pb-1 px-3">
-              <p className="text-[10px] font-semibold text-[var(--text-dim)] uppercase tracking-wider">Админ</p>
+              <p className="text-[10px] font-semibold text-[var(--text-dim)] uppercase tracking-wider">{t('nav.admin')}</p>
             </div>
             <Link to="/admin"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${pathname.startsWith('/admin') ? 'bg-[var(--accent)]/15 text-[var(--accent)] font-medium' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)]'}`}
             >
               <span>⚙️</span>
-              <span>Управление</span>
+              <span>{t('nav.manage')}</span>
             </Link>
           </>
         )}
@@ -64,7 +66,7 @@ export default function Sidebar() {
 
       {/* Footer link */}
       <div className="px-6 py-2">
-        <Link to="/privacy" className="text-[10px] text-[var(--text-dim)] hover:text-[var(--accent)] transition">Конфиденциальность</Link>
+        <Link to="/privacy" className="text-[10px] text-[var(--text-dim)] hover:text-[var(--accent)] transition">{t('nav.privacy')}</Link>
       </div>
 
       {/* User */}
@@ -76,13 +78,13 @@ export default function Sidebar() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm text-[var(--text)] truncate">{user.username}</p>
-              <p className="text-[10px] text-[var(--text-dim)]">{user.is_admin ? 'Администратор' : 'Пользователь'}</p>
+              <p className="text-[10px] text-[var(--text-dim)]">{user.is_admin ? t('settings.administrator') : t('settings.user')}</p>
             </div>
           </Link>
         ) : (
           <div className="flex gap-2">
-            <Link to="/login" className="flex-1 text-center text-sm py-2 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 transition">Войти</Link>
-            <Link to="/register" className="flex-1 text-center text-sm py-2 rounded-lg border border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)] transition">Создать</Link>
+            <Link to="/login" className="flex-1 text-center text-sm py-2 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 transition">{t('nav.login')}</Link>
+            <Link to="/register" className="flex-1 text-center text-sm py-2 rounded-lg border border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)] transition">{t('nav.register')}</Link>
           </div>
         )}
       </div>

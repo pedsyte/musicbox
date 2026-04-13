@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { User } from '@/lib/types'
 import api from '@/lib/api'
+import i18n from '@/i18n'
 
 interface AuthState {
   user: User | null
@@ -31,7 +32,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: data.user, token: data.token, loading: false })
       return true
     } catch (err: any) {
-      set({ error: err.response?.data?.detail || 'Ошибка входа', loading: false })
+      set({ error: err.response?.data?.detail || i18n.t('auth.loginError'), loading: false })
       return false
     }
   },
@@ -45,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: data.user, token: data.token, loading: false })
       return true
     } catch (err: any) {
-      set({ error: err.response?.data?.detail || 'Ошибка регистрации', loading: false })
+      set({ error: err.response?.data?.detail || i18n.t('auth.registerError'), loading: false })
       return false
     }
   },

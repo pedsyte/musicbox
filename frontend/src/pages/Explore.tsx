@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import type { Genre } from '@/lib/types'
-import { pluralize } from '@/lib/utils'
 
 const colorPalette = [
   'from-purple-600/30 to-violet-500/20',
@@ -16,6 +16,7 @@ const colorPalette = [
 ]
 
 export default function Explore() {
+  const { t } = useTranslation()
   const [genres, setGenres] = useState<Genre[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -29,20 +30,20 @@ export default function Explore() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-xl font-bold text-[var(--text)] mb-4">Жанры</h1>
+      <h1 className="text-xl font-bold text-[var(--text)] mb-4">{t('explore.title')}</h1>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {genres.map((genre, idx) => (
           <Link key={genre.id} to={`/browse?genres=${genre.id}`}
             className={`p-5 rounded-2xl bg-gradient-to-br ${colorPalette[idx % colorPalette.length]} border border-[var(--border)] hover:border-[var(--accent)]/40 transition group relative overflow-hidden`}>
             <p className="text-base font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition">{genre.name}</p>
-            <p className="text-sm text-[var(--text-dim)] mt-1">{pluralize(genre.track_count ?? 0, 'трек', 'трека', 'треков')}</p>
+            <p className="text-sm text-[var(--text-dim)] mt-1">{genre.track_count ?? 0} {t('common.track', { count: genre.track_count ?? 0 })}</p>
           </Link>
         ))}
       </div>
       {genres.length === 0 && (
         <div className="text-center py-16 text-[var(--text-dim)]">
           <p className="text-3xl mb-2">🎭</p>
-          <p>Жанры пока не добавлены</p>
+          <p>{t('explore.empty')}</p>
         </div>
       )}
     </div>

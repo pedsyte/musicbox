@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
 import { api } from '@/lib/api'
 import type { Track, Genre, AdminStats, TagCategory } from '@/lib/types'
-import { pluralize } from '@/lib/utils'
 import { formatTime } from '@/lib/utils'
 import Tooltip from '@/components/Tooltip'
 
@@ -12,6 +12,7 @@ type Tab = 'upload' | 'tracks' | 'genres' | 'tags' | 'stats' | 'settings'
 export default function Admin() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [tab, setTab] = useState<Tab>('upload')
 
   useEffect(() => {
@@ -20,20 +21,22 @@ export default function Admin() {
 
   if (!user?.is_admin) return null
 
+  const tabs: { v: Tab; l: string }[] = [
+    { v: 'upload', l: `📤 ${t('admin.tabUpload')}` },
+    { v: 'tracks', l: `🎵 ${t('admin.tabTracks')}` },
+    { v: 'genres', l: `🎭 ${t('admin.tabGenres')}` },
+    { v: 'tags', l: `🏷️ ${t('admin.tabTags')}` },
+    { v: 'stats', l: `📊 ${t('admin.tabStats')}` },
+    { v: 'settings', l: `⚙️ ${t('admin.tabSettings')}` },
+  ]
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <h1 className="text-xl font-bold text-[var(--text)]">⚙️ Панель управления</h1>
+      <h1 className="text-xl font-bold text-[var(--text)]">⚙️ {t('admin.title')}</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-[var(--surface)] rounded-xl border border-[var(--border)] p-1 overflow-x-auto">
-        {([
-          { v: 'upload', l: '📤 Загрузить' },
-          { v: 'tracks', l: '🎵 Треки' },
-          { v: 'genres', l: '🎭 Жанры' },
-          { v: 'tags', l: '🏷️ Теги' },
-          { v: 'stats', l: '📊 Статистика' },
-          { v: 'settings', l: '⚙️ Настройки' },
-        ] as { v: Tab; l: string }[]).map(t => (
+        {tabs.map(t => (
           <button key={t.v} onClick={() => setTab(t.v)}
             className={`flex-1 shrink-0 px-3 py-2 text-sm rounded-lg transition whitespace-nowrap ${tab === t.v ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
             {t.l}
@@ -52,6 +55,7 @@ export default function Admin() {
 }
 
 function UploadTab() {
+  const { t } = useTranslation()
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [description, setDescription] = useState('')
@@ -76,7 +80,7 @@ function UploadTab() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!audioFile || !title.trim() || !artist.trim()) {
-      setMsg('Заполните название, артиста и выберите WAV-файл')
+      setMsg(t('admin.uploadValidation'))
       return
     }
     setUploading(true)
@@ -99,10 +103,10 @@ function UploadTab() {
       }
       if (Object.keys(tagMap).length) fd.append('tags_json', JSON.stringify(tagMap))
       await api.post('/api/admin/tracks', fd)
-      setMsg('✅ Трек успешно загружен!')
+      setMsg('✅ ' + t('admin.uploadSuccess'))
       setTitle(''); setArtist(''); setDescription(''); setLyrics(''); setGenreText(''); setSelectedTags([]); setTagTexts({}); setAudioFile(null); setCoverFile(null)
     } catch (err: any) {
-      setMsg(`❌ Ошибка: ${err.response?.data?.detail || err.message}`)
+      setMsg(`❌ ${t('admin.error')}: ${err.response?.data?.detail || err.message}`)
     } finally { setUploading(false) }
   }
 
@@ -112,12 +116,12 @@ function UploadTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Название *</label>
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelTitle')} *</label>
           <input value={title} onChange={e => setTitle(e.target.value)} required
             className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
         </div>
         <div>
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Артист *</label>
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelArtist')} *</label>
           <input value={artist} onChange={e => setArtist(e.target.value)} required
             className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
         </div>
@@ -125,39 +129,39 @@ function UploadTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Аудио (WAV, MP3, FLAC, OGG) *</label>
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelAudio')} *</label>
           <input type="file" accept=".wav,.mp3,.flac,.ogg,.aac,.m4a,audio/*" onChange={e => setAudioFile(e.target.files?.[0] || null)}
             className="w-full text-sm text-[var(--text-dim)] file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--accent)] file:text-white file:text-sm file:cursor-pointer" />
         </div>
         <div>
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Обложка (JPG/PNG)</label>
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelCover')}</label>
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setCoverFile(e.target.files?.[0] || null)}
             className="w-full text-sm text-[var(--text-dim)] file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--surface-hover)] file:text-[var(--text)] file:text-sm file:cursor-pointer" />
         </div>
       </div>
 
       <div>
-        <label className="text-xs text-[var(--text-dim)] mb-1 block">Описание (необязательно)</label>
-        <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Короткое описание трека"
+        <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelDescription')}</label>
+        <input value={description} onChange={e => setDescription(e.target.value)} placeholder={t('admin.placeholderDescription')}
           className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
       </div>
 
       <div>
-        <label className="text-xs text-[var(--text-dim)] mb-1 block">Текст (необязательно)</label>
+        <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelLyrics')}</label>
         <textarea value={lyrics} onChange={e => setLyrics(e.target.value)} rows={4}
           className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] resize-y" />
       </div>
 
       <div>
-        <label className="text-xs text-[var(--text-dim)] mb-1 block">Жанры (через запятую)</label>
-        <input value={genreText} onChange={e => setGenreText(e.target.value)} placeholder="Pop, Rock, Electronic"
+        <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.labelGenres')}</label>
+        <input value={genreText} onChange={e => setGenreText(e.target.value)} placeholder={t('admin.placeholderGenres')}
           className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
       </div>
 
       {/* Tag inputs per category — type names, auto-created if new */}
       {tagCategories.length > 0 && (
         <div className="space-y-3">
-          <label className="text-xs text-[var(--text-dim)] block">Характеристики (через запятую, создаются автоматически)</label>
+          <label className="text-xs text-[var(--text-dim)] block">{t('admin.labelCharacteristics')}</label>
           {tagCategories.map(cat => (
             <div key={cat.id}>
               <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon} {cat.name}</p>
@@ -193,13 +197,14 @@ function UploadTab() {
 
       <button type="submit" disabled={uploading}
         className="px-6 py-3 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition">
-        {uploading ? '⏳ Конвертация и загрузка...' : '📤 Загрузить трек'}
+        {uploading ? `⏳ ${t('admin.uploading')}` : `📤 ${t('admin.uploadBtn')}`}
       </button>
     </form>
   )
 }
 
 function TracksTab() {
+  const { t } = useTranslation()
   const [tracks, setTracks] = useState<Track[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -228,7 +233,7 @@ function TracksTab() {
   }
 
   const deleteTrack = async (id: number) => {
-    if (!confirm('Удалить трек?')) return
+    if (!confirm(t('admin.confirmDeleteTrack'))) return
     await api.delete(`/api/admin/tracks/${id}`)
     fetchTracks()
   }
@@ -246,12 +251,12 @@ function TracksTab() {
             {editingId === t.id ? (
               <div className="flex-1 flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Название" className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] flex-1" />
-                  <input value={editArtist} onChange={e => setEditArtist(e.target.value)} placeholder="Исполнитель" className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] w-32" />
+                  <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder={t('admin.labelTitle')} className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] flex-1" />
+                  <input value={editArtist} onChange={e => setEditArtist(e.target.value)} placeholder={t('admin.labelArtist')} className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] w-32" />
                   <button onClick={saveEdit} className="text-xs text-green-400 hover:text-green-300">✓</button>
                   <button onClick={() => setEditingId(null)} className="text-xs text-[var(--text-dim)] hover:text-[var(--text)]">✕</button>
                 </div>
-                <input value={editGenres} onChange={e => setEditGenres(e.target.value)} placeholder="Жанры через запятую: Pop, Rock, Electronic" className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--text)] w-full" />
+                <input value={editGenres} onChange={e => setEditGenres(e.target.value)} placeholder={t('admin.placeholderGenres')} className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-xs text-[var(--text)] w-full" />
               </div>
             ) : (
               <>
@@ -260,19 +265,20 @@ function TracksTab() {
                   <p className="text-xs text-[var(--text-dim)] truncate">{t.artist}</p>
                 </div>
                 <span className="text-xs text-[var(--text-dim)]">{formatTime(t.duration_seconds)}</span>
-                <Tooltip text="Редактировать"><button onClick={() => startEdit(t)} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] px-1">✏️</button></Tooltip>
-                <Tooltip text="Удалить"><button onClick={() => deleteTrack(t.id)} className="text-xs text-red-400 hover:text-red-300 px-1">🗑</button></Tooltip>
+                <Tooltip text={t('admin.edit')}><button onClick={() => startEdit(t)} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] px-1">✏️</button></Tooltip>
+                <Tooltip text={t('admin.delete')}><button onClick={() => deleteTrack(t.id)} className="text-xs text-red-400 hover:text-red-300 px-1">🗑</button></Tooltip>
               </>
             )}
           </div>
         ))}
       </div>
-      {tracks.length === 0 && <p className="text-center py-8 text-[var(--text-dim)]">Нет треков</p>}
+      {tracks.length === 0 && <p className="text-center py-8 text-[var(--text-dim)]">{t('admin.noTracks')}</p>}
     </div>
   )
 }
 
 function GenresTab() {
+  const { t } = useTranslation()
   const [genres, setGenres] = useState<Genre[]>([])
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -297,7 +303,7 @@ function GenresTab() {
   }
 
   const deleteGenre = async (id: number) => {
-    if (!confirm('Удалить жанр?')) return
+    if (!confirm(t('admin.confirmDeleteGenre'))) return
     await api.delete(`/api/admin/genres/${id}`)
     fetchGenres()
   }
@@ -305,9 +311,9 @@ function GenresTab() {
   return (
     <div className="max-w-lg space-y-4">
       <form onSubmit={addGenre} className="flex gap-2">
-        <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Новый жанр"
+        <input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t('admin.newGenre')}
           className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
-        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">Добавить</button>
+        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition">{t('admin.add')}</button>
       </form>
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl divide-y divide-[var(--border)]">
@@ -323,7 +329,7 @@ function GenresTab() {
             ) : (
               <>
                 <span className="flex-1 text-sm text-[var(--text)]">{g.name}</span>
-                <span className="text-xs text-[var(--text-dim)]">{pluralize(g.track_count ?? 0, 'трек', 'трека', 'треков')}</span>
+                <span className="text-xs text-[var(--text-dim)]">{g.track_count ?? 0} {t('common.track')}</span>
                 <button onClick={() => { setEditingId(g.id); setEditName(g.name) }} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)]">✏️</button>
                 <button onClick={() => deleteGenre(g.id)} className="text-xs text-red-400 hover:text-red-300">🗑</button>
               </>
@@ -339,6 +345,7 @@ interface AdminTag { id: number; name: string; slug: string; track_count: number
 interface AdminTagCategory { id: number; name: string; slug: string; icon: string; tags: AdminTag[] }
 
 function TagsTab() {
+  const { t } = useTranslation()
   const [categories, setCategories] = useState<AdminTagCategory[]>([])
   const [newTagName, setNewTagName] = useState('')
   const [newTagCat, setNewTagCat] = useState<number | null>(null)
@@ -369,7 +376,7 @@ function TagsTab() {
   }
 
   const deleteTag = async (id: number) => {
-    if (!confirm('Удалить тег?')) return
+    if (!confirm(t('admin.confirmDeleteTag'))) return
     await api.delete(`/api/admin/tags/${id}`)
     fetchTags()
   }
@@ -378,19 +385,19 @@ function TagsTab() {
     <div className="max-w-2xl space-y-4">
       <form onSubmit={addTag} className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Новый тег</label>
-          <input value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder="Название тега"
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.newTag')}</label>
+          <input value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder={t('admin.tagName')}
             className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
         </div>
         <div>
-          <label className="text-xs text-[var(--text-dim)] mb-1 block">Категория</label>
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('admin.category')}</label>
           <select value={newTagCat ?? ''} onChange={e => setNewTagCat(Number(e.target.value))}
             className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]">
             <option value="">—</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
           </select>
         </div>
-        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition shrink-0">Добавить</button>
+        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition shrink-0">{t('admin.add')}</button>
       </form>
 
       {categories.map(cat => (
@@ -413,14 +420,14 @@ function TagsTab() {
                         tag.enabled ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'border-[var(--border)] text-transparent'
                       )}>✓</button>
                     <span className="flex-1 text-sm text-[var(--text)]">{tag.name}</span>
-                    <span className="text-xs text-[var(--text-dim)]">{pluralize(tag.track_count, 'трек', 'трека', 'треков')}</span>
+                    <span className="text-xs text-[var(--text-dim)]">{tag.track_count} {t('common.track')}</span>
                     <button onClick={() => { setEditingId(tag.id); setEditName(tag.name) }} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)]">✏️</button>
                     <button onClick={() => deleteTag(tag.id)} className="text-xs text-red-400 hover:text-red-300">🗑</button>
                   </>
                 )}
               </div>
             ))}
-            {cat.tags.length === 0 && <p className="px-4 py-3 text-xs text-[var(--text-dim)]">Нет тегов</p>}
+            {cat.tags.length === 0 && <p className="px-4 py-3 text-xs text-[var(--text-dim)]">{t('admin.noTags')}</p>}
           </div>
         </div>
       ))}
@@ -429,6 +436,7 @@ function TagsTab() {
 }
 
 function StatsTab() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState<AdminStats | null>(null)
 
   useEffect(() => {
@@ -440,10 +448,10 @@ function StatsTab() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {[
-        { label: 'Треков', value: stats.total_tracks, icon: '🎵' },
-        { label: 'Жанров', value: stats.total_genres, icon: '🎭' },
-        { label: 'Пользователей', value: stats.total_users, icon: '👤' },
-        { label: 'Плейлистов', value: stats.total_playlists, icon: '📋' },
+        { label: t('admin.statTracks'), value: stats.total_tracks, icon: '🎵' },
+        { label: t('admin.statGenres'), value: stats.total_genres, icon: '🎭' },
+        { label: t('admin.statUsers'), value: stats.total_users, icon: '👤' },
+        { label: t('admin.statPlaylists'), value: stats.total_playlists, icon: '📋' },
       ].map(s => (
         <div key={s.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 text-center">
           <p className="text-2xl mb-1">{s.icon}</p>
@@ -457,6 +465,7 @@ function StatsTab() {
 
 
 function SettingsTab() {
+  const { t } = useTranslation()
   const [siteUrl, setSiteUrl] = useState('')
   const [staticMeta, setStaticMeta] = useState<{ key: string; value: string }[]>([])
   const [saving, setSaving] = useState(false)
@@ -486,9 +495,9 @@ function SettingsTab() {
         download_metadata_url: siteUrl,
         download_metadata_static: JSON.stringify(staticObj),
       })
-      setMsg('Сохранено!')
+      setMsg(t('admin.saved'))
     } catch {
-      setMsg('Ошибка сохранения')
+      setMsg(t('admin.saveError'))
     } finally {
       setSaving(false)
       setTimeout(() => setMsg(''), 3000)
@@ -509,37 +518,37 @@ function SettingsTab() {
     <div className="space-y-6">
       {/* Site URL for metadata */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
-        <h3 className="text-sm font-semibold text-[var(--text)]">🌐 URL сайта (добавляется в метаданные)</h3>
-        <p className="text-xs text-[var(--text-dim)]">Будет вписан в comment и url теги скачиваемых файлов</p>
+        <h3 className="text-sm font-semibold text-[var(--text)]">🌐 {t('admin.siteUrlTitle')}</h3>
+        <p className="text-xs text-[var(--text-dim)]">{t('admin.siteUrlDesc')}</p>
         <input type="text" value={siteUrl} onChange={e => setSiteUrl(e.target.value)} placeholder="musicbox.gornich.fun" className={inputCls} />
       </div>
 
       {/* Static metadata tags */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
-        <h3 className="text-sm font-semibold text-[var(--text)]">🏷️ Статические метатеги</h3>
-        <p className="text-xs text-[var(--text-dim)]">Добавляются ко всем скачиваемым трекам. Динамические теги (title, artist, genre) назначаются автоматически.</p>
+        <h3 className="text-sm font-semibold text-[var(--text)]">🏷️ {t('admin.staticMetaTitle')}</h3>
+        <p className="text-xs text-[var(--text-dim)]">{t('admin.staticMetaDesc')}</p>
         <div className="space-y-2">
           {staticMeta.map((m, i) => (
             <div key={i} className="flex gap-2 items-center">
               <input type="text" value={m.key} onChange={e => updateMeta(i, 'key', e.target.value)}
-                placeholder="Ключ (напр. copyright)" className={`${inputCls} flex-1`} />
+                placeholder={t('admin.placeholderKey')} className={`${inputCls} flex-1`} />
               <input type="text" value={m.value} onChange={e => updateMeta(i, 'value', e.target.value)}
-                placeholder="Значение" className={`${inputCls} flex-1`} />
+                placeholder={t('admin.placeholderValue')} className={`${inputCls} flex-1`} />
               <button onClick={() => removeMeta(i)} className="text-red-400 hover:text-red-300 text-lg px-2 shrink-0">✕</button>
             </div>
           ))}
         </div>
-        <button onClick={addMeta} className="text-sm text-[var(--accent)] hover:underline">+ Добавить тег</button>
+        <button onClick={addMeta} className="text-sm text-[var(--accent)] hover:underline">+ {t('admin.addTag')}</button>
       </div>
 
       {/* Dynamic metadata info */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-2">
-        <h3 className="text-sm font-semibold text-[var(--text)]">🔄 Динамические метатеги (автоматические)</h3>
-        <p className="text-xs text-[var(--text-dim)]">Эти теги добавляются автоматически из данных трека:</p>
+        <h3 className="text-sm font-semibold text-[var(--text)]">🔄 {t('admin.dynamicMetaTitle')}</h3>
+        <p className="text-xs text-[var(--text-dim)]">{t('admin.dynamicMetaDesc')}</p>
         <div className="grid grid-cols-2 gap-1 text-xs text-[var(--text-dim)]">
-          <span className="text-[var(--text)]">title</span><span>→ Название трека</span>
-          <span className="text-[var(--text)]">artist</span><span>→ Исполнитель</span>
-          <span className="text-[var(--text)]">genre</span><span>→ Жанры (через запятую)</span>
+          <span className="text-[var(--text)]">title</span><span>→ {t('admin.metaTitle')}</span>
+          <span className="text-[var(--text)]">artist</span><span>→ {t('admin.metaArtist')}</span>
+          <span className="text-[var(--text)]">genre</span><span>→ {t('admin.metaGenre')}</span>
           <span className="text-[var(--text)]">comment</span><span>→ "Downloaded from {'{URL}'}"</span>
           <span className="text-[var(--text)]">url</span><span>→ URL сайта</span>
         </div>
@@ -549,7 +558,7 @@ function SettingsTab() {
       <div className="flex items-center gap-3">
         <button onClick={save} disabled={saving}
           className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium">
-          {saving ? 'Сохранение...' : 'Сохранить настройки'}
+          {saving ? t('admin.saving') : t('admin.saveSettings')}
         </button>
         {msg && <span className={`text-sm ${msg.includes('Ошибка') ? 'text-red-400' : 'text-green-400'}`}>{msg}</span>}
       </div>

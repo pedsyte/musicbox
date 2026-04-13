@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from 'react-i18next'
 import { formatTime } from '@/lib/utils'
 import Tooltip from './Tooltip'
 import Waveform from './Waveform'
@@ -17,6 +18,7 @@ export default function PlayerBar() {
   } = usePlayerStore()
   const user = useAuthStore(s => s.user)
   const showWaveform = user?.show_waveform ?? true
+  const { t } = useTranslation()
   const [peaks, setPeaks] = useState<number[]>([])
   const [dragging, setDragging] = useState(false)
   const [showQualityMenu, setShowQualityMenu] = useState(false)
@@ -115,7 +117,7 @@ export default function PlayerBar() {
   if (!currentTrack) return <audio ref={audioRef} preload="auto" />
 
   const repeatIcons: Record<string, string> = { off: '↻', all: '🔁', one: '🔂' }
-  const repeatLabels: Record<string, string> = { off: 'Повтор выключен', all: 'Повторять очередь', one: 'Повторять трек' }
+  const repeatLabels: Record<string, string> = { off: t('player.repeatOff'), all: t('player.repeatQueue'), one: t('player.repeatTrack') }
 
   return (
     <>
@@ -143,18 +145,18 @@ export default function PlayerBar() {
         {/* Controls + Progress */}
         <div className="flex-1 flex flex-col items-center gap-1 max-w-2xl">
           <div className="flex items-center gap-3">
-            <Tooltip text={shuffle ? 'Перемешивание включено' : 'Перемешать'}>
+            <Tooltip text={shuffle ? t('player.shuffleOn') : t('player.shuffle')}>
               <button onClick={toggleShuffle} className={`p-1 text-sm transition ${shuffle ? '' : 'opacity-40 grayscale hover:opacity-70'}`}>🔀</button>
             </Tooltip>
-            <Tooltip text="Предыдущий трек">
+            <Tooltip text={t('player.prevTrack')}>
               <button onClick={prev} className="p-1 text-lg text-[var(--text-dim)] hover:text-[var(--text)] transition">⏮</button>
             </Tooltip>
-            <Tooltip text={isPlaying ? 'Пауза' : 'Воспроизвести'}>
+            <Tooltip text={isPlaying ? t('player.pause') : t('player.play')}>
               <button onClick={togglePlay} className="w-9 h-9 rounded-full bg-[var(--text)] text-[var(--bg)] flex items-center justify-center text-lg hover:scale-105 transition">
                 {isPlaying ? '⏸' : <span className="pl-0.5">▶</span>}
               </button>
             </Tooltip>
-            <Tooltip text="Следующий трек">
+            <Tooltip text={t('player.nextTrack')}>
               <button onClick={next} className="p-1 text-lg text-[var(--text-dim)] hover:text-[var(--text)] transition">⏭</button>
             </Tooltip>
             <Tooltip text={repeatLabels[repeat]}>
@@ -183,7 +185,7 @@ export default function PlayerBar() {
         <div className="flex items-center gap-2 w-48 justify-end shrink-0 self-end mb-3">
           {/* Stream quality selector */}
           <div ref={qualityRef} className="relative">
-            <Tooltip text="Качество воспроизведения">
+            <Tooltip text={t('player.qualityPlayback')}>
               <button
                 onClick={() => setShowQualityMenu(!showQualityMenu)}
                 className={`px-1.5 py-0.5 text-[10px] font-bold rounded border transition ${
@@ -197,7 +199,7 @@ export default function PlayerBar() {
             </Tooltip>
             {showQualityMenu && (
               <div className="absolute bottom-full right-0 mb-2 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl py-1 min-w-[140px] z-50">
-                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-[var(--text-dim)] font-semibold">Качество</div>
+                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-[var(--text-dim)] font-semibold">{t('player.quality')}</div>
                 {(() => {
                   const orig = (currentTrack.original_format || 'wav').toLowerCase()
                   // Quality tiers: only show formats strictly below original
@@ -215,7 +217,7 @@ export default function PlayerBar() {
                         streamQuality === q ? 'text-[var(--accent)]' : 'text-[var(--text)]'
                       }`}
                     >
-                      <span>{q === 'original' ? `Оригинал (${orig.toUpperCase()})` : q.toUpperCase()}</span>
+                      <span>{q === 'original' ? t('player.originalFormat', { format: orig.toUpperCase() }) : q.toUpperCase()}</span>
                       {streamQuality === q && <span className="text-xs">✓</span>}
                     </button>
                   ))
@@ -223,17 +225,17 @@ export default function PlayerBar() {
               </div>
             )}
           </div>
-          <Tooltip text={`Громкость: ${Math.round(volume * 100)}%`}>
+          <Tooltip text={t('player.volume', { value: Math.round(volume * 100) })}>
             <div className="flex items-center gap-1">
               <span className="text-sm">{volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}</span>
               <input type="range" min="0" max="1" step="0.01" value={volume} onChange={e => setVolume(parseFloat(e.target.value))}
                 className="w-20 h-1 accent-[var(--accent)]" />
             </div>
           </Tooltip>
-          <Tooltip text="Очередь воспроизведения">
+          <Tooltip text={t('player.queue')}>
             <button onClick={toggleQueue} className={`p-1 text-sm transition ${showQueue ? 'text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--text)]'}`}>📋</button>
           </Tooltip>
-          <Tooltip text="Скачать">
+          <Tooltip text={t('player.download')}>
             <DownloadMenu trackId={currentTrack.id} originalFormat={currentTrack.original_format || 'wav'} compact />
           </Tooltip>
         </div>

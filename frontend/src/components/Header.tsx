@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { usePlayerStore } from '@/stores/playerStore'
+import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 import { useState, useRef, useEffect } from 'react'
 
 export default function Header() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { t } = useTranslation()
   const [searchVal, setSearchVal] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -30,10 +32,10 @@ export default function Header() {
 
       {/* Navigation arrows (desktop) */}
       <div className="hidden md:flex items-center gap-1">
-        <Tooltip text="Назад">
+        <Tooltip text={t('nav.back')}>
           <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text)] opacity-60 hover:opacity-100 transition text-base">←</button>
         </Tooltip>
-        <Tooltip text="Вперёд">
+        <Tooltip text={t('nav.forward')}>
           <button onClick={() => navigate(1)} className="w-8 h-8 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] flex items-center justify-center text-[var(--text)] opacity-60 hover:opacity-100 transition text-base">→</button>
         </Tooltip>
       </div>
@@ -47,7 +49,7 @@ export default function Header() {
             type="text"
             value={searchVal}
             onChange={e => setSearchVal(e.target.value)}
-            placeholder="Поиск треков, исполнителей..."
+            placeholder={t('search.placeholder')}
             className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-full pl-9 pr-4 py-2 text-sm text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:border-[var(--accent)] transition"
           />
         </div>
@@ -57,12 +59,12 @@ export default function Header() {
       <div className="flex items-center gap-2">
         {!user ? (
           <>
-            <Tooltip text="Войти в аккаунт">
-              <button onClick={() => navigate('/login')} className="hidden md:block text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition">Войти</button>
+            <Tooltip text={t('nav.loginToAccount')}>
+              <button onClick={() => navigate('/login')} className="hidden md:block text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition">{t('nav.login')}</button>
             </Tooltip>
           </>
         ) : (
-          <Tooltip text="Настройки">
+<Tooltip text={t('nav.settings')}>
             <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold hover:scale-110 hover:brightness-110 transition">
               {user.username[0].toUpperCase()}
             </button>

@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { Playlist } from '@/lib/types'
-import { pluralize } from '@/lib/utils'
 
-function formatDuration(seconds: number): string {
+function formatDuration(seconds: number, t: (key: string) => string): string {
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0) return `${h} ч ${m} мин`
-  return `${m} мин`
+  if (h > 0) return `${h} ${t('common.h')} ${m} ${t('common.min')}`
+  return `${m} ${t('common.min')}`
 }
 
 export default function PlaylistCard({ playlist }: { playlist: Playlist }) {
+  const { t } = useTranslation()
   const covers = (playlist.covers || []).filter(Boolean) as string[]
   const count = playlist.track_count || 0
   const duration = playlist.total_duration || 0
@@ -46,8 +47,8 @@ export default function PlaylistCard({ playlist }: { playlist: Playlist }) {
         {/* Badge: count + duration */}
         {count > 0 && (
           <div className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1.5">
-            <span>{pluralize(count, 'трек', 'трека', 'треков')}</span>
-            {duration > 0 && <><span className="opacity-50">·</span><span>{formatDuration(duration)}</span></>}
+            <span>{count} {t('common.track')}</span>
+            {duration > 0 && <><span className="opacity-50">·</span><span>{formatDuration(duration, t)}</span></>}
           </div>
         )}
       </div>
@@ -64,7 +65,7 @@ export default function PlaylistCard({ playlist }: { playlist: Playlist }) {
             </p>
           ))}
           {count > 3 && (
-            <p className="text-[10px] text-[var(--text-dim)]/50 leading-tight">и ещё {count - 3}...</p>
+            <p className="text-[10px] text-[var(--text-dim)]/50 leading-tight">{t('common.andMore', { count: count - 3 })}</p>
           )}
         </div>
       ) : (

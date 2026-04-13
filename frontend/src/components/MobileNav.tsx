@@ -1,16 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useTranslation } from 'react-i18next'
 
 export default function MobileNav() {
   const { pathname } = useLocation()
   const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   const mobileNavItems = [
-    { path: '/', label: 'Главная', icon: '🏠' },
-    { path: '/browse', label: 'Обзор', icon: '🎵' },
-    { path: '/explore', label: 'Жанры', icon: '🎭' },
-    { path: '/playlists', label: 'Плейлисты', icon: '📋' },
-    user ? { path: '/settings', label: 'Ещё', icon: '☰' } : { path: '/login', label: 'Войти', icon: '👤' },
+    { path: '/', label: t('nav.home'), icon: '🏠' },
+    { path: '/browse', label: t('nav.browse'), icon: '🎵' },
+    { path: '/explore', label: t('nav.genres'), icon: '🎭' },
+    { path: '/playlists', label: t('nav.playlists'), icon: '📋' },
+    user ? { path: '/settings', label: t('nav.more'), icon: '☰' } : { path: '/login', label: t('nav.login'), icon: '👤' },
   ]
 
   return (
