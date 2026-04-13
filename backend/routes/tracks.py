@@ -39,7 +39,8 @@ def track_to_dict(track: Track, is_favorite: bool = False) -> dict:
         "tags": [{"id": t.id, "name": t.name, "slug": t.slug, "category_id": t.category_id,
                   "category_name": t.category.name if t.category else None,
                   "category_slug": t.category.slug if t.category else None,
-                  "category_icon": t.category.icon if t.category else None} for t in (track.tags or [])],
+                  "category_icon": t.category.icon if t.category else None,
+                  "translations": t.translations or {}} for t in (track.tags or [])],
         "is_favorite": is_favorite,
     }
 

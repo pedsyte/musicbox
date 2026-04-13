@@ -264,9 +264,12 @@
     "metaTitle": "Track-Titel",
     "metaArtist": "Künstler",
     "metaGenre": "Genres (kommagetrennt)",
+    "metaUrl": "Website-URL",
     "saving": "Wird gespeichert...",
     "saveSettings": "Einstellungen speichern",
     "saved": "Gespeichert!",
+    "translations": "Übersetzungen",
+    "saveTranslations": "Übersetzungen speichern",
     "saveError": "Fehler beim Speichern"
   },
   "cookie": {
@@ -377,6 +380,14 @@
     "s9_title": "9. Kontakt",
     "s9_text": "Wenn Sie Fragen zu dieser Richtlinie oder der Verarbeitung Ihrer Daten haben, wenden Sie sich an den Service-Administrator.",
     "backHome": "← Zurück zur Startseite"
+  },
+  "tagCategories": {
+    "language": "Sprache",
+    "mood": "Stimmung",
+    "vocal": "Gesang",
+    "energy": "Energie",
+    "occasion": "Anlass",
+    "era": "Epoche"
   },
   "common": {
     "track": "Track",

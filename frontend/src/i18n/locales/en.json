@@ -264,9 +264,12 @@
     "metaTitle": "Track title",
     "metaArtist": "Artist",
     "metaGenre": "Genres (comma-separated)",
+    "metaUrl": "Site URL",
     "saving": "Saving...",
     "saveSettings": "Save settings",
     "saved": "Saved!",
+    "translations": "Translations",
+    "saveTranslations": "Save translations",
     "saveError": "Save error"
   },
   "cookie": {
@@ -377,6 +380,14 @@
     "s9_title": "9. Contact",
     "s9_text": "If you have questions about this Policy or the processing of your data, contact the service administrator.",
     "backHome": "← Back to home"
+  },
+  "tagCategories": {
+    "language": "Language",
+    "mood": "Mood",
+    "vocal": "Vocals",
+    "energy": "Energy",
+    "occasion": "Occasion",
+    "era": "Era"
   },
   "common": {
     "track": "track",

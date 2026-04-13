@@ -68,11 +68,11 @@ export default function Extension() {
               <div className="text-xs text-zinc-500">pedsyte</div>
             </div>
             {/* Fake search */}
-            <div className="bg-[#0f0f17] rounded-md px-3 py-2 text-xs text-zinc-600">🔍 Поиск треков...</div>
+            <div className="bg-[#0f0f17] rounded-md px-3 py-2 text-xs text-zinc-600">{t('extension.searchPlaceholder')}</div>
             {/* Fake tabs */}
             <div className="flex gap-3 text-xs border-b border-zinc-800 pb-2">
-              <span className="text-purple-400 border-b-2 border-purple-400 pb-1">Все</span>
-              <span className="text-zinc-500">🔥 Топ</span>
+              <span className="text-purple-400 border-b-2 border-purple-400 pb-1">{t('extension.all')}</span>
+              <span className="text-zinc-500">{t('extension.top')}</span>
               <span className="text-zinc-500">🎭</span>
               <span className="text-zinc-500">📋</span>
               <span className="text-zinc-500">♥</span>

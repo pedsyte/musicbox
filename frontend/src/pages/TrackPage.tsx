@@ -333,12 +333,12 @@ export default function TrackPage() {
               <div key={key} className="flex items-start gap-2">
                 <span className="text-sm shrink-0 mt-0.5">{cat.icon || '🏷️'}</span>
                 <div>
-                  <p className="text-xs font-medium text-[var(--text-dim)] mb-1">{cat.name}</p>
+                  <p className="text-xs font-medium text-[var(--text-dim)] mb-1">{t('tagCategories.' + key, { defaultValue: cat.name })}</p>
                   <div className="flex flex-wrap gap-1">
                     {cat.tags.map(tag => (
                       <Link key={tag.id} to={`/browse?tags=${tag.id}`}
                         className="px-2 py-0.5 text-xs rounded-full bg-[var(--surface-hover)] text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 transition">
-                        {tag.name}
+                        {tag.translations?.[i18n.language] || tag.name}
                       </Link>
                     ))}
                   </div>
@@ -355,7 +355,7 @@ export default function TrackPage() {
             <p className="text-xs text-[var(--text-dim)] font-medium">{t('track.selectTags')}</p>
             {allTagCategories.map(cat => (
               <div key={cat.id}>
-                <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon || '🏷️'} {cat.name}</p>
+                <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon || '🏷️'} {t('tagCategories.' + cat.slug, { defaultValue: cat.name })}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {cat.tags.map(tag => (
                     <button key={tag.id} onClick={() => toggleTag(tag, cat.slug, cat.icon, cat.name)}
@@ -364,7 +364,7 @@ export default function TrackPage() {
                           ? 'bg-[var(--accent)] border-[var(--accent)] text-white'
                           : 'bg-[var(--surface-hover)] border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
                       }`}>
-                      {trackTagIds.has(tag.id) ? `✕ ${tag.name}` : `+ ${tag.name}`}
+                      {trackTagIds.has(tag.id) ? `✕ ${tag.translations?.[i18n.language] || tag.name}` : `+ ${tag.translations?.[i18n.language] || tag.name}`}
                     </button>
                   ))}
                 </div>

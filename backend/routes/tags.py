@@ -39,6 +39,7 @@ async def list_tags(db: AsyncSession = Depends(get_db)):
                     "name": tag.name,
                     "slug": tag.slug,
                     "track_count": counts.get(tag.id, 0),
+                    "translations": tag.translations or {},
                 }
                 for tag in cat.tags
                 if tag.enabled

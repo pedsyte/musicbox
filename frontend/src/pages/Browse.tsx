@@ -6,7 +6,7 @@ import type { Track, Genre, SortOption, TagCategory } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
 
 export default function Browse() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const SORTS: { value: SortOption; label: string }[] = [
     { value: 'newest', label: t('browse.newest') },
     { value: 'oldest', label: t('browse.oldest') },
@@ -130,7 +130,7 @@ export default function Browse() {
               if (!tag) return null
               return (
                 <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
-                  {tag.name}
+                  {tag.translations?.[i18n.language] || tag.name}
                   <button onClick={() => { const p = new URLSearchParams(params); const cur = includeTags.filter(t => t !== id); if (cur.length) p.set('tags', cur.join(',')); else p.delete('tags'); setParams(p) }}
                     className="hover:text-white transition">✕</button>
                 </span>

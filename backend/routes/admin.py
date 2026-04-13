@@ -406,7 +406,7 @@ async def list_admin_tags(
         {
             "id": cat.id, "name": cat.name, "slug": cat.slug, "icon": cat.icon,
             "tags": [
-                {"id": t.id, "name": t.name, "slug": t.slug, "track_count": counts.get(t.id, 0), "enabled": t.enabled}
+                {"id": t.id, "name": t.name, "slug": t.slug, "track_count": counts.get(t.id, 0), "enabled": t.enabled, "translations": t.translations or {}}
                 for t in cat.tags
             ],
         }
@@ -453,8 +453,10 @@ async def update_tag(
         tag.slug = tag.name.lower().replace(" ", "-").replace("&", "and")
     if "enabled" in body:
         tag.enabled = bool(body["enabled"])
+    if "translations" in body and isinstance(body["translations"], dict):
+        tag.translations = body["translations"]
     await db.commit()
-    return {"id": tag.id, "name": tag.name, "slug": tag.slug, "enabled": tag.enabled}
+    return {"id": tag.id, "name": tag.name, "slug": tag.slug, "enabled": tag.enabled, "translations": tag.translations or {}}
 
 
 @router.delete("/tags/{tag_id}")

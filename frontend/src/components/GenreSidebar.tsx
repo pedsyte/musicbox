@@ -16,7 +16,7 @@ const colors = [
 ]
 
 export default function GenreSidebar() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [genres, setGenres] = useState<Genre[]>([])
   const [tagCategories, setTagCategories] = useState<TagCategory[]>([])
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
@@ -159,7 +159,7 @@ export default function GenreSidebar() {
               <button onClick={() => toggle(cat.slug)}
                 className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-hover)] transition">
                 <span className="flex items-center gap-2">
-                  {cat.icon} {cat.name}
+                  {cat.icon} {t('tagCategories.' + cat.slug, { defaultValue: cat.name })}
                   {activeCount > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)]">{activeCount}</span>}
                 </span>
                 <span className="text-[var(--text-dim)] text-xs">{isCollapsed(cat.slug) ? '▸' : '▾'}</span>
@@ -177,7 +177,7 @@ export default function GenreSidebar() {
                         }`}>
                           <Link to={'/browse?tags=' + tag.id}
                             className={'inline-flex items-center gap-1.5 pl-2.5 py-1 transition ' + (isActive ? '' : 'hover:text-[var(--text)]')}>
-                            <span className="truncate">{tag.name}</span>
+                            <span className="truncate">{tag.translations?.[i18n.language] || tag.name}</span>
                             {tag.track_count ? <span className={'text-[9px] px-1 py-0.5 rounded-full ' + colors[(ci * 3 + ti) % colors.length]}>{tag.track_count}</span> : null}
                           </Link>
                           <button onClick={() => addTagToFilter(tag.id)}

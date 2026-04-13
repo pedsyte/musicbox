@@ -164,7 +164,7 @@ function UploadTab() {
           <label className="text-xs text-[var(--text-dim)] block">{t('admin.labelCharacteristics')}</label>
           {tagCategories.map(cat => (
             <div key={cat.id}>
-              <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon} {cat.name}</p>
+              <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon} {t('tagCategories.' + cat.slug, { defaultValue: cat.name })}</p>
               <input
                 value={tagTexts[cat.slug] || ''}
                 onChange={e => setTagTexts(prev => ({ ...prev, [cat.slug]: e.target.value }))}
@@ -341,8 +341,16 @@ function GenresTab() {
   )
 }
 
-interface AdminTag { id: number; name: string; slug: string; track_count: number; enabled: boolean }
+interface AdminTag { id: number; name: string; slug: string; track_count: number; enabled: boolean; translations: Record<string, string> }
 interface AdminTagCategory { id: number; name: string; slug: string; icon: string; tags: AdminTag[] }
+
+const TRANSLATE_LANGS = [
+  { code: 'uk', flag: '🇺🇦' },
+  { code: 'en', flag: '🇬🇧' },
+  { code: 'es', flag: '🇪🇸' },
+  { code: 'de', flag: '🇩🇪' },
+  { code: 'fr', flag: '🇫🇷' },
+]
 
 function TagsTab() {
   const { t } = useTranslation()
@@ -351,6 +359,8 @@ function TagsTab() {
   const [newTagCat, setNewTagCat] = useState<number | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [translatingId, setTranslatingId] = useState<number | null>(null)
+  const [editTranslations, setEditTranslations] = useState<Record<string, string>>({})
 
   const fetchTags = () => api.get('/api/admin/tags').then(res => setCategories(res.data))
   useEffect(() => { fetchTags() }, [])
@@ -372,6 +382,22 @@ function TagsTab() {
     if (!editingId || !editName.trim()) return
     await api.put(`/api/admin/tags/${editingId}`, { name: editName.trim() })
     setEditingId(null)
+    fetchTags()
+  }
+
+  const startTranslating = (tag: AdminTag) => {
+    setTranslatingId(tag.id)
+    setEditTranslations({ ...tag.translations })
+  }
+
+  const saveTranslations = async () => {
+    if (!translatingId) return
+    const clean: Record<string, string> = {}
+    for (const [k, v] of Object.entries(editTranslations)) {
+      if (v.trim()) clean[k] = v.trim()
+    }
+    await api.put(`/api/admin/tags/${translatingId}`, { translations: clean })
+    setTranslatingId(null)
     fetchTags()
   }
 
@@ -402,10 +428,11 @@ function TagsTab() {
 
       {categories.map(cat => (
         <div key={cat.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
-          <div className="px-4 py-2.5 bg-[var(--surface-hover)] text-sm font-medium text-[var(--text)]">{cat.icon} {cat.name}</div>
+          <div className="px-4 py-2.5 bg-[var(--surface-hover)] text-sm font-medium text-[var(--text)]">{cat.icon} {t('tagCategories.' + cat.slug, { defaultValue: cat.name })}</div>
           <div className="divide-y divide-[var(--border)]">
             {cat.tags.map(tag => (
-              <div key={tag.id} className={'flex items-center gap-3 px-4 py-2 ' + (!tag.enabled ? 'opacity-50' : '')}>
+              <div key={tag.id} className={'px-4 py-2 ' + (!tag.enabled ? 'opacity-50' : '')}>
+                <div className="flex items-center gap-3">
                 {editingId === tag.id ? (
                   <>
                     <input value={editName} onChange={e => setEditName(e.target.value)}
@@ -421,9 +448,33 @@ function TagsTab() {
                       )}>✓</button>
                     <span className="flex-1 text-sm text-[var(--text)]">{tag.name}</span>
                     <span className="text-xs text-[var(--text-dim)]">{tag.track_count} {t('common.track')}</span>
+                    <button onClick={() => startTranslating(tag)} className={'text-xs px-1 ' + (Object.keys(tag.translations || {}).length > 0 ? 'text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--accent)]')}>🌐</button>
                     <button onClick={() => { setEditingId(tag.id); setEditName(tag.name) }} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)]">✏️</button>
                     <button onClick={() => deleteTag(tag.id)} className="text-xs text-red-400 hover:text-red-300">🗑</button>
                   </>
+                )}
+                </div>
+                {translatingId === tag.id && (
+                  <div className="mt-2 ml-8 p-3 bg-[var(--bg)] border border-[var(--border)] rounded-lg space-y-2">
+                    <p className="text-xs font-medium text-[var(--text-dim)] mb-1">🌐 {t('admin.translations')} — <span className="text-[var(--text)]">🇷🇺 {tag.name}</span></p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {TRANSLATE_LANGS.map(lang => (
+                        <div key={lang.code} className="flex items-center gap-2">
+                          <span className="text-sm w-6 shrink-0">{lang.flag}</span>
+                          <input
+                            value={editTranslations[lang.code] || ''}
+                            onChange={e => setEditTranslations(prev => ({ ...prev, [lang.code]: e.target.value }))}
+                            placeholder={tag.name}
+                            className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 mt-1">
+                      <button onClick={saveTranslations} className="px-3 py-1 bg-[var(--accent)] text-white rounded text-xs hover:opacity-90 transition">{t('admin.saveTranslations')}</button>
+                      <button onClick={() => setTranslatingId(null)} className="px-3 py-1 text-xs text-[var(--text-dim)] hover:text-[var(--text)]">{t('playlist.cancel')}</button>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
@@ -550,7 +601,7 @@ function SettingsTab() {
           <span className="text-[var(--text)]">artist</span><span>→ {t('admin.metaArtist')}</span>
           <span className="text-[var(--text)]">genre</span><span>→ {t('admin.metaGenre')}</span>
           <span className="text-[var(--text)]">comment</span><span>→ "Downloaded from {'{URL}'}"</span>
-          <span className="text-[var(--text)]">url</span><span>→ URL сайта</span>
+          <span className="text-[var(--text)]">url</span><span>→ {t('admin.metaUrl')}</span>
         </div>
       </div>
 
@@ -560,7 +611,7 @@ function SettingsTab() {
           className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium">
           {saving ? t('admin.saving') : t('admin.saveSettings')}
         </button>
-        {msg && <span className={`text-sm ${msg.includes('Ошибка') ? 'text-red-400' : 'text-green-400'}`}>{msg}</span>}
+        {msg && <span className={`text-sm ${msg === t('admin.saved') ? 'text-green-400' : 'text-red-400'}`}>{msg}</span>}
       </div>
     </div>
   )

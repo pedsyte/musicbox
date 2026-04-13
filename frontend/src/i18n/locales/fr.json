@@ -264,9 +264,12 @@
     "metaTitle": "Titre de la piste",
     "metaArtist": "Artiste",
     "metaGenre": "Genres (séparés par des virgules)",
+    "metaUrl": "URL du site",
     "saving": "Enregistrement...",
     "saveSettings": "Enregistrer les paramètres",
     "saved": "Enregistré !",
+    "translations": "Traductions",
+    "saveTranslations": "Enregistrer les traductions",
     "saveError": "Erreur d'enregistrement"
   },
   "cookie": {
@@ -377,6 +380,14 @@
     "s9_title": "9. Contact",
     "s9_text": "Si vous avez des questions sur cette Politique ou le traitement de vos données, contactez l'administrateur du service.",
     "backHome": "← Retour à l'accueil"
+  },
+  "tagCategories": {
+    "language": "Langue",
+    "mood": "Humeur",
+    "vocal": "Voix",
+    "energy": "Énergie",
+    "occasion": "Occasion",
+    "era": "Époque"
   },
   "common": {
     "track": "piste",

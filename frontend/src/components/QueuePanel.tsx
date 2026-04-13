@@ -44,7 +44,7 @@ export default function QueuePanel() {
 
         {queueSource && (
           <div className="px-4 py-2 text-xs text-[var(--text-dim)] border-b border-[var(--border)]">
-            Источник: {queueSource}
+            {t('queue.source')} {queueSource}
           </div>
         )}
 

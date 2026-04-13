@@ -85,6 +85,7 @@ class Tag(Base):
     slug = Column(String(50), nullable=False, index=True)
     sort_order = Column(Integer, default=0, nullable=False)
     enabled = Column(Boolean, default=True, nullable=False)
+    translations = Column(JSON, default=dict, nullable=False)
 
     __table_args__ = (UniqueConstraint("category_id", "slug", name="uq_tag_category_slug"),)
 
