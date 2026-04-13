@@ -62,6 +62,11 @@ export default function Sidebar() {
         )}
       </nav>
 
+      {/* Footer link */}
+      <div className="px-6 py-2">
+        <Link to="/privacy" className="text-[10px] text-[var(--text-dim)] hover:text-[var(--accent)] transition">Конфиденциальность</Link>
+      </div>
+
       {/* User */}
       <div className="p-3 border-t border-[var(--border)]">
         {user ? (
