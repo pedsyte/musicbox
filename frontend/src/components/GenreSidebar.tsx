@@ -173,10 +173,11 @@ export default function GenreSidebar() {
                             ? 'bg-[var(--accent)]/15 text-[var(--accent)] font-medium'
                             : 'bg-[var(--surface-hover)] text-[var(--text-dim)]'
                         }`}>
-                          <span className={'inline-flex items-center gap-1.5 pl-2.5 py-1 ' + (isActive ? '' : '')}>
+                          <Link to={'/browse?tags=' + tag.id}
+                            className={'inline-flex items-center gap-1.5 pl-2.5 py-1 transition ' + (isActive ? '' : 'hover:text-[var(--text)]')}>
                             <span className="truncate">{tag.name}</span>
                             {tag.track_count ? <span className={'text-[9px] px-1 py-0.5 rounded-full ' + colors[(ci * 3 + ti) % colors.length]}>{tag.track_count}</span> : null}
-                          </span>
+                          </Link>
                           <button onClick={() => addTagToFilter(tag.id)}
                             title={isActive ? 'Убрать из фильтра' : 'Добавить в фильтр'}
                             className={'px-2 py-1 text-[10px] transition border-l ' + (
