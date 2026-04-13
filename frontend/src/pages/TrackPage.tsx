@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '@/lib/api'
-import type { Track, Genre, Tag, Comment } from '@/lib/types'
+import type { Track, Genre, Tag, TagCategory, Comment } from '@/lib/types'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useAuthStore } from '@/stores/authStore'
 import Tooltip from '@/components/Tooltip'
@@ -31,6 +31,12 @@ export default function TrackPage() {
   const [commentTotal, setCommentTotal] = useState(0)
   const [commentSending, setCommentSending] = useState(false)
 
+  // Tag editor
+  const [tagEditing, setTagEditing] = useState(false)
+  const [allTagCategories, setAllTagCategories] = useState<TagCategory[]>([])
+  const [trackTagIds, setTrackTagIds] = useState<Set<number>>(new Set())
+  const tagRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     setLoading(true)
     api.get(`/api/tracks/${slug}`).then(trackRes => {
@@ -38,6 +44,7 @@ export default function TrackPage() {
       setTrack(t)
       setIsFav(t.is_favorite ?? false)
       setTrackGenreIds(new Set((t.genres || []).map((g: Genre) => g.id)))
+      setTrackTagIds(new Set((t.tags || []).map((tg: Tag) => tg.id)))
       setPeaks(t.waveform_peaks || [])
     }).finally(() => setLoading(false))
   }, [slug])
@@ -62,6 +69,15 @@ export default function TrackPage() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [genreEditing])
+
+  useEffect(() => {
+    if (!tagEditing) return
+    const handler = (e: MouseEvent) => {
+      if (tagRef.current && !tagRef.current.contains(e.target as Node)) setTagEditing(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [tagEditing])
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" /></div>
   if (!track) return <div className="text-center py-16 text-[var(--text-dim)]">Трек не найден</div>
@@ -127,6 +143,31 @@ export default function TrackPage() {
     try {
       await api.delete(`/api/comments/${commentId}`)
       fetchComments()
+    } catch {}
+  }
+
+  const openTagEditor = async () => {
+    try {
+      const res = await api.get('/api/tags')
+      setAllTagCategories(res.data)
+    } catch {}
+    setTagEditing(true)
+  }
+
+  const toggleTag = async (tag: Tag, catSlug: string, catIcon: string | null, catName: string) => {
+    if (!track) return
+    const has = trackTagIds.has(tag.id)
+    try {
+      if (has) {
+        await api.delete(`/api/tags/tracks/${track.id}/${tag.id}`)
+        setTrackTagIds(prev => { const s = new Set(prev); s.delete(tag.id); return s })
+        setTrack(t => t ? { ...t, tags: (t.tags || []).filter(tg => tg.id !== tag.id) } : t)
+      } else {
+        await api.post(`/api/tags/tracks/${track.id}/${tag.id}`)
+        setTrackTagIds(prev => new Set(prev).add(tag.id))
+        const newTag: Tag = { ...tag, category_slug: catSlug, category_icon: catIcon, category_name: catName }
+        setTrack(t => t ? { ...t, tags: [...(t.tags || []), newTag] } : t)
+      }
     } catch {}
   }
 
@@ -271,9 +312,20 @@ export default function TrackPage() {
       )}
 
       {/* Tags / Characteristics */}
-      {Object.keys(tagsByCategory).length > 0 && (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5">
-          <h2 className="text-sm font-semibold text-[var(--text)] mb-3">🏷️ Характеристики</h2>
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5" ref={tagRef}>
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-sm font-semibold text-[var(--text)]">🏷️ Характеристики</h2>
+          {user?.is_admin && (
+            <Tooltip text="Редактировать характеристики">
+              <button onClick={tagEditing ? () => setTagEditing(false) : openTagEditor}
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${tagEditing ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--surface-hover)]'}`}>
+                ✏️
+              </button>
+            </Tooltip>
+          )}
+        </div>
+
+        {Object.keys(tagsByCategory).length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.entries(tagsByCategory).map(([key, cat]) => (
               <div key={key} className="flex items-start gap-2">
@@ -292,8 +344,33 @@ export default function TrackPage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-xs text-[var(--text-dim)]">{user?.is_admin ? 'Нет характеристик. Нажмите ✏️ чтобы добавить.' : 'Нет характеристик'}</p>
+        )}
+
+        {tagEditing && user?.is_admin && (
+          <div className="mt-3 p-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl space-y-3">
+            <p className="text-xs text-[var(--text-dim)] font-medium">Выбрать характеристики:</p>
+            {allTagCategories.map(cat => (
+              <div key={cat.id}>
+                <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon || '🏷️'} {cat.name}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {cat.tags.map(tag => (
+                    <button key={tag.id} onClick={() => toggleTag(tag, cat.slug, cat.icon, cat.name)}
+                      className={`px-2.5 py-1 text-xs rounded-full border transition ${
+                        trackTagIds.has(tag.id)
+                          ? 'bg-[var(--accent)] border-[var(--accent)] text-white'
+                          : 'bg-[var(--surface-hover)] border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
+                      }`}>
+                      {trackTagIds.has(tag.id) ? `✕ ${tag.name}` : `+ ${tag.name}`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Lyrics */}
       {track.lyrics && (
