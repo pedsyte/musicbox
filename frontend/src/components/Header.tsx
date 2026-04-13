@@ -65,8 +65,8 @@ export default function Header() {
           </>
         ) : (
 <Tooltip text={t('nav.settings')}>
-            <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold hover:scale-110 hover:brightness-110 transition">
-              {user.username[0].toUpperCase()}
+            <button onClick={() => navigate('/settings')} className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold hover:scale-110 hover:brightness-110 transition overflow-hidden">
+              {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : user.username[0].toUpperCase()}
             </button>
           </Tooltip>
         )}

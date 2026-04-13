@@ -18,6 +18,7 @@ class User(Base):
     is_admin = Column(Boolean, default=False, nullable=False)
     theme = Column(String(10), default="dark", nullable=False)
     show_waveform = Column(Boolean, default=True, nullable=False)
+    avatar = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     playlists = relationship("Playlist", back_populates="user", cascade="all, delete-orphan")

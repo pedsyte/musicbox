@@ -1,11 +1,11 @@
 import { useAuthStore } from '@/stores/authStore'
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { languages } from '@/i18n'
 
 export default function Settings() {
-  const { user, logout, updateSettings } = useAuthStore()
+  const { user, logout, updateSettings, uploadAvatar, deleteAvatar } = useAuthStore()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const [theme, setTheme] = useState(user?.theme || 'dark')
@@ -13,6 +13,8 @@ export default function Settings() {
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [msg, setMsg] = useState('')
+  const [avatarLoading, setAvatarLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) navigate('/login')
@@ -60,13 +62,36 @@ export default function Settings() {
       {/* Profile */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-2xl font-bold">
-            {user.username[0].toUpperCase()}
+          <div className="relative group">
+            {user.avatar ? (
+              <img src={user.avatar} alt="" className="w-14 h-14 rounded-full object-cover" />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-2xl font-bold">
+                {user.username[0].toUpperCase()}
+              </div>
+            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarLoading}
+              className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-lg transition cursor-pointer"
+            >📷</button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={async e => {
+              const f = e.target.files?.[0]
+              if (!f) return
+              setAvatarLoading(true)
+              try { await uploadAvatar(f) } catch { setMsg(t('admin.error')) }
+              setAvatarLoading(false)
+              e.target.value = ''
+            }} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-base font-medium text-[var(--text)]">{user.username}</p>
             <p className="text-xs text-[var(--text-dim)]">{user.is_admin ? t('settings.administrator') : t('settings.user')}</p>
           </div>
+          {user.avatar && (
+            <button onClick={async () => { setAvatarLoading(true); try { await deleteAvatar() } catch {} setAvatarLoading(false) }}
+              className="text-xs text-red-400 hover:text-red-300 transition">{t('settings.removeAvatar')}</button>
+          )}
         </div>
       </div>
 

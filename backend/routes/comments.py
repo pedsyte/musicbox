@@ -54,6 +54,7 @@ async def list_comments(
                 "text": c.text,
                 "username": c.user.username,
                 "user_id": str(c.user_id),
+                "avatar": f"/uploads/avatars/{c.user.avatar}" if c.user.avatar else None,
                 "created_at": c.created_at.isoformat(),
             }
             for c in comments
@@ -86,6 +87,7 @@ async def create_comment(
         "text": comment.text,
         "username": user.username,
         "user_id": str(user.id),
+        "avatar": f"/uploads/avatars/{user.avatar}" if user.avatar else None,
         "created_at": comment.created_at.isoformat(),
     }
 

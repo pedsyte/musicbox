@@ -74,6 +74,7 @@ export interface User {
   is_admin: boolean
   theme: 'dark' | 'light'
   show_waveform: boolean
+  avatar: string | null
 }
 
 export interface AuthResponse {

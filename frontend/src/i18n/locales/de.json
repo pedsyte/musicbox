@@ -198,6 +198,7 @@
   "settings": {
     "title": "Einstellungen",
     "administrator": "Administrator",
+    "removeAvatar": "Foto entfernen",
     "user": "Benutzer",
     "theme": "Design",
     "dark": "🌙 Dunkel",

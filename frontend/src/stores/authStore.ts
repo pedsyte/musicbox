@@ -13,6 +13,8 @@ interface AuthState {
   logout: () => void
   loadUser: () => Promise<void>
   updateSettings: (settings: Partial<{ theme: string; show_waveform: boolean; old_password: string; new_password: string }>) => Promise<void>
+  uploadAvatar: (file: File) => Promise<void>
+  deleteAvatar: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -83,6 +85,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         ...(settings.theme ? { theme: settings.theme as 'dark' | 'light' } : {}),
         ...(settings.show_waveform !== undefined ? { show_waveform: settings.show_waveform } : {}),
       }
+      localStorage.setItem('user', JSON.stringify(updated))
+      set({ user: updated })
+    }
+  },
+
+  uploadAvatar: async (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const { data } = await api.post('/api/auth/avatar', form)
+    const user = get().user
+    if (user) {
+      const updated = { ...user, avatar: data.avatar }
+      localStorage.setItem('user', JSON.stringify(updated))
+      set({ user: updated })
+    }
+  },
+
+  deleteAvatar: async () => {
+    await api.delete('/api/auth/avatar')
+    const user = get().user
+    if (user) {
+      const updated = { ...user, avatar: null }
       localStorage.setItem('user', JSON.stringify(updated))
       set({ user: updated })
     }

@@ -391,8 +391,8 @@ export default function TrackPage() {
         {/* Comment form */}
         {user ? (
           <div className="flex gap-3 mb-5">
-            <div className="w-8 h-8 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] flex items-center justify-center text-xs font-bold shrink-0">
-              {user.username[0].toUpperCase()}
+            <div className="w-8 h-8 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+              {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : user.username[0].toUpperCase()}
             </div>
             <div className="flex-1">
               <textarea
@@ -425,8 +425,8 @@ export default function TrackPage() {
           <div className="space-y-4">
             {comments.map(c => (
               <div key={c.id} className="flex gap-3 group">
-                <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] text-[var(--text-dim)] flex items-center justify-center text-xs font-bold shrink-0">
-                  {c.username[0].toUpperCase()}
+                <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] text-[var(--text-dim)] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                  {c.avatar ? <img src={c.avatar} alt="" className="w-full h-full object-cover" /> : c.username[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">

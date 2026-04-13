@@ -198,6 +198,7 @@
   "settings": {
     "title": "Paramètres",
     "administrator": "Administrateur",
+    "removeAvatar": "Supprimer la photo",
     "user": "Utilisateur",
     "theme": "Thème",
     "dark": "🌙 Sombre",

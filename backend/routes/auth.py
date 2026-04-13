@@ -1,12 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from pydantic import BaseModel, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import re
+import re, os, uuid as _uuid
+from PIL import Image
+import io
 
 from database import get_db
 from models import User
 from auth import hash_password, verify_password, create_token, require_user
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/opt/musicbox/uploads")
+AVATAR_DIR = os.path.join(UPLOAD_DIR, "avatars")
+os.makedirs(AVATAR_DIR, exist_ok=True)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -56,6 +62,17 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+def _user_dict(user: User) -> dict:
+    return {
+        "id": str(user.id),
+        "username": user.username,
+        "is_admin": user.is_admin,
+        "theme": user.theme,
+        "show_waveform": user.show_waveform,
+        "avatar": f"/uploads/avatars/{user.avatar}" if user.avatar else None,
+    }
+
+
 @router.post("/register")
 async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     existing = await db.execute(select(User).where(User.username == req.username))
@@ -71,16 +88,7 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     await db.refresh(user)
 
     token = create_token(str(user.id), user.is_admin)
-    return {
-        "token": token,
-        "user": {
-            "id": str(user.id),
-            "username": user.username,
-            "is_admin": user.is_admin,
-            "theme": user.theme,
-            "show_waveform": user.show_waveform,
-        },
-    }
+    return {"token": token, "user": _user_dict(user)}
 
 
 @router.post("/login")
@@ -91,27 +99,12 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = create_token(str(user.id), user.is_admin)
-    return {
-        "token": token,
-        "user": {
-            "id": str(user.id),
-            "username": user.username,
-            "is_admin": user.is_admin,
-            "theme": user.theme,
-            "show_waveform": user.show_waveform,
-        },
-    }
+    return {"token": token, "user": _user_dict(user)}
 
 
 @router.get("/me")
 async def get_me(user: User = Depends(require_user)):
-    return {
-        "id": str(user.id),
-        "username": user.username,
-        "is_admin": user.is_admin,
-        "theme": user.theme,
-        "show_waveform": user.show_waveform,
-    }
+    return _user_dict(user)
 
 
 @router.put("/settings")
@@ -133,3 +126,63 @@ async def update_settings(
 
     await db.commit()
     return {"message": "Settings updated"}
+
+
+@router.post("/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    user: User = Depends(require_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+
+    data = await file.read()
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+
+    try:
+        img = Image.open(io.BytesIO(data))
+        img.verify()
+        img = Image.open(io.BytesIO(data))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid image file")
+
+    # Crop to square and resize
+    w, h = img.size
+    side = min(w, h)
+    left = (w - side) // 2
+    top = (h - side) // 2
+    img = img.crop((left, top, left + side, top + side))
+    img = img.resize((256, 256), Image.LANCZOS)
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+
+    filename = f"{_uuid.uuid4().hex}.webp"
+    filepath = os.path.join(AVATAR_DIR, filename)
+    img.save(filepath, "WEBP", quality=85)
+
+    # Remove old avatar file
+    if user.avatar:
+        old_path = os.path.join(AVATAR_DIR, user.avatar)
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    user.avatar = filename
+    await db.commit()
+
+    return {"avatar": f"/uploads/avatars/{filename}"}
+
+
+@router.delete("/avatar")
+async def delete_avatar(
+    user: User = Depends(require_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if user.avatar:
+        old_path = os.path.join(AVATAR_DIR, user.avatar)
+        if os.path.exists(old_path):
+            os.remove(old_path)
+        user.avatar = None
+        await db.commit()
+    return {"avatar": None}

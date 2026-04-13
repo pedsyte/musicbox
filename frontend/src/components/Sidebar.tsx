@@ -73,9 +73,13 @@ export default function Sidebar() {
       <div className="p-3 border-t border-[var(--border)]">
         {user ? (
           <Link to="/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[var(--surface-hover)] transition">
-            <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold">
-              {user.username[0].toUpperCase()}
-            </div>
+            {user.avatar ? (
+              <img src={user.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-sm font-bold">
+                {user.username[0].toUpperCase()}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="text-sm text-[var(--text)] truncate">{user.username}</p>
               <p className="text-[10px] text-[var(--text-dim)]">{user.is_admin ? t('settings.administrator') : t('settings.user')}</p>
