@@ -13,6 +13,7 @@ from routes.genres import router as genres_router
 from routes.playlists import router as playlists_router
 from routes.favorites import router as favorites_router
 from routes.tags import router as tags_router
+from routes.comments import router as comments_router
 
 
 @asynccontextmanager
@@ -39,6 +40,7 @@ app.include_router(genres_router)
 app.include_router(playlists_router)
 app.include_router(favorites_router)
 app.include_router(tags_router)
+app.include_router(comments_router)
 
 # Serve uploaded files
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/opt/musicbox/uploads")

@@ -38,7 +38,18 @@ export interface Tag {
   name: string
   slug: string
   category_id: number
+  category_name?: string
+  category_slug?: string
+  category_icon?: string | null
   track_count?: number
+}
+
+export interface Comment {
+  id: number
+  text: string
+  username: string
+  user_id: string
+  created_at: string
 }
 
 export interface Playlist {

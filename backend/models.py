@@ -153,3 +153,16 @@ class SiteSetting(Base):
 
     key = Column(String(100), primary_key=True)
     value = Column(Text, nullable=False)
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    track_id = Column(UUID(as_uuid=True), ForeignKey("tracks.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    text = Column(String(1000), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("User", lazy="selectin")
+    track = relationship("Track", lazy="selectin")
