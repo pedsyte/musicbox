@@ -28,6 +28,7 @@ class Track(Base):
     __tablename__ = "tracks"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    slug = Column(String(500), unique=True, nullable=False, index=True)
     title = Column(String(200), nullable=False, index=True)
     artist = Column(String(200), default="Suno AI", nullable=False)
     duration_seconds = Column(Float, default=0, nullable=False)

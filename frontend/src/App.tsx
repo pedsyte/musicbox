@@ -31,7 +31,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/browse" element={<Browse />} />
-          <Route path="/track/:id" element={<TrackPage />} />
+          <Route path="/track/:slug" element={<TrackPage />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/playlist/:id" element={<PlaylistPage />} />

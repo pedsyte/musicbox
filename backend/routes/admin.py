@@ -17,6 +17,7 @@ from audio import (
     get_duration, convert_to_mp3, generate_waveform_peaks,
     detect_format, extract_embedded_cover, ALLOWED_UPLOAD_EXTENSIONS,
 )
+from slugify import make_slug
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -79,9 +80,21 @@ async def upload_track(
         if extract_embedded_cover(orig_path, embedded_cover_path):
             cover_path = embedded_cover_path
 
+    # Generate unique slug
+    base_slug = make_slug(artist.strip(), title.strip())
+    slug = base_slug
+    suffix = 2
+    while True:
+        existing = await db.execute(select(Track.id).where(Track.slug == slug))
+        if not existing.scalar_one_or_none():
+            break
+        slug = f"{base_slug}-{suffix}"
+        suffix += 1
+
     # Create track — no auto-convert, stream original
     track = Track(
         id=track_id,
+        slug=slug,
         title=title.strip(),
         artist=artist.strip(),
         duration_seconds=duration,
@@ -194,6 +207,20 @@ async def update_track(
         track.title = title.strip()
     if artist is not None:
         track.artist = artist.strip()
+
+    # Regenerate slug if title or artist changed
+    if title is not None or artist is not None:
+        base_slug = make_slug(track.artist, track.title)
+        slug = base_slug
+        suffix = 2
+        while True:
+            existing = await db.execute(select(Track.id).where(Track.slug == slug, Track.id != track.id))
+            if not existing.scalar_one_or_none():
+                break
+            slug = f"{base_slug}-{suffix}"
+            suffix += 1
+        track.slug = slug
+
     if description is not None:
         track.description = description.strip() if description else None
     if lyrics is not None:

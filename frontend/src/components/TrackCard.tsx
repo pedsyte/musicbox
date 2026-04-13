@@ -88,7 +88,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
 
       {/* Cover */}
       {showCover && (
-        <Link to={`/track/${track.id}`} className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
+        <Link to={`/track/${track.slug}`} className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
           {track.cover_path ? (
             <img src={track.cover_path} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -99,7 +99,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
 
       {/* Info */}
       <div className="min-w-0 flex-1">
-        <Link to={`/track/${track.id}`} className={`block text-sm font-medium truncate ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text)]'} hover:underline`}>{track.title}</Link>
+        <Link to={`/track/${track.slug}`} className={`block text-sm font-medium truncate ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text)]'} hover:underline`}>{track.title}</Link>
         {showArtist && <Link to={`/browse?artist=${encodeURIComponent(track.artist)}`} className="block text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition">{track.artist}</Link>}
       </div>
 
@@ -151,7 +151,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
                 )}
               </div>
             )}
-            <Link to={`/track/${track.id}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Страница трека</Link>
+            <Link to={`/track/${track.slug}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">Страница трека</Link>
             <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} onClose={() => setMenuOpen(false)} />
           </div>
         )}

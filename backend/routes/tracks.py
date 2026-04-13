@@ -16,6 +16,7 @@ from models import Track, Genre, TrackGenre, TrackEvent, PlaylistTrack, SiteSett
 from auth import get_current_user, require_user
 from models import User, Favorite
 from audio import convert_audio, get_available_download_formats, FORMAT_MIME, CONVERTED_DIR, STREAM_QUALITIES
+from slugify import make_slug
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
 
@@ -23,6 +24,7 @@ router = APIRouter(prefix="/api/tracks", tags=["tracks"])
 def track_to_dict(track: Track, is_favorite: bool = False) -> dict:
     return {
         "id": str(track.id),
+        "slug": track.slug,
         "title": track.title,
         "artist": track.artist,
         "duration_seconds": track.duration_seconds,
@@ -231,13 +233,20 @@ async def popular_tracks(
 
 @router.get("/{track_id}")
 async def get_track(
-    track_id: UUID,
+    track_id: str,
     user: Optional[User] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == track_id)
-    )
+    # Try UUID first, then slug
+    try:
+        uid = UUID(track_id)
+        result = await db.execute(
+            select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == uid)
+        )
+    except (ValueError, AttributeError):
+        result = await db.execute(
+            select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.slug == track_id)
+        )
     track = result.scalar_one_or_none()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
@@ -245,7 +254,7 @@ async def get_track(
     is_fav = False
     if user:
         fav = await db.execute(
-            select(Favorite).where(Favorite.user_id == user.id, Favorite.track_id == track_id)
+            select(Favorite).where(Favorite.user_id == user.id, Favorite.track_id == track.id)
         )
         is_fav = fav.scalar_one_or_none() is not None
 
@@ -419,8 +428,9 @@ async def download_track(
     # Add website comment from settings
     site_url = settings.get("download_metadata_url", "")
     if site_url:
-        metadata["comment"] = f"Downloaded from {site_url}"
-        metadata["url"] = site_url
+        track_url = f"{site_url.rstrip('/')}/track/{track.slug}"
+        metadata["comment"] = f"Downloaded from {track_url}"
+        metadata["url"] = track_url
 
     safe_title = "".join(c for c in track.title if c.isalnum() or c in " -_").strip()
     filename = f"{safe_title} - {track.artist}.{format}"

@@ -1,5 +1,6 @@
 export interface Track {
   id: string
+  slug: string
   title: string
   artist: string
   duration_seconds: number

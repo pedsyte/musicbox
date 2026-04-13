@@ -10,7 +10,7 @@ import DownloadMenu from '@/components/DownloadMenu'
 import { formatTime, pluralize } from '@/lib/utils'
 
 export default function TrackPage() {
-  const { id } = useParams()
+  const { slug } = useParams()
   const [track, setTrack] = useState<Track | null>(null)
   const [peaks, setPeaks] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,23 +33,22 @@ export default function TrackPage() {
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([
-      api.get(`/api/tracks/${id}`),
-      api.get(`/api/tracks/${id}/waveform`).catch(() => ({ data: { peaks: [] } })),
-    ]).then(([trackRes, waveRes]) => {
-      setTrack(trackRes.data)
-      setPeaks(waveRes.data.peaks || [])
-      setIsFav(trackRes.data.is_favorite ?? false)
-      setTrackGenreIds(new Set((trackRes.data.genres || []).map((g: Genre) => g.id)))
+    api.get(`/api/tracks/${slug}`).then(trackRes => {
+      const t = trackRes.data
+      setTrack(t)
+      setIsFav(t.is_favorite ?? false)
+      setTrackGenreIds(new Set((t.genres || []).map((g: Genre) => g.id)))
+      setPeaks(t.waveform_peaks || [])
     }).finally(() => setLoading(false))
-  }, [id])
+  }, [slug])
 
   useEffect(() => {
-    if (id) fetchComments()
-  }, [id])
+    if (track?.id) fetchComments()
+  }, [track?.id])
 
   const fetchComments = () => {
-    api.get(`/api/comments/${id}`).then(res => {
+    if (!track?.id) return
+    api.get(`/api/comments/${track.id}`).then(res => {
       setComments(res.data.comments)
       setCommentTotal(res.data.total)
     }).catch(() => {})
