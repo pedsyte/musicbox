@@ -12,7 +12,7 @@ import json
 from fastapi.responses import FileResponse
 
 from database import get_db
-from models import Track, Genre, TrackGenre, TrackEvent, PlaylistTrack, SiteSetting
+from models import Track, Genre, TrackGenre, TrackEvent, PlaylistTrack, SiteSetting, Tag, TrackTag
 from auth import get_current_user, require_user
 from models import User, Favorite
 from audio import convert_audio, get_available_download_formats, FORMAT_MIME, CONVERTED_DIR, STREAM_QUALITIES
@@ -34,6 +34,7 @@ def track_to_dict(track: Track, is_favorite: bool = False) -> dict:
         "original_format": track.original_format or "wav",
         "uploaded_at": track.uploaded_at.isoformat(),
         "genres": [{"id": g.id, "name": g.name, "slug": g.slug} for g in track.genres],
+        "tags": [{"id": t.id, "name": t.name, "slug": t.slug, "category_id": t.category_id} for t in (track.tags or [])],
         "is_favorite": is_favorite,
     }
 
@@ -45,6 +46,7 @@ async def list_tracks(
     genres: Optional[str] = Query(None, description="Comma-separated genre slugs to include"),
     exclude: Optional[str] = Query(None, description="Comma-separated genre slugs to exclude"),
     artist: Optional[str] = Query(None, description="Exact artist name filter"),
+    tag_ids: Optional[str] = Query(None, description="Comma-separated tag IDs to include (AND logic)"),
     search: Optional[str] = Query(None),
     sort: str = Query("newest"),
     page: int = Query(1, ge=1),
@@ -52,21 +54,31 @@ async def list_tracks(
     user: Optional[User] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Track).options(selectinload(Track.genres))
+    query = select(Track).options(selectinload(Track.genres), selectinload(Track.tags))
 
-    # Include filter by IDs
+    # Include filter by IDs (AND logic — track must have ALL selected genres)
     if genre_ids:
         ids = [int(x) for x in genre_ids.split(",") if x.strip().isdigit()]
         if ids:
-            track_ids_q = select(TrackGenre.track_id).where(TrackGenre.genre_id.in_(ids)).distinct()
+            track_ids_q = (
+                select(TrackGenre.track_id)
+                .where(TrackGenre.genre_id.in_(ids))
+                .group_by(TrackGenre.track_id)
+                .having(func.count(TrackGenre.genre_id.distinct()) == len(ids))
+            )
             query = query.where(Track.id.in_(track_ids_q))
 
-    # Include filter by slugs (backward compat)
+    # Include filter by slugs (backward compat, AND logic)
     if genres:
         include_slugs = [s.strip() for s in genres.split(",") if s.strip()]
         if include_slugs:
             genre_ids_q = select(Genre.id).where(Genre.slug.in_(include_slugs))
-            track_ids_q = select(TrackGenre.track_id).where(TrackGenre.genre_id.in_(genre_ids_q)).distinct()
+            track_ids_q = (
+                select(TrackGenre.track_id)
+                .where(TrackGenre.genre_id.in_(genre_ids_q))
+                .group_by(TrackGenre.track_id)
+                .having(func.count(TrackGenre.genre_id.distinct()) == len(include_slugs))
+            )
             query = query.where(Track.id.in_(track_ids_q))
 
     # Exclude filter by IDs
@@ -87,6 +99,18 @@ async def list_tracks(
     # Artist exact filter
     if artist:
         query = query.where(Track.artist == artist)
+
+    # Tag filter (AND logic — track must have ALL selected tags)
+    if tag_ids:
+        tids = [int(x) for x in tag_ids.split(",") if x.strip().isdigit()]
+        if tids:
+            tag_track_ids = (
+                select(TrackTag.track_id)
+                .where(TrackTag.tag_id.in_(tids))
+                .group_by(TrackTag.track_id)
+                .having(func.count(TrackTag.tag_id.distinct()) == len(tids))
+            )
+            query = query.where(Track.id.in_(tag_track_ids))
 
     # Search
     if search:
@@ -150,7 +174,7 @@ async def popular_tracks(
     if period == "all":
         query = (
             select(Track)
-            .options(selectinload(Track.genres))
+            .options(selectinload(Track.genres), selectinload(Track.tags))
             .order_by(desc(Track.play_count + Track.download_count * 3))
             .limit(limit)
         )
@@ -186,7 +210,7 @@ async def popular_tracks(
 
         query = (
             select(Track)
-            .options(selectinload(Track.genres))
+            .options(selectinload(Track.genres), selectinload(Track.tags))
             .join(subq, Track.id == subq.c.track_id)
             .order_by(desc(subq.c.score))
         )
@@ -209,7 +233,7 @@ async def get_track(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Track).options(selectinload(Track.genres)).where(Track.id == track_id)
+        select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == track_id)
     )
     track = result.scalar_one_or_none()
     if not track:
@@ -327,7 +351,7 @@ async def download_track(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Track).options(selectinload(Track.genres)).where(Track.id == track_id)
+        select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == track_id)
     )
     track = result.scalar_one_or_none()
     if not track:
@@ -369,6 +393,25 @@ async def download_track(
     metadata["artist"] = track.artist
     if track.genres:
         metadata["genre"] = ", ".join(g.name for g in track.genres)
+
+    # Tag-based metadata
+    if track.tags:
+        tag_by_cat: dict[str, list[str]] = {}
+        for tag in track.tags:
+            cat_slug = tag.category.slug if tag.category else ""
+            tag_by_cat.setdefault(cat_slug, []).append(tag.name)
+        # Map category slugs to metadata keys
+        TAG_META_MAP = {
+            "language": "language",
+            "mood": "mood",
+            "vocal": "vocal",
+            "energy": "energy",
+            "occasion": "occasion",
+            "era": "date",
+        }
+        for cat_slug, tag_names in tag_by_cat.items():
+            meta_key = TAG_META_MAP.get(cat_slug, cat_slug)
+            metadata[meta_key] = ", ".join(tag_names)
 
     # Add website comment from settings
     site_url = settings.get("download_metadata_url", "")

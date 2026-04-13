@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { api } from '@/lib/api'
-import type { Track, Genre, AdminStats } from '@/lib/types'
+import type { Track, Genre, AdminStats, TagCategory } from '@/lib/types'
 import { pluralize } from '@/lib/utils'
 import { formatTime } from '@/lib/utils'
 import Tooltip from '@/components/Tooltip'
 
-type Tab = 'upload' | 'tracks' | 'genres' | 'stats' | 'settings'
+type Tab = 'upload' | 'tracks' | 'genres' | 'tags' | 'stats' | 'settings'
 
 export default function Admin() {
   const { user } = useAuthStore()
@@ -30,6 +30,7 @@ export default function Admin() {
           { v: 'upload', l: '📤 Загрузить' },
           { v: 'tracks', l: '🎵 Треки' },
           { v: 'genres', l: '🎭 Жанры' },
+          { v: 'tags', l: '🏷️ Теги' },
           { v: 'stats', l: '📊 Статистика' },
           { v: 'settings', l: '⚙️ Настройки' },
         ] as { v: Tab; l: string }[]).map(t => (
@@ -43,6 +44,7 @@ export default function Admin() {
       {tab === 'upload' && <UploadTab />}
       {tab === 'tracks' && <TracksTab />}
       {tab === 'genres' && <GenresTab />}
+      {tab === 'tags' && <TagsTab />}
       {tab === 'stats' && <StatsTab />}
       {tab === 'settings' && <SettingsTab />}
     </div>
@@ -55,10 +57,21 @@ function UploadTab() {
   const [description, setDescription] = useState('')
   const [lyrics, setLyrics] = useState('')
   const [genreText, setGenreText] = useState('')
+  const [selectedTags, setSelectedTags] = useState<number[]>([])
+  const [tagTexts, setTagTexts] = useState<Record<string, string>>({})
+  const [tagCategories, setTagCategories] = useState<TagCategory[]>([])
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
+
+  useEffect(() => {
+    api.get('/api/tags').then(res => setTagCategories(res.data)).catch(() => {})
+  }, [])
+
+  const toggleTag = (id: number) => {
+    setSelectedTags(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,9 +90,17 @@ function UploadTab() {
       if (description.trim()) fd.append('description', description.trim())
       if (lyrics.trim()) fd.append('lyrics', lyrics.trim())
       if (genreText.trim()) fd.append('genres', genreText.trim())
+      if (selectedTags.length) fd.append('tag_ids', selectedTags.join(','))
+      // Send tag texts as JSON for auto-creation
+      const tagMap: Record<string, string> = {}
+      for (const cat of tagCategories) {
+        const txt = tagTexts[cat.slug]?.trim()
+        if (txt) tagMap[cat.slug] = txt
+      }
+      if (Object.keys(tagMap).length) fd.append('tags_json', JSON.stringify(tagMap))
       await api.post('/api/admin/tracks', fd)
       setMsg('✅ Трек успешно загружен!')
-      setTitle(''); setArtist(''); setDescription(''); setLyrics(''); setGenreText(''); setAudioFile(null); setCoverFile(null)
+      setTitle(''); setArtist(''); setDescription(''); setLyrics(''); setGenreText(''); setSelectedTags([]); setTagTexts({}); setAudioFile(null); setCoverFile(null)
     } catch (err: any) {
       setMsg(`❌ Ошибка: ${err.response?.data?.detail || err.message}`)
     } finally { setUploading(false) }
@@ -132,6 +153,43 @@ function UploadTab() {
         <input value={genreText} onChange={e => setGenreText(e.target.value)} placeholder="Pop, Rock, Electronic"
           className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
       </div>
+
+      {/* Tag inputs per category — type names, auto-created if new */}
+      {tagCategories.length > 0 && (
+        <div className="space-y-3">
+          <label className="text-xs text-[var(--text-dim)] block">Характеристики (через запятую, создаются автоматически)</label>
+          {tagCategories.map(cat => (
+            <div key={cat.id}>
+              <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon} {cat.name}</p>
+              <input
+                value={tagTexts[cat.slug] || ''}
+                onChange={e => setTagTexts(prev => ({ ...prev, [cat.slug]: e.target.value }))}
+                placeholder={cat.tags.slice(0, 3).map(t => t.name).join(', ') + '...'}
+                className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
+              />
+              {cat.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {cat.tags.map(tag => (
+                    <button key={tag.id} type="button" onClick={() => {
+                      const current = tagTexts[cat.slug] || ''
+                      const names = current.split(',').map(s => s.trim()).filter(Boolean)
+                      if (names.some(n => n.toLowerCase() === tag.name.toLowerCase())) return
+                      setTagTexts(prev => ({ ...prev, [cat.slug]: names.length ? names.join(', ') + ', ' + tag.name : tag.name }))
+                    }}
+                      className={'px-2 py-0.5 text-[10px] rounded-full border transition ' + (
+                        (tagTexts[cat.slug] || '').split(',').map(s => s.trim().toLowerCase()).includes(tag.name.toLowerCase())
+                          ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                          : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'
+                      )}>
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <button type="submit" disabled={uploading}
         className="px-6 py-3 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition">
@@ -273,6 +331,99 @@ function GenresTab() {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+interface AdminTag { id: number; name: string; slug: string; track_count: number; enabled: boolean }
+interface AdminTagCategory { id: number; name: string; slug: string; icon: string; tags: AdminTag[] }
+
+function TagsTab() {
+  const [categories, setCategories] = useState<AdminTagCategory[]>([])
+  const [newTagName, setNewTagName] = useState('')
+  const [newTagCat, setNewTagCat] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editName, setEditName] = useState('')
+
+  const fetchTags = () => api.get('/api/admin/tags').then(res => setCategories(res.data))
+  useEffect(() => { fetchTags() }, [])
+
+  const addTag = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTagName.trim() || !newTagCat) return
+    await api.post('/api/admin/tags', { name: newTagName.trim(), category_id: newTagCat })
+    setNewTagName('')
+    fetchTags()
+  }
+
+  const toggleEnabled = async (tag: AdminTag) => {
+    await api.put(`/api/admin/tags/${tag.id}`, { enabled: !tag.enabled })
+    fetchTags()
+  }
+
+  const saveEdit = async () => {
+    if (!editingId || !editName.trim()) return
+    await api.put(`/api/admin/tags/${editingId}`, { name: editName.trim() })
+    setEditingId(null)
+    fetchTags()
+  }
+
+  const deleteTag = async (id: number) => {
+    if (!confirm('Удалить тег?')) return
+    await api.delete(`/api/admin/tags/${id}`)
+    fetchTags()
+  }
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      <form onSubmit={addTag} className="flex gap-2 items-end">
+        <div className="flex-1">
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">Новый тег</label>
+          <input value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder="Название тега"
+            className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]" />
+        </div>
+        <div>
+          <label className="text-xs text-[var(--text-dim)] mb-1 block">Категория</label>
+          <select value={newTagCat ?? ''} onChange={e => setNewTagCat(Number(e.target.value))}
+            className="bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)]">
+            <option value="">—</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+          </select>
+        </div>
+        <button type="submit" className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg text-sm hover:opacity-90 transition shrink-0">Добавить</button>
+      </form>
+
+      {categories.map(cat => (
+        <div key={cat.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
+          <div className="px-4 py-2.5 bg-[var(--surface-hover)] text-sm font-medium text-[var(--text)]">{cat.icon} {cat.name}</div>
+          <div className="divide-y divide-[var(--border)]">
+            {cat.tags.map(tag => (
+              <div key={tag.id} className={'flex items-center gap-3 px-4 py-2 ' + (!tag.enabled ? 'opacity-50' : '')}>
+                {editingId === tag.id ? (
+                  <>
+                    <input value={editName} onChange={e => setEditName(e.target.value)}
+                      className="flex-1 bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)]" />
+                    <button onClick={saveEdit} className="text-xs text-green-400">✓</button>
+                    <button onClick={() => setEditingId(null)} className="text-xs text-[var(--text-dim)]">✕</button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => toggleEnabled(tag)}
+                      className={'w-5 h-5 rounded border flex items-center justify-center text-xs transition ' + (
+                        tag.enabled ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'border-[var(--border)] text-transparent'
+                      )}>✓</button>
+                    <span className="flex-1 text-sm text-[var(--text)]">{tag.name}</span>
+                    <span className="text-xs text-[var(--text-dim)]">{pluralize(tag.track_count, 'трек', 'трека', 'треков')}</span>
+                    <button onClick={() => { setEditingId(tag.id); setEditName(tag.name) }} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)]">✏️</button>
+                    <button onClick={() => deleteTag(tag.id)} className="text-xs text-red-400 hover:text-red-300">🗑</button>
+                  </>
+                )}
+              </div>
+            ))}
+            {cat.tags.length === 0 && <p className="px-4 py-3 text-xs text-[var(--text-dim)]">Нет тегов</p>}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

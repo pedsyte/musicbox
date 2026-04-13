@@ -35,7 +35,7 @@ class Track(Base):
     mp3_path = Column(String(500), nullable=True)
     original_format = Column(String(10), default="wav", nullable=False)
     cover_path = Column(String(500), nullable=True)
-    description = Column(String(500), nullable=True)
+    description = Column(String(2000), nullable=True)
     lyrics = Column(Text, nullable=True)
     waveform_peaks = Column(JSON, nullable=True)
     play_count = Column(Integer, default=0, nullable=False)
@@ -43,6 +43,7 @@ class Track(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     genres = relationship("Genre", secondary="track_genres", back_populates="tracks", lazy="selectin")
+    tags = relationship("Tag", secondary="track_tags", back_populates="tracks", lazy="selectin")
 
 
 class Genre(Base):
@@ -60,6 +61,41 @@ class TrackGenre(Base):
 
     track_id = Column(UUID(as_uuid=True), ForeignKey("tracks.id", ondelete="CASCADE"), primary_key=True)
     genre_id = Column(Integer, ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True)
+
+
+class TagCategory(Base):
+    __tablename__ = "tag_categories"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), unique=True, nullable=False)
+    slug = Column(String(50), unique=True, nullable=False, index=True)
+    icon = Column(String(10), nullable=True)
+    sort_order = Column(Integer, default=0, nullable=False)
+
+    tags = relationship("Tag", back_populates="category", order_by="Tag.sort_order", lazy="selectin")
+
+
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    category_id = Column(Integer, ForeignKey("tag_categories.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(50), nullable=False)
+    slug = Column(String(50), nullable=False, index=True)
+    sort_order = Column(Integer, default=0, nullable=False)
+    enabled = Column(Boolean, default=True, nullable=False)
+
+    __table_args__ = (UniqueConstraint("category_id", "slug", name="uq_tag_category_slug"),)
+
+    category = relationship("TagCategory", back_populates="tags", lazy="selectin")
+    tracks = relationship("Track", secondary="track_tags", back_populates="tags", lazy="selectin")
+
+
+class TrackTag(Base):
+    __tablename__ = "track_tags"
+
+    track_id = Column(UUID(as_uuid=True), ForeignKey("tracks.id", ondelete="CASCADE"), primary_key=True)
+    tag_id = Column(Integer, ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
 
 
 class Playlist(Base):

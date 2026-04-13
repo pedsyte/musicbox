@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models import Track, Genre, TrackGenre, User, Playlist, SiteSetting
+from models import Track, Genre, TrackGenre, User, Playlist, SiteSetting, Tag, TagCategory, TrackTag
 from auth import require_admin
 from audio import (
     get_duration, convert_to_mp3, generate_waveform_peaks,
@@ -35,6 +35,8 @@ async def upload_track(
     description: Optional[str] = Form(None),
     lyrics: Optional[str] = Form(None),
     genres: str = Form(""),  # comma-separated genre names (auto-created)
+    tag_ids: str = Form(""),  # comma-separated tag IDs
+    tags_json: str = Form(""),  # JSON: {"category_slug": "tag1, tag2", ...} — auto-create
     audio: UploadFile = File(...),
     cover: Optional[UploadFile] = File(None),
     admin: User = Depends(require_admin),
@@ -107,12 +109,51 @@ async def upload_track(
                 await db.flush()
             db.add(TrackGenre(track_id=track_id, genre_id=genre.id))
 
+    # Handle tags — by ID or by name (auto-create)
+    if tag_ids:
+        ids = [int(x) for x in tag_ids.split(",") if x.strip().isdigit()]
+        for tid in ids:
+            db.add(TrackTag(track_id=track_id, tag_id=tid))
+    if tags_json:
+        import json as _json
+        try:
+            tag_map = _json.loads(tags_json)  # {"category_slug": "tag1, tag2"}
+            for cat_slug, names_str in tag_map.items():
+                # Find category
+                cat_result = await db.execute(select(TagCategory).where(TagCategory.slug == cat_slug))
+                category = cat_result.scalar_one_or_none()
+                if not category:
+                    continue
+                tag_names = [n.strip() for n in names_str.split(",") if n.strip()]
+                for tname in tag_names:
+                    tslug = tname.lower().replace(" ", "-").replace("&", "and")
+                    tag_result = await db.execute(
+                        select(Tag).where(Tag.category_id == category.id, Tag.slug == tslug)
+                    )
+                    tag = tag_result.scalar_one_or_none()
+                    if not tag:
+                        max_order = await db.execute(
+                            select(func.coalesce(func.max(Tag.sort_order), 0)).where(Tag.category_id == category.id)
+                        )
+                        next_order = max_order.scalar() + 1
+                        tag = Tag(category_id=category.id, name=tname, slug=tslug, sort_order=next_order)
+                        db.add(tag)
+                        await db.flush()
+                    # Avoid duplicate track_tag
+                    existing_tt = await db.execute(
+                        select(TrackTag).where(TrackTag.track_id == track_id, TrackTag.tag_id == tag.id)
+                    )
+                    if not existing_tt.scalar_one_or_none():
+                        db.add(TrackTag(track_id=track_id, tag_id=tag.id))
+        except Exception:
+            pass
+
     await db.commit()
     await db.refresh(track)
 
     # Reload with genres
     result = await db.execute(
-        select(Track).options(selectinload(Track.genres)).where(Track.id == track_id)
+        select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == track_id)
     )
     track = result.scalar_one()
 
@@ -136,12 +177,14 @@ async def update_track(
     description: Optional[str] = Form(None),
     lyrics: Optional[str] = Form(None),
     genres: Optional[str] = Form(None),
+    tag_ids: Optional[str] = Form(None),
+    tags_json: Optional[str] = Form(None),  # JSON: {"category_slug": "tag1, tag2", ...}
     cover: Optional[UploadFile] = File(None),
     admin: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Track).options(selectinload(Track.genres)).where(Track.id == uuid.UUID(track_id))
+        select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == uuid.UUID(track_id))
     )
     track = result.scalar_one_or_none()
     if not track:
@@ -184,6 +227,44 @@ async def update_track(
                     db.add(genre)
                     await db.flush()
                 db.add(TrackGenre(track_id=track.id, genre_id=genre.id))
+
+    if tag_ids is not None or tags_json is not None:
+        await db.execute(delete(TrackTag).where(TrackTag.track_id == track.id))
+        if tag_ids:
+            ids = [int(x) for x in tag_ids.split(",") if x.strip().isdigit()]
+            for tid in ids:
+                db.add(TrackTag(track_id=track.id, tag_id=tid))
+        if tags_json:
+            import json as _json
+            try:
+                tag_map = _json.loads(tags_json)
+                for cat_slug, names_str in tag_map.items():
+                    cat_result = await db.execute(select(TagCategory).where(TagCategory.slug == cat_slug))
+                    category = cat_result.scalar_one_or_none()
+                    if not category:
+                        continue
+                    tag_names = [n.strip() for n in names_str.split(",") if n.strip()]
+                    for tname in tag_names:
+                        tslug = tname.lower().replace(" ", "-").replace("&", "and")
+                        tag_result = await db.execute(
+                            select(Tag).where(Tag.category_id == category.id, Tag.slug == tslug)
+                        )
+                        tag = tag_result.scalar_one_or_none()
+                        if not tag:
+                            max_order = await db.execute(
+                                select(func.coalesce(func.max(Tag.sort_order), 0)).where(Tag.category_id == category.id)
+                            )
+                            next_order = max_order.scalar() + 1
+                            tag = Tag(category_id=category.id, name=tname, slug=tslug, sort_order=next_order)
+                            db.add(tag)
+                            await db.flush()
+                        existing_tt = await db.execute(
+                            select(TrackTag).where(TrackTag.track_id == track.id, TrackTag.tag_id == tag.id)
+                        )
+                        if not existing_tt.scalar_one_or_none():
+                            db.add(TrackTag(track_id=track.id, tag_id=tag.id))
+            except Exception:
+                pass
 
     await db.commit()
     return {"message": "Track updated"}
@@ -270,6 +351,99 @@ async def delete_genre(
     await db.delete(genre)
     await db.commit()
     return {"message": "Genre deleted"}
+
+
+# --- Tags ---
+
+class TagBody(BaseModel):
+    name: str
+    category_id: int
+
+
+@router.get("/tags")
+async def list_admin_tags(
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return all tag categories with tags, track counts, and enabled status."""
+    result = await db.execute(
+        select(TagCategory).options(selectinload(TagCategory.tags)).order_by(TagCategory.sort_order)
+    )
+    categories = result.scalars().all()
+    count_result = await db.execute(
+        select(TrackTag.tag_id, func.count(TrackTag.track_id).label("cnt"))
+        .group_by(TrackTag.tag_id)
+    )
+    counts = {row[0]: row[1] for row in count_result.all()}
+    return [
+        {
+            "id": cat.id, "name": cat.name, "slug": cat.slug, "icon": cat.icon,
+            "tags": [
+                {"id": t.id, "name": t.name, "slug": t.slug, "track_count": counts.get(t.id, 0), "enabled": t.enabled}
+                for t in cat.tags
+            ],
+        }
+        for cat in categories
+    ]
+
+
+@router.post("/tags")
+async def create_tag(
+    body: TagBody,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    name = body.name.strip()
+    slug = name.lower().replace(" ", "-").replace("&", "and")
+    existing = await db.execute(
+        select(Tag).where(Tag.category_id == body.category_id, Tag.slug == slug)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Tag already exists in this category")
+    max_order = await db.execute(
+        select(func.coalesce(func.max(Tag.sort_order), 0)).where(Tag.category_id == body.category_id)
+    )
+    tag = Tag(category_id=body.category_id, name=name, slug=slug, sort_order=max_order.scalar() + 1)
+    db.add(tag)
+    await db.commit()
+    await db.refresh(tag)
+    return {"id": tag.id, "name": tag.name, "slug": tag.slug, "category_id": tag.category_id}
+
+
+@router.put("/tags/{tag_id}")
+async def update_tag(
+    tag_id: int,
+    body: dict,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Tag).where(Tag.id == tag_id))
+    tag = result.scalar_one_or_none()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    if "name" in body:
+        tag.name = body["name"].strip()
+        tag.slug = tag.name.lower().replace(" ", "-").replace("&", "and")
+    if "enabled" in body:
+        tag.enabled = bool(body["enabled"])
+    await db.commit()
+    return {"id": tag.id, "name": tag.name, "slug": tag.slug, "enabled": tag.enabled}
+
+
+@router.delete("/tags/{tag_id}")
+async def delete_tag(
+    tag_id: int,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Tag).where(Tag.id == tag_id))
+    tag = result.scalar_one_or_none()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    await db.execute(delete(TrackTag).where(TrackTag.tag_id == tag_id))
+    await db.delete(tag)
+    await db.commit()
+    return {"message": "Tag deleted"}
 
 
 # --- Stats ---

@@ -13,6 +13,7 @@ export interface Track {
   original_format: string
   uploaded_at: string
   genres: Genre[]
+  tags: Tag[]
   is_favorite: boolean
   position?: number
 }
@@ -24,6 +25,22 @@ export interface Genre {
   track_count?: number
 }
 
+export interface TagCategory {
+  id: number
+  name: string
+  slug: string
+  icon: string | null
+  tags: Tag[]
+}
+
+export interface Tag {
+  id: number
+  name: string
+  slug: string
+  category_id: number
+  track_count?: number
+}
+
 export interface Playlist {
   id: string
   name: string
@@ -32,6 +49,7 @@ export interface Playlist {
   username?: string
   is_owner?: boolean
   track_count?: number
+  total_duration?: number
   covers?: (string | null)[]
   preview_tracks?: { title: string; artist: string }[]
   tracks?: Track[]

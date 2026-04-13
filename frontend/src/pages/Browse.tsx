@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '@/lib/api'
-import type { Track, Genre, SortOption } from '@/lib/types'
+import type { Track, Genre, SortOption, TagCategory } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
 import { pluralize } from '@/lib/utils'
 
@@ -18,6 +18,7 @@ export default function Browse() {
   const [params, setParams] = useSearchParams()
   const [tracks, setTracks] = useState<Track[]>([])
   const [genres, setGenres] = useState<Genre[]>([])
+  const [tagCategories, setTagCategories] = useState<TagCategory[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -27,10 +28,12 @@ export default function Browse() {
   const sort = (params.get('sort') as SortOption) || 'newest'
   const includeGenres = params.get('genres')?.split(',').filter(Boolean).map(Number) || []
   const excludeGenres = params.get('exclude')?.split(',').filter(Boolean).map(Number) || []
+  const includeTags = params.get('tags')?.split(',').filter(Boolean).map(Number) || []
   const limit = 30
 
   useEffect(() => {
     api.get('/api/genres').then(res => setGenres(res.data))
+    api.get('/api/tags').then(res => setTagCategories(res.data)).catch(() => {})
   }, [])
 
   const fetchTracks = useCallback(async () => {
@@ -44,13 +47,14 @@ export default function Browse() {
       if (artistFilter) p.set('artist', artistFilter)
       if (includeGenres.length) p.set('genre_ids', includeGenres.join(','))
       if (excludeGenres.length) p.set('exclude_genre_ids', excludeGenres.join(','))
+      if (includeTags.length) p.set('tag_ids', includeTags.join(','))
       const res = await api.get('/api/tracks?' + p.toString())
       setTracks(res.data.tracks)
       setTotal(res.data.total)
     } finally {
       setLoading(false)
     }
-  }, [q, artistFilter, sort, includeGenres.join(','), excludeGenres.join(','), page])
+  }, [q, artistFilter, sort, includeGenres.join(','), excludeGenres.join(','), includeTags.join(','), page])
 
   useEffect(() => { fetchTracks() }, [fetchTracks])
 
@@ -97,9 +101,44 @@ export default function Browse() {
         </select>
 
         <button onClick={() => setShowFilters(!showFilters)}
-          className={`px-3 py-2 text-sm rounded-lg border transition ${(includeGenres.length || excludeGenres.length) ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
-          🎭 Жанры {(includeGenres.length + excludeGenres.length) > 0 && '(' + (includeGenres.length + excludeGenres.length) + ')'}
+          className={`px-3 py-2 text-sm rounded-lg border transition ${excludeGenres.length ? 'border-red-500/50 text-red-400 bg-red-500/10' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+          🚫 Исключить жанры {excludeGenres.length > 0 && '(' + excludeGenres.length + ')'}
         </button>
+
+        {includeGenres.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {includeGenres.map(id => {
+              const genre = genres.find(g => g.id === id)
+              if (!genre) return null
+              return (
+                <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
+                  {genre.name}
+                  <button onClick={() => toggleGenre(id, 'include')} className="hover:text-white transition">✕</button>
+                </span>
+              )
+            })}
+            <button onClick={() => { const p = new URLSearchParams(params); p.delete('genres'); setParams(p) }}
+              className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] transition">Сбросить</button>
+          </div>
+        )}
+
+        {includeTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {includeTags.map(id => {
+              const tag = tagCategories.flatMap(c => c.tags).find(t => t.id === id)
+              if (!tag) return null
+              return (
+                <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
+                  {tag.name}
+                  <button onClick={() => { const p = new URLSearchParams(params); const cur = includeTags.filter(t => t !== id); if (cur.length) p.set('tags', cur.join(',')); else p.delete('tags'); setParams(p) }}
+                    className="hover:text-white transition">✕</button>
+                </span>
+              )
+            })}
+            <button onClick={() => { const p = new URLSearchParams(params); p.delete('tags'); setParams(p) }}
+              className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] transition">Сбросить теги</button>
+          </div>
+        )}
 
         {q && (
           <span className="text-sm text-[var(--text-dim)]">
@@ -113,15 +152,14 @@ export default function Browse() {
       {/* Genre filters */}
       {showFilters && (
         <div className="mb-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl relative z-10">
-          <p className="text-xs text-[var(--text-dim)] mb-2">Нажмите — включить, Shift+нажмите — исключить</p>
+          <p className="text-xs text-[var(--text-dim)] mb-2">Нажмите на жанр, чтобы исключить его из результатов</p>
           <div className="flex flex-wrap gap-1.5">
             {genres.map(genre => {
-              const isIncluded = includeGenres.includes(genre.id)
               const isExcluded = excludeGenres.includes(genre.id)
               return (
                 <button key={genre.id}
-                  onClick={(e) => toggleGenre(genre.id, e.shiftKey ? 'exclude' : 'include')}
-                  className={`px-2.5 py-1 text-xs rounded-full border transition ${isIncluded ? 'bg-[var(--accent)] text-white border-[var(--accent)]' : isExcluded ? 'bg-red-500/20 text-red-400 border-red-500/50 line-through' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
+                  onClick={() => toggleGenre(genre.id, 'exclude')}
+                  className={`px-2.5 py-1 text-xs rounded-full border transition ${isExcluded ? 'bg-red-500/20 text-red-400 border-red-500/50 line-through' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
                   {genre.name}
                 </button>
               )

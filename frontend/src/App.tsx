@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import Layout from '@/Layout'
+import CookieConsent from '@/components/CookieConsent'
 
 import Home from '@/pages/Home'
 import Browse from '@/pages/Browse'
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+      <CookieConsent />
     </BrowserRouter>
   )
 }

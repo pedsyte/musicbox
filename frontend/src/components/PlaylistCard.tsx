@@ -2,9 +2,17 @@ import { Link } from 'react-router-dom'
 import type { Playlist } from '@/lib/types'
 import { pluralize } from '@/lib/utils'
 
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  if (h > 0) return `${h} ч ${m} мин`
+  return `${m} мин`
+}
+
 export default function PlaylistCard({ playlist }: { playlist: Playlist }) {
   const covers = (playlist.covers || []).filter(Boolean) as string[]
   const count = playlist.track_count || 0
+  const duration = playlist.total_duration || 0
   const previews = playlist.preview_tracks || []
 
   return (
@@ -35,10 +43,11 @@ export default function PlaylistCard({ playlist }: { playlist: Playlist }) {
             {covers.slice(0, 4).map((c, i) => <img key={i} src={c} alt="" className="w-full h-full object-cover" />)}
           </div>
         )}
-        {/* Track count badge */}
+        {/* Badge: count + duration */}
         {count > 0 && (
-          <div className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
-            {count} {pluralize(count, 'трек', 'трека', 'треков')}
+          <div className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1.5">
+            <span>{pluralize(count, 'трек', 'трека', 'треков')}</span>
+            {duration > 0 && <><span className="opacity-50">·</span><span>{formatDuration(duration)}</span></>}
           </div>
         )}
       </div>
@@ -60,7 +69,7 @@ export default function PlaylistCard({ playlist }: { playlist: Playlist }) {
         </div>
       ) : (
         <p className="text-xs text-[var(--text-dim)] mt-0.5">
-          {pluralize(count, 'трек', 'трека', 'треков')} {playlist.username && `· ${playlist.username}`}
+          {playlist.username && `${playlist.username}`}
         </p>
       )}
     </Link>

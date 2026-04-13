@@ -44,10 +44,14 @@ async def my_playlists(
 
     items = []
     for p in playlists:
-        count_result = await db.execute(
-            select(func.count(PlaylistTrack.track_id)).where(PlaylistTrack.playlist_id == p.id)
+        stats_result = await db.execute(
+            select(func.count(PlaylistTrack.track_id), func.coalesce(func.sum(Track.duration_seconds), 0))
+            .join(Track, Track.id == PlaylistTrack.track_id)
+            .where(PlaylistTrack.playlist_id == p.id)
         )
-        count = count_result.scalar() or 0
+        stats = stats_result.one()
+        count = stats[0] or 0
+        total_duration = stats[1] or 0
 
         # Get first 4 cover images for mosaic
         covers_result = await db.execute(
@@ -80,6 +84,7 @@ async def my_playlists(
             "description": p.description,
             "is_public": p.is_public,
             "track_count": count,
+            "total_duration": round(total_duration),
             "covers": covers,
             "preview_tracks": preview_tracks,
             "created_at": p.created_at.isoformat(),
@@ -99,10 +104,14 @@ async def public_playlists(db: AsyncSession = Depends(get_db)):
 
     items = []
     for p in playlists:
-        count_result = await db.execute(
-            select(func.count(PlaylistTrack.track_id)).where(PlaylistTrack.playlist_id == p.id)
+        stats_result = await db.execute(
+            select(func.count(PlaylistTrack.track_id), func.coalesce(func.sum(Track.duration_seconds), 0))
+            .join(Track, Track.id == PlaylistTrack.track_id)
+            .where(PlaylistTrack.playlist_id == p.id)
         )
-        count = count_result.scalar() or 0
+        stats = stats_result.one()
+        count = stats[0] or 0
+        total_duration = stats[1] or 0
 
         covers_result = await db.execute(
             select(Track.cover_path)
@@ -135,6 +144,7 @@ async def public_playlists(db: AsyncSession = Depends(get_db)):
             "is_public": p.is_public,
             "username": p.user.username if p.user else None,
             "track_count": count,
+            "total_duration": round(total_duration),
             "covers": covers,
             "preview_tracks": preview_tracks,
             "created_at": p.created_at.isoformat(),
