@@ -80,7 +80,7 @@ def parse_suno(url: str) -> dict:
         unesc = raw.replace('\\"', '"').replace('\\n', '\n').replace('\\\\', '\\')
         payloads.append(unesc)
 
-    # Find the JSON object with song metadata
+    # Find the JSON object with song metadata (+ extract lyrics from metadata.prompt)
     for p in payloads:
         if '"metadata"' in p and '"tags"' in p and '"title"' in p:
             m2 = re.search(r'(\{"status".*)', p)
@@ -92,19 +92,27 @@ def parse_suno(url: str) -> dict:
                     result["description"] = data.get("metadata", {}).get("tags", "")
                     result["display_tags"] = data.get("display_tags", "")
                     result["image_large_url"] = data.get("image_large_url", "")
+                    # Lyrics are often inside metadata.prompt
+                    prompt_lyrics = data.get("metadata", {}).get("prompt", "")
+                    if prompt_lyrics:
+                        result["lyrics"] = prompt_lyrics.replace("\\n", "\n").strip()
                 except json.JSONDecodeError:
                     pass
             break
 
-    # Find lyrics payload: "NN:TLEN,<lyrics>"
-    for p in payloads:
-        if "[Verse" in p or "[Chorus" in p or "[Intro" in p or "[Hook" in p:
-            m3 = re.match(r'[\da-f]+:T\d+,(.+)', p, re.DOTALL)
-            if m3:
-                result["lyrics"] = m3.group(1).strip()
-            else:
-                result["lyrics"] = p.strip()
-            break
+    # Find separate lyrics payload only if not already extracted from metadata
+    if not result["lyrics"]:
+        for p in payloads:
+            # Skip the main metadata payload
+            if '"metadata"' in p and '"tags"' in p:
+                continue
+            if "[Verse" in p or "[Chorus" in p or "[Intro" in p or "[Hook" in p:
+                m3 = re.match(r'[\da-f]+:T\d+,(.+)', p, re.DOTALL)
+                if m3:
+                    result["lyrics"] = m3.group(1).strip()
+                else:
+                    result["lyrics"] = p.strip()
+                break
 
     if not result["title"]:
         # Fallback: og:title
