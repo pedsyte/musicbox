@@ -278,6 +278,12 @@
     "ingestInfoHint": "Zeile 1: Suno-Link, Zeile 2: Künstler",
     "ingestRunning": "Verarbeitung...",
     "ingestBtn": "Import starten",
+    "ingestFormTitle": "Schnell-Upload",
+    "ingestFormDesc": "Lade Audio hoch, füge einen Suno-Link ein und klicke — der Track erscheint mit allen Metadaten auf der Seite.",
+    "ingestAudioLabel": "Audiodatei",
+    "ingestUrlLabel": "Suno-Link",
+    "ingestArtistLabel": "Künstler (Standard — Suno AI)",
+    "ingestUploadBtn": "Hochladen & verarbeiten",
     "ingestHasCover": "Cover",
     "ingestHasLyrics": "Text"
   },

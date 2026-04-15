@@ -541,3 +541,48 @@ async def run_ingest_endpoint(admin: User = Depends(require_admin)):
         return {"results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/ingest/upload")
+async def ingest_upload(
+    suno_url: str = Form(...),
+    artist: str = Form("Suno AI"),
+    audio: UploadFile = File(...),
+    admin: User = Depends(require_admin),
+):
+    """Upload audio + Suno link → instant ingest without manual folder creation."""
+    import tempfile
+    from pathlib import Path
+    from ingest import ingest_folder, async_session, UPMUS_DIR
+
+    # Create temp folder in upmus/
+    os.makedirs(UPMUS_DIR, exist_ok=True)
+    folder_name = f"web-{uuid.uuid4().hex[:8]}"
+    folder_path = Path(UPMUS_DIR) / folder_name
+    folder_path.mkdir()
+
+    try:
+        # Save audio file
+        orig_name = audio.filename or "track.mp3"
+        audio_path = folder_path / orig_name
+        content = await audio.read()
+        audio_path.write_bytes(content)
+
+        # Write info.txt
+        info_path = folder_path / "info.txt"
+        info_path.write_text(f"{suno_url.strip()}\n{artist.strip()}\n", encoding="utf-8")
+
+        # Run ingest on the folder
+        async with async_session() as db:
+            result = await ingest_folder(folder_path, db)
+
+        return {"results": [result]}
+    except Exception as e:
+        # Move to failed/
+        failed_dir = Path(UPMUS_DIR) / "failed"
+        failed_dir.mkdir(exist_ok=True)
+        try:
+            shutil.move(str(folder_path), str(failed_dir / folder_name))
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail=str(e))

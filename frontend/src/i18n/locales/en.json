@@ -278,6 +278,12 @@
     "ingestInfoHint": "line 1: Suno link, line 2: artist",
     "ingestRunning": "Processing...",
     "ingestBtn": "Run import",
+    "ingestFormTitle": "Quick Upload",
+    "ingestFormDesc": "Upload audio, paste a Suno link and hit the button — the track will appear on the site with all metadata.",
+    "ingestAudioLabel": "Audio file",
+    "ingestUrlLabel": "Suno link",
+    "ingestArtistLabel": "Artist (default — Suno AI)",
+    "ingestUploadBtn": "Upload & process",
     "ingestHasCover": "cover",
     "ingestHasLyrics": "lyrics"
   },

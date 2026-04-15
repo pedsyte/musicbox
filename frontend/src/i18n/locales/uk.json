@@ -278,6 +278,12 @@
     "ingestInfoHint": "рядок 1: посилання Suno, рядок 2: автор",
     "ingestRunning": "Обробка...",
     "ingestBtn": "Запустити імпорт",
+    "ingestFormTitle": "Швидке завантаження",
+    "ingestFormDesc": "Завантаж аудіо, встав посилання на Suno та натисни — трек з'явиться на сайті з усіма метаданими.",
+    "ingestAudioLabel": "Аудіо файл",
+    "ingestUrlLabel": "Посилання на Suno",
+    "ingestArtistLabel": "Автор (за замовчуванням — Suno AI)",
+    "ingestUploadBtn": "Завантажити й обробити",
     "ingestHasCover": "обкладинка",
     "ingestHasLyrics": "текст"
   },

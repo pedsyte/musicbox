@@ -278,6 +278,12 @@
     "ingestInfoHint": "строка 1: ссылка Suno, строка 2: автор",
     "ingestRunning": "Обработка...",
     "ingestBtn": "Запустить импорт",
+    "ingestFormTitle": "Быстрая загрузка",
+    "ingestFormDesc": "Загрузи аудио, вставь ссылку на Suno и жми — трек появится на сайте со всеми метаданными.",
+    "ingestAudioLabel": "Аудио файл",
+    "ingestUrlLabel": "Ссылка на Suno",
+    "ingestArtistLabel": "Автор (по умолчанию — Suno AI)",
+    "ingestUploadBtn": "Загрузить и обработать",
     "ingestHasCover": "обложка",
     "ingestHasLyrics": "текст"
   },

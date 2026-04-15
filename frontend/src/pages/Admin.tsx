@@ -640,6 +640,12 @@ function IngestTab() {
   const [results, setResults] = useState<IngestResult[]>([])
   const [error, setError] = useState('')
 
+  // Form state
+  const [sunoUrl, setSunoUrl] = useState('')
+  const [artist, setArtist] = useState('')
+  const [audioFile, setAudioFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+
   const runIngest = async () => {
     setRunning(true)
     setError('')
@@ -653,9 +659,76 @@ function IngestTab() {
     setRunning(false)
   }
 
+  const handleUpload = async () => {
+    if (!audioFile || !sunoUrl.trim()) return
+    setUploading(true)
+    setError('')
+    setResults([])
+    try {
+      const fd = new FormData()
+      fd.append('audio', audioFile)
+      fd.append('suno_url', sunoUrl.trim())
+      fd.append('artist', artist.trim() || 'Suno AI')
+      const res = await api.post('/api/admin/ingest/upload', fd)
+      setResults(res.data.results || [])
+      setSunoUrl('')
+      setArtist('')
+      setAudioFile(null)
+      // Reset file input
+      const fileInput = document.getElementById('ingest-audio') as HTMLInputElement
+      if (fileInput) fileInput.value = ''
+    } catch (e: any) {
+      setError(e.response?.data?.detail || t('admin.error'))
+    }
+    setUploading(false)
+  }
+
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Quick Upload Form */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-[var(--text)]">⚡ {t('admin.ingestFormTitle')}</h2>
+        <p className="text-xs text-[var(--text-dim)]">{t('admin.ingestFormDesc')}</p>
+
+        <div className="space-y-3">
+          {/* Audio file */}
+          <div>
+            <label className="block text-xs text-[var(--text-dim)] mb-1">{t('admin.ingestAudioLabel')}</label>
+            <input id="ingest-audio" type="file" accept=".mp3,.wav,.flac,.ogg,.m4a,.aac,.wma"
+              onChange={e => setAudioFile(e.target.files?.[0] || null)}
+              className="w-full text-sm text-[var(--text)] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-[var(--accent)]/10 file:text-[var(--accent)] hover:file:bg-[var(--accent)]/20 file:cursor-pointer" />
+          </div>
+
+          {/* Suno URL */}
+          <div>
+            <label className="block text-xs text-[var(--text-dim)] mb-1">{t('admin.ingestUrlLabel')}</label>
+            <input type="text" value={sunoUrl} onChange={e => setSunoUrl(e.target.value)}
+              placeholder="https://suno.com/song/..."
+              className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] placeholder:text-[var(--text-dim)]/50 focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+
+          {/* Artist */}
+          <div>
+            <label className="block text-xs text-[var(--text-dim)] mb-1">{t('admin.ingestArtistLabel')}</label>
+            <input type="text" value={artist} onChange={e => setArtist(e.target.value)}
+              placeholder="Suno AI"
+              className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] placeholder:text-[var(--text-dim)]/50 focus:outline-none focus:border-[var(--accent)]" />
+          </div>
+
+          <button onClick={handleUpload} disabled={uploading || !audioFile || !sunoUrl.trim()}
+            className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium flex items-center gap-2">
+            {uploading ? (
+              <><span className="animate-spin">⏳</span> {t('admin.ingestRunning')}</>
+            ) : (
+              <><span>⚡</span> {t('admin.ingestUploadBtn')}</>
+            )}
+          </button>
+        </div>
+
+        {error && <p className="text-sm text-red-400">{error}</p>}
+      </div>
+
+      {/* Folder scan */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
         <h2 className="text-sm font-semibold text-[var(--text)]">🚀 {t('admin.ingestTitle')}</h2>
         <p className="text-xs text-[var(--text-dim)] leading-relaxed">{t('admin.ingestDesc')}</p>
@@ -668,15 +741,13 @@ function IngestTab() {
         </div>
 
         <button onClick={runIngest} disabled={running}
-          className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium flex items-center gap-2">
+          className="px-6 py-2.5 bg-[var(--surface-hover)] text-[var(--text)] rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium flex items-center gap-2 border border-[var(--border)]">
           {running ? (
             <><span className="animate-spin">⏳</span> {t('admin.ingestRunning')}</>
           ) : (
             <><span>🚀</span> {t('admin.ingestBtn')}</>
           )}
         </button>
-
-        {error && <p className="text-sm text-red-400">{error}</p>}
       </div>
 
       {/* Results */}

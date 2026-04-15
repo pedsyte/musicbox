@@ -278,6 +278,12 @@
     "ingestInfoHint": "ligne 1: lien Suno, ligne 2: artiste",
     "ingestRunning": "Traitement...",
     "ingestBtn": "Lancer l'import",
+    "ingestFormTitle": "Upload rapide",
+    "ingestFormDesc": "Télécharge l'audio, colle le lien Suno et clique — le morceau apparaîtra sur le site avec toutes les métadonnées.",
+    "ingestAudioLabel": "Fichier audio",
+    "ingestUrlLabel": "Lien Suno",
+    "ingestArtistLabel": "Artiste (par défaut — Suno AI)",
+    "ingestUploadBtn": "Télécharger et traiter",
     "ingestHasCover": "couverture",
     "ingestHasLyrics": "paroles"
   },
