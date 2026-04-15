@@ -412,5 +412,25 @@
     "andMore": "und {{count}} weitere...",
     "h": "Std",
     "min": "Min"
+  },
+  "collections": {
+    "title": "Sammlungen",
+    "top100": "Top 100",
+    "mostPlayed": "Meistgespielt",
+    "newReleases": "Neuerscheinungen",
+    "energyHigh": "Hohe Energie",
+    "energyChill": "Entspannt",
+    "vocalMale": "Männlicher Gesang",
+    "vocalFemale": "Weiblicher Gesang",
+    "instrumental": "Instrumental",
+    "groupPopular": "🔥 Beliebt",
+    "groupNew": "🆕 Neuerscheinungen",
+    "groupMood": "😌 Nach Stimmung",
+    "groupGenre": "🎵 Nach Genre",
+    "groupLanguage": "🌍 Nach Sprache",
+    "groupEnergy": "⚡ Nach Energie",
+    "groupVocal": "🎤 Nach Gesang",
+    "groupEra": "📅 Nach Epoche",
+    "groupOccasion": "🎧 Nach Anlass"
   }
 }

@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
-import type { Playlist } from '@/lib/types'
+import type { Playlist, CollectionGroup } from '@/lib/types'
 import PlaylistCard from '@/components/PlaylistCard'
+import CollectionCard from '@/components/CollectionCard'
 
 export default function Playlists() {
   const { user } = useAuthStore()
@@ -12,6 +13,7 @@ export default function Playlists() {
   const { t } = useTranslation()
   const [myPlaylists, setMyPlaylists] = useState<Playlist[]>([])
   const [publicPlaylists, setPublicPlaylists] = useState<Playlist[]>([])
+  const [collectionGroups, setCollectionGroups] = useState<CollectionGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
@@ -22,6 +24,10 @@ export default function Playlists() {
     try {
       const publicRes = await api.get('/api/playlists/public')
       setPublicPlaylists(publicRes.data)
+      try {
+        const collectionsRes = await api.get('/api/collections')
+        setCollectionGroups(collectionsRes.data)
+      } catch { /* collections unavailable — show page without them */ }
       if (user) {
         const myRes = await api.get('/api/playlists')
         setMyPlaylists(myRes.data)
@@ -80,19 +86,29 @@ export default function Playlists() {
         </section>
       )}
 
+      {/* Smart collections */}
+      {collectionGroups.map(group => (
+        <section key={group.group_key}>
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-3">{t(group.group_key)}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {group.collections.map(coll => (
+              <CollectionCard key={coll.slug} collection={coll} />
+            ))}
+          </div>
+        </section>
+      ))}
+
       {/* Public playlists */}
-      <section>
-        <h2 className="text-lg font-semibold text-[var(--text)] mb-3">{t('playlists.publicSection')}</h2>
-        {publicPlaylists.length > 0 ? (
+      {publicPlaylists.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-3">{t('playlists.publicSection')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {publicPlaylists.map(pl => (
               <PlaylistCard key={pl.id} playlist={pl} />
             ))}
           </div>
-        ) : (
-          <p className="text-sm text-[var(--text-dim)]">{t('playlists.publicEmpty')}</p>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   )
 }

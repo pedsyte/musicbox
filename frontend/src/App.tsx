@@ -10,6 +10,7 @@ import TrackPage from '@/pages/TrackPage'
 import Explore from '@/pages/Explore'
 import Playlists from '@/pages/Playlists'
 import PlaylistPage from '@/pages/PlaylistPage'
+import CollectionPage from '@/pages/CollectionPage'
 import Favorites from '@/pages/Favorites'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/playlists" element={<Playlists />} />
           <Route path="/playlist/:id" element={<PlaylistPage />} />
+          <Route path="/collection/:slug" element={<CollectionPage />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

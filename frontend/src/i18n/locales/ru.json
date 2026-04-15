@@ -412,5 +412,25 @@
     "andMore": "и ещё {{count}}...",
     "h": "ч",
     "min": "мин"
+  },
+  "collections": {
+    "title": "Коллекции",
+    "top100": "Топ 100",
+    "mostPlayed": "Самые популярные",
+    "newReleases": "Новинки",
+    "energyHigh": "Энергичное",
+    "energyChill": "Спокойное",
+    "vocalMale": "Мужской вокал",
+    "vocalFemale": "Женский вокал",
+    "instrumental": "Инструментал",
+    "groupPopular": "🔥 Популярное",
+    "groupNew": "🆕 Новинки",
+    "groupMood": "😌 По настроению",
+    "groupGenre": "🎵 По жанру",
+    "groupLanguage": "🌍 По языку",
+    "groupEnergy": "⚡ По энергии",
+    "groupVocal": "🎤 По вокалу",
+    "groupEra": "📅 По эпохе",
+    "groupOccasion": "🎧 По случаю"
   }
 }

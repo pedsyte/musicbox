@@ -101,3 +101,21 @@ export interface AdminStats {
 
 export type RepeatMode = 'off' | 'all' | 'one'
 export type SortOption = 'newest' | 'oldest' | 'popular' | 'title' | 'artist' | 'duration'
+
+export interface Collection {
+  slug: string
+  name: string | null
+  name_key: string | null
+  icon: string
+  group_key: string
+  track_count: number
+  total_duration: number
+  covers: (string | null)[]
+  preview_tracks: { title: string; artist: string }[]
+  tracks?: Track[]
+}
+
+export interface CollectionGroup {
+  group_key: string
+  collections: Collection[]
+}

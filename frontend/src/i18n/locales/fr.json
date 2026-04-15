@@ -412,5 +412,25 @@
     "andMore": "et {{count}} de plus...",
     "h": "h",
     "min": "min"
+  },
+  "collections": {
+    "title": "Collections",
+    "top100": "Top 100",
+    "mostPlayed": "Les plus écoutés",
+    "newReleases": "Nouveautés",
+    "energyHigh": "Haute énergie",
+    "energyChill": "Détente",
+    "vocalMale": "Voix masculine",
+    "vocalFemale": "Voix féminine",
+    "instrumental": "Instrumental",
+    "groupPopular": "🔥 Populaire",
+    "groupNew": "🆕 Nouveautés",
+    "groupMood": "😌 Par humeur",
+    "groupGenre": "🎵 Par genre",
+    "groupLanguage": "🌍 Par langue",
+    "groupEnergy": "⚡ Par énergie",
+    "groupVocal": "🎤 Par voix",
+    "groupEra": "📅 Par époque",
+    "groupOccasion": "🎧 Par occasion"
   }
 }
