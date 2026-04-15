@@ -40,6 +40,23 @@ from slugify import make_slug
 logger = logging.getLogger("ingest")
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/opt/musicbox/uploads")
+
+
+def _clean_lyrics(text: str) -> str:
+    """Strip RSC/JSON payload garbage appended to lyrics text."""
+    # RSC continuation: NN:["$" — never appears in real lyrics
+    m = re.search(r'\d+:\["\$', text)
+    if m:
+        text = text[:m.start()].rstrip()
+    # JSON object like {"clip":
+    m = re.search(r'\{"clip":', text)
+    if m:
+        text = text[:m.start()].rstrip()
+    # RSC meta tags: [["$","meta",
+    m = re.search(r'\[\["\$","meta"', text)
+    if m:
+        text = text[:m.start()].rstrip()
+    return text.strip()
 UPMUS_DIR = os.getenv("UPMUS_DIR", "/opt/musicbox/upmus")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
@@ -141,6 +158,10 @@ def parse_suno(url: str) -> dict:
 
     if not result["image_large_url"]:
         result["image_large_url"] = f"https://cdn2.suno.ai/image_large_{song_id}.jpeg"
+
+    # Clean lyrics: strip RSC/JSON garbage appended after lyrics text
+    if result["lyrics"]:
+        result["lyrics"] = _clean_lyrics(result["lyrics"])
 
     return result
 
@@ -422,10 +443,11 @@ async def ingest_folder(folder: Path, db: AsyncSession) -> dict:
     db.add(track)
     await db.flush()
 
-    # 8. Add genres from display_tags
+    # 8. Add genres from display_tags (fallback to description if empty)
     genres_added = []
-    if display_tags:
-        genre_names = [g.strip() for g in display_tags.split(",") if g.strip()]
+    genre_source = display_tags or description or ""
+    if genre_source:
+        genre_names = [g.strip() for g in genre_source.split(",") if g.strip()]
         for gname in genre_names:
             gslug = gname.lower().replace(" ", "-").replace("&", "and")
             result = await db.execute(select(Genre).where(Genre.slug == gslug))
