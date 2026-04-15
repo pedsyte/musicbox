@@ -242,25 +242,29 @@ export default function PlayerBar() {
       </div>
 
       {/* Mobile Player - compact bar */}
-      <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 bg-[var(--surface)] border-t border-[var(--border)]"
-        onClick={() => setShowMobilePlayer(true)}>
+      <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 bg-[var(--surface)] border-t border-[var(--border)]">
         <div className="h-0.5 bg-[var(--surface-hover)]">
           <div className="h-full bg-[var(--accent)]" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }} />
         </div>
-        <div className="flex items-center gap-3 p-2">
-          <div className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
+        <div className="flex items-center gap-2 p-2">
+          <div className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0"
+            onClick={() => setShowMobilePlayer(true)}>
             {currentTrack.cover_path ? (
               <img src={currentTrack.cover_path} alt="" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-lg">🎵</div>
             )}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0" onClick={() => setShowMobilePlayer(true)}>
             <p className="text-sm font-medium text-[var(--text)] truncate">{currentTrack.title}</p>
-            <p className="text-xs text-[var(--text-dim)] truncate">{currentTrack.artist}</p>
+            <a href={`/browse?artist=${encodeURIComponent(currentTrack.artist)}`}
+              onClick={e => e.stopPropagation()}
+              className="text-xs text-[var(--text-dim)] truncate block hover:text-[var(--accent)]">{currentTrack.artist}</a>
           </div>
-          <button onClick={(e) => { e.stopPropagation(); togglePlay() }} className="p-2 text-xl">{isPlaying ? '⏸' : '▶'}</button>
-          <button onClick={(e) => { e.stopPropagation(); next() }} className="p-2 text-lg">⏭</button>
+          <button onClick={(e) => { e.stopPropagation(); prev() }} className="p-1.5 text-lg text-[var(--text-dim)]">⏮</button>
+          <button onClick={(e) => { e.stopPropagation(); togglePlay() }} className="p-1.5 text-xl">{isPlaying ? '⏸' : '▶'}</button>
+          <button onClick={(e) => { e.stopPropagation(); next() }} className="p-1.5 text-lg text-[var(--text-dim)]">⏭</button>
+          <button onClick={(e) => { e.stopPropagation(); toggleQueue() }} className="p-1.5 text-sm text-[var(--text-dim)]">📋</button>
         </div>
       </div>
     </>

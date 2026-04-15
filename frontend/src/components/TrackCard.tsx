@@ -82,8 +82,11 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
     <div className={`group flex items-center gap-3 rounded-lg transition cursor-pointer ${compact ? 'p-1.5 hover:bg-[var(--surface-hover)]' : 'p-2.5 hover:bg-[var(--surface-hover)]'} ${isCurrent ? 'bg-[var(--accent)]/10' : ''}`}>
       {/* Index / play btn */}
       <div className="w-8 text-center shrink-0" onClick={handlePlay}>
-        <span className={`md:group-hover:hidden text-sm ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text-dim)]'}`}>
+        <span className={`hidden md:inline md:group-hover:hidden text-sm ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text-dim)]'}`}>
           {isCurrent && isPlaying ? '♫' : idx !== undefined ? idx + 1 : '♪'}
+        </span>
+        <span className={`md:hidden text-sm ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text-dim)]'}`}>
+          {isCurrent && isPlaying ? '♫' : '▶'}
         </span>
         <button className="hidden md:group-hover:block text-sm text-[var(--text)] hover:text-[var(--accent)] transition mx-auto">▶</button>
       </div>
