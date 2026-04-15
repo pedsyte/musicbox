@@ -81,11 +81,11 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
   return (
     <div className={`group flex items-center gap-3 rounded-lg transition cursor-pointer ${compact ? 'p-1.5 hover:bg-[var(--surface-hover)]' : 'p-2.5 hover:bg-[var(--surface-hover)]'} ${isCurrent ? 'bg-[var(--accent)]/10' : ''}`}>
       {/* Index / play btn */}
-      <div className="w-8 text-center shrink-0">
-        <span className={`group-hover:hidden text-sm ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text-dim)]'}`}>
+      <div className="w-8 text-center shrink-0" onClick={handlePlay}>
+        <span className={`md:group-hover:hidden text-sm ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text-dim)]'}`}>
           {isCurrent && isPlaying ? '♫' : idx !== undefined ? idx + 1 : '♪'}
         </span>
-        <button onClick={handlePlay} className="hidden group-hover:block text-sm text-[var(--text)] hover:text-[var(--accent)] transition mx-auto">▶</button>
+        <button className="hidden md:group-hover:block text-sm text-[var(--text)] hover:text-[var(--accent)] transition mx-auto">▶</button>
       </div>
 
       {/* Cover */}
@@ -120,7 +120,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       {/* Fav */}
       {user && (
         <Tooltip text={isFav ? t('track.removeFav') : t('track.addFav')}>
-          <button onClick={toggleFav} className={`text-sm transition ${isFav ? 'text-red-400' : 'text-[var(--text-dim)] opacity-0 group-hover:opacity-100'} hover:scale-110`}>
+          <button onClick={toggleFav} className={`text-sm transition ${isFav ? 'text-red-400' : 'text-[var(--text-dim)] md:opacity-0 md:group-hover:opacity-100'} hover:scale-110`}>
             {isFav ? '❤️' : '🤍'}
           </button>
         </Tooltip>
@@ -129,7 +129,7 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       {/* Context menu */}
       <div className="relative" ref={menuRef}>
         <Tooltip text={t('trackCard.more')}>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="text-[var(--text-dim)] opacity-0 group-hover:opacity-100 hover:text-[var(--text)] transition text-sm px-1">⋯</button>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="text-[var(--text-dim)] md:opacity-0 md:group-hover:opacity-100 hover:text-[var(--text)] transition text-sm px-1">⋯</button>
         </Tooltip>
         {menuOpen && (
           <div className="absolute right-0 top-8 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-50 py-1 max-h-80 overflow-y-auto">

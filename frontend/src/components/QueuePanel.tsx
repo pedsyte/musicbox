@@ -98,7 +98,7 @@ export default function QueuePanel() {
                       <a href={`/browse?artist=${encodeURIComponent(track.artist)}`} className="text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition block">{track.artist}</a>
                     </div>
                     <span className="text-xs text-[var(--text-dim)]">{formatTime(track.duration_seconds)}</span>
-                    <div className="hidden group-hover:flex items-center gap-1">
+                    <div className="flex md:hidden md:group-hover:flex items-center gap-1">
                       <Tooltip text={t('queue.playTooltip')}>
                         <button onClick={() => play(track)} className="text-xs hover:text-[var(--accent)] transition">▶</button>
                       </Tooltip>

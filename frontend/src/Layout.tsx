@@ -4,6 +4,7 @@ import Header from '@/components/Header'
 import PlayerBar from '@/components/PlayerBar'
 import QueuePanel from '@/components/QueuePanel'
 import MobileNav from '@/components/MobileNav'
+import MobilePlayer from '@/components/MobilePlayer'
 import GenreSidebar from '@/components/GenreSidebar'
 import { usePlayerStore } from '@/stores/playerStore'
 
@@ -13,7 +14,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[var(--bg)]">
       {/* Top area: sidebar + content */}
-      <div className={`flex flex-1 min-h-0 ${currentTrack ? 'pb-20' : ''}`}>
+      <div className={`flex flex-1 min-h-0 ${currentTrack ? 'pb-20 md:pb-20 max-md:pb-[7.5rem]' : ''}`}>
         {/* Sidebar (desktop) */}
         <Sidebar />
 

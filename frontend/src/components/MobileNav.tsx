@@ -11,7 +11,7 @@ export default function MobileNav() {
     { path: '/', label: t('nav.home'), icon: '🏠' },
     { path: '/browse', label: t('nav.browse'), icon: '🎵' },
     { path: '/explore', label: t('nav.genres'), icon: '🎭' },
-    { path: '/playlists', label: t('nav.playlists'), icon: '📋' },
+    ...(user ? [{ path: '/favorites', label: t('nav.favorites'), icon: '❤️' }] : []),
     user ? { path: '/settings', label: t('nav.more'), icon: '☰' } : { path: '/login', label: t('nav.login'), icon: '👤' },
   ]
 
