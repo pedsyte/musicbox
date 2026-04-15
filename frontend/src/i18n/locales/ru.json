@@ -104,7 +104,8 @@
     "addToQueue": "Добавить в очередь",
     "addToPlaylist": "Добавить в плейлист",
     "noPlaylists": "Нет плейлистов",
-    "more": "Ещё"
+    "more": "Ещё",
+    "deleteTrack": "Удалить трек"
   },
   "browse": {
     "newest": "Новые",

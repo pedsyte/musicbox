@@ -104,7 +104,8 @@
     "addToQueue": "Ajouter à la file",
     "addToPlaylist": "Ajouter à la playlist",
     "noPlaylists": "Aucune playlist",
-    "more": "Plus"
+    "more": "Plus",
+    "deleteTrack": "Supprimer le morceau"
   },
   "browse": {
     "newest": "Récentes",

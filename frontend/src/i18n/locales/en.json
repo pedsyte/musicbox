@@ -104,7 +104,8 @@
     "addToQueue": "Add to queue",
     "addToPlaylist": "Add to playlist",
     "noPlaylists": "No playlists",
-    "more": "More"
+    "more": "More",
+    "deleteTrack": "Delete track"
   },
   "browse": {
     "newest": "Newest",

@@ -78,6 +78,14 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
     } catch {}
   }
 
+  const handleDelete = async () => {
+    if (!confirm(t('admin.confirmDeleteTrack'))) return
+    try {
+      await api.delete(`/api/admin/tracks/${track.id}`)
+      window.location.reload()
+    } catch {}
+  }
+
   return (
     <div className={`group flex items-center gap-3 rounded-lg transition cursor-pointer ${compact ? 'p-1.5 hover:bg-[var(--surface-hover)]' : 'p-2.5 hover:bg-[var(--surface-hover)]'} ${isCurrent ? 'bg-[var(--accent)]/10' : ''}`}>
       {/* Index / play btn */}
@@ -158,6 +166,12 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
             )}
             <Link to={`/track/${track.slug}`} onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition">{t('track.trackPage')}</Link>
             <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} onClose={() => setMenuOpen(false)} />
+            {user?.is_admin && (
+              <>
+                <hr className="border-[var(--border)] my-1" />
+                <button onClick={() => { setMenuOpen(false); handleDelete() }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition">{t('trackCard.deleteTrack')}</button>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -104,7 +104,8 @@
     "addToQueue": "Zur Warteschlange hinzufügen",
     "addToPlaylist": "Zur Playlist hinzufügen",
     "noPlaylists": "Keine Playlisten",
-    "more": "Mehr"
+    "more": "Mehr",
+    "deleteTrack": "Track löschen"
   },
   "browse": {
     "newest": "Neueste",

@@ -104,7 +104,8 @@
     "addToQueue": "Añadir a la cola",
     "addToPlaylist": "Añadir a lista",
     "noPlaylists": "Sin listas",
-    "more": "Más"
+    "more": "Más",
+    "deleteTrack": "Eliminar pista"
   },
   "browse": {
     "newest": "Nuevas",

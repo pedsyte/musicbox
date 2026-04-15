@@ -209,7 +209,7 @@ function TracksTab() {
   const { t } = useTranslation()
   const [tracks, setTracks] = useState<Track[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editArtist, setEditArtist] = useState('')
   const [editGenres, setEditGenres] = useState('')
@@ -221,7 +221,7 @@ function TracksTab() {
 
   useEffect(() => { fetchTracks() }, [])
 
-  const startEdit = (t: Track) => { setEditingId(t.id); setEditTitle(t.title); setEditArtist(t.artist); setEditGenres(t.genres.map(g => g.name).join(', ')) }
+  const startEdit = (tr: Track) => { setEditingId(tr.id); setEditTitle(tr.title); setEditArtist(tr.artist); setEditGenres(tr.genres.map(g => g.name).join(', ')) }
 
   const saveEdit = async () => {
     if (!editingId) return
@@ -234,7 +234,7 @@ function TracksTab() {
     fetchTracks()
   }
 
-  const deleteTrack = async (id: number) => {
+  const deleteTrack = async (id: string) => {
     if (!confirm(t('admin.confirmDeleteTrack'))) return
     await api.delete(`/api/admin/tracks/${id}`)
     fetchTracks()
@@ -245,12 +245,12 @@ function TracksTab() {
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
       <div className="divide-y divide-[var(--border)]">
-        {tracks.map(t => (
-          <div key={t.id} className="flex items-center gap-3 p-3 hover:bg-[var(--surface-hover)] transition">
+        {tracks.map(tr => (
+          <div key={tr.id} className="flex items-center gap-3 p-3 hover:bg-[var(--surface-hover)] transition">
             <div className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
-              {t.cover_path ? <img src={t.cover_path} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">🎵</div>}
+              {tr.cover_path ? <img src={tr.cover_path} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center">🎵</div>}
             </div>
-            {editingId === t.id ? (
+            {editingId === tr.id ? (
               <div className="flex-1 flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
                   <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder={t('admin.labelTitle')} className="bg-[var(--bg)] border border-[var(--border)] rounded px-2 py-1 text-sm text-[var(--text)] flex-1" />
@@ -263,12 +263,12 @@ function TracksTab() {
             ) : (
               <>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[var(--text)] truncate">{t.title}</p>
-                  <p className="text-xs text-[var(--text-dim)] truncate">{t.artist}</p>
+                  <p className="text-sm text-[var(--text)] truncate">{tr.title}</p>
+                  <p className="text-xs text-[var(--text-dim)] truncate">{tr.artist}</p>
                 </div>
-                <span className="text-xs text-[var(--text-dim)]">{formatTime(t.duration_seconds)}</span>
-                <Tooltip text={t('admin.edit')}><button onClick={() => startEdit(t)} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] px-1">✏️</button></Tooltip>
-                <Tooltip text={t('admin.delete')}><button onClick={() => deleteTrack(t.id)} className="text-xs text-red-400 hover:text-red-300 px-1">🗑</button></Tooltip>
+                <span className="text-xs text-[var(--text-dim)]">{formatTime(tr.duration_seconds)}</span>
+                <Tooltip text={t('admin.edit')}><button onClick={() => startEdit(tr)} className="text-xs text-[var(--text-dim)] hover:text-[var(--accent)] px-1">✏️</button></Tooltip>
+                <Tooltip text={t('admin.delete')}><button onClick={() => deleteTrack(tr.id)} className="text-xs text-red-400 hover:text-red-300 px-1">🗑</button></Tooltip>
               </>
             )}
           </div>
