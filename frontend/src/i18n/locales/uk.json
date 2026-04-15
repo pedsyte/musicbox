@@ -271,7 +271,15 @@
     "saved": "Збережено!",
     "translations": "Переклади",
     "saveTranslations": "Зберегти переклади",
-    "saveError": "Помилка збереження"
+    "saveError": "Помилка збереження",
+    "tabIngest": "Авто-імпорт",
+    "ingestTitle": "Авто-імпорт з Suno",
+    "ingestDesc": "Сканує папку upmus/ на сервері. Кожна підпапка має містити аудіо-файл та info.txt (рядок 1 = посилання Suno, рядок 2 = автор).",
+    "ingestInfoHint": "рядок 1: посилання Suno, рядок 2: автор",
+    "ingestRunning": "Обробка...",
+    "ingestBtn": "Запустити імпорт",
+    "ingestHasCover": "обкладинка",
+    "ingestHasLyrics": "текст"
   },
   "cookie": {
     "title": "🍪 Використання cookies",

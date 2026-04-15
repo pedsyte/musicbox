@@ -526,3 +526,18 @@ async def update_settings(
             db.add(SiteSetting(key=key, value=value))
     await db.commit()
     return {"message": "Settings updated"}
+
+
+# ---------------------------------------------------------------------------
+# Auto-ingest from upmus/ folder (Suno pipeline)
+# ---------------------------------------------------------------------------
+
+@router.post("/ingest")
+async def run_ingest_endpoint(admin: User = Depends(require_admin)):
+    """Scan upmus/ folder and ingest tracks from Suno."""
+    from ingest import run_ingest
+    try:
+        results = await run_ingest()
+        return {"results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

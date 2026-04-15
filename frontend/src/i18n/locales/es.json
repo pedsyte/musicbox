@@ -271,7 +271,15 @@
     "saved": "¡Guardado!",
     "translations": "Traducciones",
     "saveTranslations": "Guardar traducciones",
-    "saveError": "Error al guardar"
+    "saveError": "Error al guardar",
+    "tabIngest": "Auto-importar",
+    "ingestTitle": "Auto-importar desde Suno",
+    "ingestDesc": "Escanea la carpeta upmus/ en el servidor. Cada subcarpeta debe contener un archivo de audio e info.txt (línea 1 = enlace Suno, línea 2 = artista).",
+    "ingestInfoHint": "línea 1: enlace Suno, línea 2: artista",
+    "ingestRunning": "Procesando...",
+    "ingestBtn": "Ejecutar importación",
+    "ingestHasCover": "portada",
+    "ingestHasLyrics": "letra"
   },
   "cookie": {
     "title": "🍪 Uso de cookies",

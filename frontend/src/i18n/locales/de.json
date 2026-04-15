@@ -271,7 +271,15 @@
     "saved": "Gespeichert!",
     "translations": "Übersetzungen",
     "saveTranslations": "Übersetzungen speichern",
-    "saveError": "Fehler beim Speichern"
+    "saveError": "Fehler beim Speichern",
+    "tabIngest": "Auto-Import",
+    "ingestTitle": "Auto-Import von Suno",
+    "ingestDesc": "Scannt den Ordner upmus/ auf dem Server. Jeder Unterordner muss eine Audiodatei und info.txt enthalten (Zeile 1 = Suno-Link, Zeile 2 = Künstler).",
+    "ingestInfoHint": "Zeile 1: Suno-Link, Zeile 2: Künstler",
+    "ingestRunning": "Verarbeitung...",
+    "ingestBtn": "Import starten",
+    "ingestHasCover": "Cover",
+    "ingestHasLyrics": "Text"
   },
   "cookie": {
     "title": "🍪 Cookie-Nutzung",

@@ -7,7 +7,7 @@ import type { Track, Genre, AdminStats, TagCategory } from '@/lib/types'
 import { formatTime } from '@/lib/utils'
 import Tooltip from '@/components/Tooltip'
 
-type Tab = 'upload' | 'tracks' | 'genres' | 'tags' | 'stats' | 'settings'
+type Tab = 'upload' | 'tracks' | 'genres' | 'tags' | 'stats' | 'settings' | 'ingest'
 
 export default function Admin() {
   const { user } = useAuthStore()
@@ -28,6 +28,7 @@ export default function Admin() {
     { v: 'tags', l: `🏷️ ${t('admin.tabTags')}` },
     { v: 'stats', l: `📊 ${t('admin.tabStats')}` },
     { v: 'settings', l: `⚙️ ${t('admin.tabSettings')}` },
+    { v: 'ingest', l: `🚀 ${t('admin.tabIngest')}` },
   ]
 
   return (
@@ -50,6 +51,7 @@ export default function Admin() {
       {tab === 'tags' && <TagsTab />}
       {tab === 'stats' && <StatsTab />}
       {tab === 'settings' && <SettingsTab />}
+      {tab === 'ingest' && <IngestTab />}
     </div>
   )
 }
@@ -613,6 +615,116 @@ function SettingsTab() {
         </button>
         {msg && <span className={`text-sm ${msg === t('admin.saved') ? 'text-green-400' : 'text-red-400'}`}>{msg}</span>}
       </div>
+    </div>
+  )
+}
+
+interface IngestResult {
+  folder: string
+  status: string
+  message?: string
+  track_id?: string
+  title?: string
+  artist?: string
+  slug?: string
+  genres?: string[]
+  tags?: Record<string, string[]>
+  duration?: number
+  has_cover?: boolean
+  has_lyrics?: boolean
+}
+
+function IngestTab() {
+  const { t } = useTranslation()
+  const [running, setRunning] = useState(false)
+  const [results, setResults] = useState<IngestResult[]>([])
+  const [error, setError] = useState('')
+
+  const runIngest = async () => {
+    setRunning(true)
+    setError('')
+    setResults([])
+    try {
+      const res = await api.post('/api/admin/ingest')
+      setResults(res.data.results || [])
+    } catch (e: any) {
+      setError(e.response?.data?.detail || t('admin.error'))
+    }
+    setRunning(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-[var(--text)]">🚀 {t('admin.ingestTitle')}</h2>
+        <p className="text-xs text-[var(--text-dim)] leading-relaxed">{t('admin.ingestDesc')}</p>
+
+        <div className="bg-[var(--bg)] rounded-lg p-3 text-xs text-[var(--text-dim)] space-y-1 font-mono">
+          <p>📁 upmus/</p>
+          <p>&nbsp;&nbsp;📁 my-song/</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;🎵 track.mp3</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;📄 info.txt <span className="text-[var(--text-dim)]">← {t('admin.ingestInfoHint')}</span></p>
+        </div>
+
+        <button onClick={runIngest} disabled={running}
+          className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium flex items-center gap-2">
+          {running ? (
+            <><span className="animate-spin">⏳</span> {t('admin.ingestRunning')}</>
+          ) : (
+            <><span>🚀</span> {t('admin.ingestBtn')}</>
+          )}
+        </button>
+
+        {error && <p className="text-sm text-red-400">{error}</p>}
+      </div>
+
+      {/* Results */}
+      {results.length > 0 && (
+        <div className="space-y-2">
+          {results.map((r, i) => (
+            <div key={i} className={`bg-[var(--surface)] border rounded-xl p-4 space-y-2 ${
+              r.status === 'ok' ? 'border-green-500/30' : r.status === 'empty' ? 'border-[var(--border)]' : 'border-red-500/30'
+            }`}>
+              {r.status === 'empty' ? (
+                <p className="text-sm text-[var(--text-dim)]">📭 {r.message}</p>
+              ) : r.status === 'ok' ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-400">✓</span>
+                    <span className="text-sm font-medium text-[var(--text)]">{r.title}</span>
+                    <span className="text-xs text-[var(--text-dim)]">— {r.artist}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 text-xs">
+                    {r.genres?.map(g => (
+                      <span key={g} className="px-2 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)]">{g}</span>
+                    ))}
+                  </div>
+                  {r.tags && Object.entries(r.tags).map(([cat, tags]) => (
+                    <div key={cat} className="flex items-center gap-1.5 text-xs">
+                      <span className="text-[var(--text-dim)]">{cat}:</span>
+                      {tags.map(tag => (
+                        <span key={tag} className="px-1.5 py-0.5 rounded bg-[var(--surface-hover)] text-[var(--text-dim)]">{tag}</span>
+                      ))}
+                    </div>
+                  ))}
+                  <div className="flex gap-3 text-[10px] text-[var(--text-dim)]">
+                    <span>⏱ {r.duration}s</span>
+                    {r.has_cover && <span>🖼 {t('admin.ingestHasCover')}</span>}
+                    {r.has_lyrics && <span>📝 {t('admin.ingestHasLyrics')}</span>}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-400">✗</span>
+                  <span className="text-sm text-[var(--text)]">{r.folder}</span>
+                  <span className="text-xs text-red-400">{r.message}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

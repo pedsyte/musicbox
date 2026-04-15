@@ -271,7 +271,15 @@
     "saved": "Saved!",
     "translations": "Translations",
     "saveTranslations": "Save translations",
-    "saveError": "Save error"
+    "saveError": "Save error",
+    "tabIngest": "Auto-import",
+    "ingestTitle": "Auto-import from Suno",
+    "ingestDesc": "Scans the upmus/ folder on the server. Each subfolder must contain an audio file and info.txt (line 1 = Suno link, line 2 = artist). The script will automatically fill in title, lyrics, genres, cover and characteristics using AI.",
+    "ingestInfoHint": "line 1: Suno link, line 2: artist",
+    "ingestRunning": "Processing...",
+    "ingestBtn": "Run import",
+    "ingestHasCover": "cover",
+    "ingestHasLyrics": "lyrics"
   },
   "cookie": {
     "title": "🍪 Cookie usage",
