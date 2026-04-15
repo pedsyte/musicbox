@@ -137,10 +137,14 @@ def analyze_with_ai(
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
+    is_instrumental = not lyrics or not lyrics.strip()
+
     existing_tags_text = ""
     for cat_slug, tags in categories.items():
         if tags:
             existing_tags_text += f"  {cat_slug}: {', '.join(tags)}\n"
+
+    lyrics_block = lyrics[:1500] if lyrics else "(NO LYRICS — this is an instrumental track)"
 
     prompt = f"""You are a music metadata analyst for a music streaming site.
 Analyze this track and assign characteristics for each category.
@@ -149,17 +153,20 @@ TRACK INFO:
 - Title: {title}
 - Suno styles: {display_tags}
 - Style description: {description}
-- Lyrics (first 1500 chars): {lyrics[:1500]}
+- Lyrics (first 1500 chars): {lyrics_block}
+- Has lyrics: {"YES" if not is_instrumental else "NO — INSTRUMENTAL TRACK"}
 
 CATEGORIES TO FILL:
 1. **language** — Detect the language of the lyrics. Return ONE value in Russian.
-   Examples: Украинский, Английский, Русский, Испанский, Немецкий, Французский, Инструментал (if no lyrics)
+   Examples: Украинский, Английский, Русский, Испанский, Немецкий, Французский
+   CRITICAL: If there are NO lyrics (instrumental track), you MUST return "Инструментал"
 
 2. **mood** — Emotional mood(s) of the track. Return 1-3 values in Russian.
    Examples: Весёлое, Грустное, Романтичное, Спокойное, Тревожное, Мечтательное, Энергичное, Меланхоличное, Вдохновляющее, Ностальгическое, Дерзкое, Нежное
 
 3. **vocal** — Type of vocals. Return ONE value in Russian.
    Values: Мужской, Женский, Дуэт, Хор, Инструментал
+   CRITICAL: If there are NO lyrics (instrumental track), you MUST return "Инструментал"
 
 4. **energy** — Energy level. Return ONE value in Russian.
    Values: Высокая, Средняя, Низкая
@@ -183,7 +190,7 @@ Return ONLY a valid JSON object with category slugs as keys and arrays of string
 {{"language": ["..."], "mood": ["...", "..."], "vocal": ["..."], "energy": ["..."], "occasion": ["...", "..."], "era": ["..."]}}"""
 
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-4.1-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         response_format={"type": "json_object"},
@@ -198,6 +205,12 @@ Return ONLY a valid JSON object with category slugs as keys and arrays of string
             if isinstance(val, str):
                 val = [val]
             validated[cat] = [v.strip() for v in val if v.strip()]
+
+        # Force instrumental overrides when no lyrics
+        if is_instrumental:
+            validated["vocal"] = ["Инструментал"]
+            validated["language"] = ["Инструментал"]
+
         return validated
     except (json.JSONDecodeError, KeyError, IndexError):
         logger.error("Failed to parse AI response")
