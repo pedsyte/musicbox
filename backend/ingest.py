@@ -74,28 +74,46 @@ def parse_suno(url: str) -> dict:
     }
 
     # Extract RSC payloads: self.__next_f.push([1,"..."])
+    # IMPORTANT: only unescape JS string quotes, keep \n as literal \n for valid JSON
     payloads = []
     for pm in re.finditer(r'self\.__next_f\.push\(\[1,"(.*?)"\]\)', html, re.DOTALL):
         raw = pm.group(1)
-        unesc = raw.replace('\\"', '"').replace('\\n', '\n').replace('\\\\', '\\')
+        unesc = raw.replace('\\"', '"').replace('\\\\', '\\')
         payloads.append(unesc)
 
-    # Find the JSON object with song metadata (+ extract lyrics from metadata.prompt)
+    # Concatenated raw text for resolving RSC $ref payloads (NN:TLEN,<text>)
+    full_rsc = ''.join(payloads)
+
+    # Find the JSON object with song metadata
+    # Suno wraps data in {"clip": {"status":...}} or {"status":...}
     for p in payloads:
         if '"metadata"' in p and '"tags"' in p and '"title"' in p:
-            m2 = re.search(r'(\{"status".*)', p)
+            # Try {"clip":{"status"...}} first (current Suno format)
+            m2 = re.search(r'(\{"clip":\{"status".*)', p) or re.search(r'(\{"status".*)', p)
             if m2:
                 try:
                     decoder = json.JSONDecoder()
                     data, _ = decoder.raw_decode(m2.group(1))
+                    # Unwrap clip wrapper if present
+                    if "clip" in data and isinstance(data["clip"], dict):
+                        data = data["clip"]
                     result["title"] = data.get("title", "")
                     result["description"] = data.get("metadata", {}).get("tags", "")
                     result["display_tags"] = data.get("display_tags", "")
                     result["image_large_url"] = data.get("image_large_url", "")
-                    # Lyrics are often inside metadata.prompt
-                    prompt_lyrics = data.get("metadata", {}).get("prompt", "")
-                    if prompt_lyrics:
-                        result["lyrics"] = prompt_lyrics.replace("\\n", "\n").strip()
+                    # Lyrics from metadata.prompt (can be real text or RSC $ref like "$47")
+                    prompt_val = data.get("metadata", {}).get("prompt", "")
+                    if prompt_val and not prompt_val.startswith("$"):
+                        result["lyrics"] = prompt_val.strip()
+                    elif prompt_val.startswith("$"):
+                        # RSC reference — resolve from payload NN:TLEN,<text>
+                        ref_id = prompt_val[1:]  # e.g. "47"
+                        ref_m = re.search(
+                            rf'{re.escape(ref_id)}:T[0-9a-f]+,(.+?)(?=\n[0-9a-f]+:|$)',
+                            full_rsc, re.DOTALL,
+                        )
+                        if ref_m:
+                            result["lyrics"] = ref_m.group(1).replace('\\n', '\n').strip()
                 except json.JSONDecodeError:
                     pass
             break
@@ -103,15 +121,16 @@ def parse_suno(url: str) -> dict:
     # Find separate lyrics payload only if not already extracted from metadata
     if not result["lyrics"]:
         for p in payloads:
+            p_text = p.replace('\\n', '\n')
             # Skip the main metadata payload
             if '"metadata"' in p and '"tags"' in p:
                 continue
-            if "[Verse" in p or "[Chorus" in p or "[Intro" in p or "[Hook" in p:
-                m3 = re.match(r'[\da-f]+:T\d+,(.+)', p, re.DOTALL)
+            if "[Verse" in p_text or "[Chorus" in p_text or "[Intro" in p_text or "[Hook" in p_text:
+                m3 = re.match(r'[\da-f]+:T\d+,(.+)', p_text, re.DOTALL)
                 if m3:
                     result["lyrics"] = m3.group(1).strip()
                 else:
-                    result["lyrics"] = p.strip()
+                    result["lyrics"] = p_text.strip()
                 break
 
     if not result["title"]:
