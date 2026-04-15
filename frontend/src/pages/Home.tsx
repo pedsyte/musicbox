@@ -50,17 +50,21 @@ export default function Home() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      {/* Hero */}
-      <section className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-purple-600/30 via-violet-500/20 to-fuchsia-600/30 p-6 md:p-10">
-        <div className="relative z-10">
-          <h1 className="text-2xl md:text-4xl font-bold text-[var(--text)] mb-2 flex items-center gap-3"><img src="/logo.png" alt="" className="w-14 h-14 md:w-16 md:h-16" /> MusicBox</h1>
-          <p className="text-[var(--text-dim)] text-sm md:text-base max-w-lg">{t('home.hero')}</p>
-          <div className="flex gap-3 mt-4">
-            <Link to="/browse" className="px-5 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition">{t('home.listen')}</Link>
-            <Link to="/explore" className="px-5 py-2.5 border border-[var(--border)] text-[var(--text)] rounded-full text-sm hover:bg-[var(--surface-hover)] transition">{t('nav.genres')}</Link>
+
+      {/* New tracks */}
+      {newTracks.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-[var(--text)]">{t('home.new')}</h2>
+            <Link to="/browse?sort=newest" className="text-sm text-[var(--accent)] hover:underline">{t('home.allLink')}</Link>
           </div>
-        </div>
-      </section>
+          <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+            {newTracks.map((track, idx) => (
+              <TrackCard key={track.id} track={track} tracks={newTracks} idx={idx} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Popular tracks */}
       <section>
@@ -87,21 +91,6 @@ export default function Home() {
           </div>
         )}
       </section>
-
-      {/* New tracks */}
-      {newTracks.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-[var(--text)]">{t('home.new')}</h2>
-            <Link to="/browse?sort=newest" className="text-sm text-[var(--accent)] hover:underline">{t('home.allLink')}</Link>
-          </div>
-          <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
-            {newTracks.map((track, idx) => (
-              <TrackCard key={track.id} track={track} tracks={newTracks} idx={idx} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Playlists */}
       {playlists.length > 0 && (

@@ -21,7 +21,10 @@ export default function Sidebar() {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-3 px-5 py-5 hover:opacity-80 transition">
         <img src="/logo.png" alt="MusicBox" className="w-10 h-10" />
-        <span className="text-lg font-bold text-[var(--text)]">MusicBox</span>
+        <div>
+          <span className="text-lg font-bold text-[var(--text)] block leading-tight">MusicBox</span>
+          <span className="text-[10px] text-[var(--text-dim)] leading-tight">{t('home.hero')}</span>
+        </div>
       </Link>
 
       <div className="mx-4 mb-2 border-b border-[var(--border)]" />
