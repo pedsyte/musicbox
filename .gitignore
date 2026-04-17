@@ -8,3 +8,4 @@ uploads/
 converted/tmp/
 converted/stream_cache/
 upmus/
+*.tsbuildinfo

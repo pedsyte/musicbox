@@ -3,6 +3,7 @@ import { api } from '@/lib/api'
 import type { Track, Genre, Playlist } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
 import PlaylistCard from '@/components/PlaylistCard'
+import PromoSlider from '@/components/PromoSlider'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -50,6 +51,9 @@ export default function Home() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
+
+      {/* Promo slider */}
+      <PromoSlider />
 
       {/* New tracks */}
       {newTracks.length > 0 && (
