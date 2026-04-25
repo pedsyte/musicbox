@@ -32,7 +32,7 @@ CONVERTED_DIR = os.getenv("CONVERTED_DIR", "/opt/musicbox/converted")
 @router.post("/tracks")
 async def upload_track(
     title: str = Form(...),
-    artist: str = Form("Suno AI"),
+    artist: str = Form("MusicBox"),
     description: Optional[str] = Form(None),
     lyrics: Optional[str] = Form(None),
     genres: str = Form(""),  # comma-separated genre names (auto-created)
@@ -529,12 +529,12 @@ async def update_settings(
 
 
 # ---------------------------------------------------------------------------
-# Auto-ingest from upmus/ folder (Suno pipeline)
+# Auto-ingest from upmus/ folder (source pipeline)
 # ---------------------------------------------------------------------------
 
 @router.post("/ingest")
 async def run_ingest_endpoint(admin: User = Depends(require_admin)):
-    """Scan upmus/ folder and ingest tracks from Suno."""
+    """Scan upmus/ folder and ingest tracks from a source link."""
     from ingest import run_ingest
     try:
         results = await run_ingest()
@@ -546,11 +546,11 @@ async def run_ingest_endpoint(admin: User = Depends(require_admin)):
 @router.post("/ingest/upload")
 async def ingest_upload(
     suno_url: str = Form(...),
-    artist: str = Form("Suno AI"),
+    artist: str = Form("MusicBox"),
     audio: UploadFile = File(...),
     admin: User = Depends(require_admin),
 ):
-    """Upload audio + Suno link → instant ingest without manual folder creation."""
+    """Upload audio + source link for instant ingest without manual folder creation."""
     import tempfile
     from pathlib import Path
     from ingest import ingest_folder, async_session, UPMUS_DIR

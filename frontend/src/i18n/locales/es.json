@@ -18,7 +18,15 @@
     "more": "Más"
   },
   "search": {
-    "placeholder": "Buscar pistas, artistas..."
+    "placeholder": "Buscar canciones, artistas, letras...",
+    "match": {
+      "title": "Título:",
+      "artist": "Artista:",
+      "description": "Descripción:",
+      "lyrics": "Letra:",
+      "genre": "Género:",
+      "tag": "Etiqueta:"
+    }
   },
   "player": {
     "pause": "Pausa",
@@ -129,7 +137,7 @@
     "libraryKicker": "Consola de biblioteca"
   },
   "home": {
-    "hero": "Tu colección de música IA. Escucha, crea listas y disfruta del sonido.",
+    "hero": "Tu colección de música. Escucha, crea listas y disfruta del sonido.",
     "listen": "Escuchar",
     "popular": "Popular",
     "day": "Hoy",
@@ -144,8 +152,8 @@
     "noTracksYet": "Aún no hay pistas",
     "uploadHint": "Sube pistas desde el panel de administración",
     "deckKicker": "Studio Deck",
-    "deckTitle": "Biblioteca de música IA para escuchar con foco.",
-    "deckSubtitle": "Explora nuevas generaciones, guarda favoritos, crea listas y reproduce todo desde una consola limpia.",
+    "deckTitle": "Biblioteca de música para escuchar con foco.",
+    "deckSubtitle": "Explora nuevas canciones, guarda favoritos, crea listas y reproduce todo desde una consola limpia.",
     "featured": "Pista destacada",
     "collectionsSection": "Colecciones de estudio"
   },
@@ -283,16 +291,16 @@
     "saveTranslations": "Guardar traducciones",
     "saveError": "Error al guardar",
     "tabIngest": "Auto-importar",
-    "ingestTitle": "Auto-importar desde Suno",
-    "ingestDesc": "Escanea la carpeta upmus/ en el servidor. Cada subcarpeta debe contener un archivo de audio e info.txt (línea 1 = enlace Suno, línea 2 = artista).",
-    "ingestInfoHint": "línea 1: enlace Suno, línea 2: artista",
+    "ingestTitle": "Autoimportar música",
+    "ingestDesc": "Escanea la carpeta upmus/ en el servidor. Cada subcarpeta debe contener un archivo de audio e info.txt (línea 1 = enlace de origen, línea 2 = artista).",
+    "ingestInfoHint": "línea 1: enlace de origen, línea 2: artista",
     "ingestRunning": "Procesando...",
     "ingestBtn": "Ejecutar importación",
     "ingestFormTitle": "Carga rápida",
-    "ingestFormDesc": "Sube el audio, pega el enlace de Suno y pulsa — la pista aparecerá en el sitio con todos los metadatos.",
+    "ingestFormDesc": "Sube el audio, pega el enlace de origen y pulsa — la pista aparecerá en el sitio con todos los metadatos.",
     "ingestAudioLabel": "Archivo de audio",
-    "ingestUrlLabel": "Enlace de Suno",
-    "ingestArtistLabel": "Artista (por defecto — Suno AI)",
+    "ingestUrlLabel": "Enlace de origen",
+    "ingestArtistLabel": "Artista (por defecto — MusicBox)",
     "ingestUploadBtn": "Subir y procesar",
     "ingestHasCover": "portada",
     "ingestHasLyrics": "letra"

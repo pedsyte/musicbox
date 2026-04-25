@@ -18,7 +18,15 @@
     "more": "More"
   },
   "search": {
-    "placeholder": "Search tracks, artists..."
+    "placeholder": "Search songs, artists, lyrics...",
+    "match": {
+      "title": "Title:",
+      "artist": "Artist:",
+      "description": "Description:",
+      "lyrics": "Lyrics:",
+      "genre": "Genre:",
+      "tag": "Tag:"
+    }
   },
   "player": {
     "pause": "Pause",
@@ -129,7 +137,7 @@
     "libraryKicker": "Library console"
   },
   "home": {
-    "hero": "Your AI music collection. Listen, create playlists, and enjoy the sound.",
+    "hero": "Your music collection. Listen, create playlists, and enjoy the sound.",
     "listen": "Listen",
     "popular": "Popular",
     "day": "Today",
@@ -144,8 +152,8 @@
     "noTracksYet": "No tracks yet",
     "uploadHint": "Upload tracks via the admin panel",
     "deckKicker": "Studio Deck",
-    "deckTitle": "AI music library for focused listening.",
-    "deckSubtitle": "Browse new generations, save favorites, build playlists and play every track from a clean studio console.",
+    "deckTitle": "Music library for focused listening.",
+    "deckSubtitle": "Browse new songs, save favorites, build playlists and play every track from a clean studio console.",
     "featured": "Featured track",
     "collectionsSection": "Studio collections"
   },
@@ -283,16 +291,16 @@
     "saveTranslations": "Save translations",
     "saveError": "Save error",
     "tabIngest": "Auto-import",
-    "ingestTitle": "Auto-import from Suno",
-    "ingestDesc": "Scans the upmus/ folder on the server. Each subfolder must contain an audio file and info.txt (line 1 = Suno link, line 2 = artist). The script will automatically fill in title, lyrics, genres, cover and characteristics using AI.",
-    "ingestInfoHint": "line 1: Suno link, line 2: artist",
+    "ingestTitle": "Music auto-import",
+    "ingestDesc": "Scans the upmus/ folder on the server. Each subfolder must contain an audio file and info.txt (line 1 = source link, line 2 = artist). The script will automatically fill in title, lyrics, genres, cover and characteristics.",
+    "ingestInfoHint": "line 1: source link, line 2: artist",
     "ingestRunning": "Processing...",
     "ingestBtn": "Run import",
     "ingestFormTitle": "Quick Upload",
-    "ingestFormDesc": "Upload audio, paste a Suno link and hit the button — the track will appear on the site with all metadata.",
+    "ingestFormDesc": "Upload audio, paste a source link and hit the button — the track will appear on the site with all metadata.",
     "ingestAudioLabel": "Audio file",
-    "ingestUrlLabel": "Suno link",
-    "ingestArtistLabel": "Artist (default — Suno AI)",
+    "ingestUrlLabel": "Source link",
+    "ingestArtistLabel": "Artist (default — MusicBox)",
     "ingestUploadBtn": "Upload & process",
     "ingestHasCover": "cover",
     "ingestHasLyrics": "lyrics"

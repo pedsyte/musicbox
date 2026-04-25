@@ -1,5 +1,29 @@
 # MusicBox — Backlog
 
+## 2026-04-25 — v1.4: Professional SEO Semantic Core
+
+### Что сделано
+- **Backend SEO-render**: публичные маршруты `/`, `/browse`, `/explore`, `/playlists`, `/track/:slug`, `/collection/:slug`, `/playlist/:id`, `/favorites` теперь отдают route-specific HTML до React: title, description, canonical, OG/Twitter, `rel="search"`, JSON-LD и видимый semantic fallback.
+- **Track SEO**: страница трека содержит в исходном HTML название, артиста, дату, жанры, теги, описание, cover, полный lyrics и JSON-LD `MusicRecording`/`MusicComposition`/`CreativeWork`.
+- **Search by lyrics**: `/api/tracks?search=` ищет по title, artist, description, lyrics, genres и tags; добавлены `pg_trgm` indexes, варианты ошибочной RU/EN-раскладки и транслита, `search_match`, `search_snippet`.
+- **Semantic endpoints**: добавлены `/robots.txt`, `/sitemap.xml`, `/opensearch.xml`, `/seo/semantic-index.json`, `/seo/structured-data.json`, построенные из текущей БД.
+- **Neutral music copy**: публичные MusicBox UI/meta/i18n и промо на `gornich.fun` переписаны как обычная музыка без AI/Suno/generated формулировок; fallback artist стал `MusicBox`.
+- **Canonical cleanup**: существующие `suno-*` slugs в БД заменены на `musicbox-*`; старые GET URL редиректят на новые canonical.
+
+### Проверки
+- `python3 -m compileall backend`
+- `npm run build`
+- JSON parse всех MusicBox locale JSON и `gornich.fun/i18n/*.json`
+- Live 200: `/`, `/robots.txt`, `/sitemap.xml`, `/opensearch.xml`, `/seo/semantic-index.json`, `/seo/structured-data.json`
+- Live track HTML: title, artist, lyric line, canonical, OG/Twitter, JSON-LD, `SearchAction`, `MusicRecording` до JS
+- Live search: запрос `slide in my phone` возвращает `sun-slow-burn-orbit` с `search_match="lyrics"`
+- `sitemap.xml` содержит canonical track URLs и корректные `lastmod`
+
+### Замечания
+- Full lyrics индексируются намеренно: это нужно для запросов по запомненной строке песни.
+- Structured data, sitemap и OpenSearch помогают поисковикам понять сайт, но не гарантируют rich result или позицию в выдаче.
+- Production build по-прежнему показывает Vite warning о JS chunk > 500 kB; это предупреждение, не ошибка.
+
 ## 2026-04-25 — v1.3: Studio Deck Redesign
 
 ### Что сделано

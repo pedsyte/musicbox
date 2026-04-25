@@ -70,10 +70,10 @@ export default function Home() {
           <div className="min-w-0">
             <div className="studio-kicker mb-3 inline-flex items-center gap-2"><Radio size={14} />{t('home.deckKicker', { defaultValue: 'Studio Deck' })}</div>
             <h1 className="studio-title max-w-3xl text-3xl md:text-5xl">
-              {t('home.deckTitle', { defaultValue: 'AI music library for focused listening.' })}
+              {t('home.deckTitle', { defaultValue: 'Music library for focused listening.' })}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-dim)] md:text-base">
-              {t('home.deckSubtitle', { defaultValue: 'Browse new generations, save favorites, build playlists and play every track from a clean studio console.' })}
+              {t('home.deckSubtitle', { defaultValue: 'Browse new songs, save favorites, build playlists and play every track from a clean studio console.' })}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link to="/browse?sort=newest" className="studio-primary-button"><Music2 size={18} />{t('home.listen')}</Link>

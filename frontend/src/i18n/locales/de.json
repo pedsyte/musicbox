@@ -18,7 +18,15 @@
     "more": "Mehr"
   },
   "search": {
-    "placeholder": "Tracks, Künstler suchen..."
+    "placeholder": "Songs, Künstler, Texte suchen...",
+    "match": {
+      "title": "Titel:",
+      "artist": "Künstler:",
+      "description": "Beschreibung:",
+      "lyrics": "Text:",
+      "genre": "Genre:",
+      "tag": "Tag:"
+    }
   },
   "player": {
     "pause": "Pause",
@@ -129,7 +137,7 @@
     "libraryKicker": "Bibliothekskonsole"
   },
   "home": {
-    "hero": "Deine AI-Musiksammlung. Höre zu, erstelle Playlisten und genieße den Klang.",
+    "hero": "Deine Musiksammlung. Höre zu, erstelle Playlisten und genieße den Klang.",
     "listen": "Anhören",
     "popular": "Beliebt",
     "day": "Heute",
@@ -144,8 +152,8 @@
     "noTracksYet": "Noch keine Tracks",
     "uploadHint": "Lade Tracks über das Admin-Panel hoch",
     "deckKicker": "Studio Deck",
-    "deckTitle": "KI-Musikbibliothek für fokussiertes Hören.",
-    "deckSubtitle": "Entdecke neue Generationen, speichere Favoriten, baue Playlisten und spiele alles über eine klare Studiokonsole ab.",
+    "deckTitle": "Musikbibliothek für fokussiertes Hören.",
+    "deckSubtitle": "Entdecke neue Songs, speichere Favoriten, baue Playlisten und spiele alles über eine klare Studiokonsole ab.",
     "featured": "Ausgewählter Track",
     "collectionsSection": "Studio-Kollektionen"
   },
@@ -283,16 +291,16 @@
     "saveTranslations": "Übersetzungen speichern",
     "saveError": "Fehler beim Speichern",
     "tabIngest": "Auto-Import",
-    "ingestTitle": "Auto-Import von Suno",
-    "ingestDesc": "Scannt den Ordner upmus/ auf dem Server. Jeder Unterordner muss eine Audiodatei und info.txt enthalten (Zeile 1 = Suno-Link, Zeile 2 = Künstler).",
-    "ingestInfoHint": "Zeile 1: Suno-Link, Zeile 2: Künstler",
+    "ingestTitle": "Musik-Auto-Import",
+    "ingestDesc": "Scannt den Ordner upmus/ auf dem Server. Jeder Unterordner muss eine Audiodatei und info.txt enthalten (Zeile 1 = Quelllink, Zeile 2 = Künstler).",
+    "ingestInfoHint": "Zeile 1: Quelllink, Zeile 2: Künstler",
     "ingestRunning": "Verarbeitung...",
     "ingestBtn": "Import starten",
     "ingestFormTitle": "Schnell-Upload",
-    "ingestFormDesc": "Lade Audio hoch, füge einen Suno-Link ein und klicke — der Track erscheint mit allen Metadaten auf der Seite.",
+    "ingestFormDesc": "Lade Audio hoch, füge einen Quelllink ein und klicke — der Track erscheint mit allen Metadaten auf der Seite.",
     "ingestAudioLabel": "Audiodatei",
-    "ingestUrlLabel": "Suno-Link",
-    "ingestArtistLabel": "Künstler (Standard — Suno AI)",
+    "ingestUrlLabel": "Quelllink",
+    "ingestArtistLabel": "Künstler (Standard — MusicBox)",
     "ingestUploadBtn": "Hochladen & verarbeiten",
     "ingestHasCover": "Cover",
     "ingestHasLyrics": "Text"

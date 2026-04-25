@@ -68,7 +68,16 @@
 - [x] Обновить 6 локалей под новые видимые подписи и убрать старые emoji из публичных строк
 - [x] Проверить live deploy на `https://musicbox.gornich.fun/`: HTML/assets/API 200, browser smoke desktop/mobile, playback bar, queue, auth state, light/dark theme
 
-## Фаза 6: Будущее (TODO)
+## Фаза 6: Professional SEO Semantic Core
+- [x] Убрать публичные AI/Suno/generated формулировки о музыке из MusicBox UI/meta/i18n и промо на `gornich.fun`
+- [x] Добавить backend SEO-render для `/`, `/browse`, `/explore`, `/playlists`, `/track/:slug`, `/collection/:slug`, `/playlist/:id`, `/favorites`
+- [x] Отдавать canonical, OG/Twitter, `rel="search"`, JSON-LD и видимый semantic fallback до загрузки React
+- [x] Индексировать полный lyrics на странице трека и добавить поиск по lyrics/description/genres/tags
+- [x] Добавить `pg_trgm` indexes, keyboard-layout/translit query variants, `search_match` и `search_snippet`
+- [x] Добавить backend `/robots.txt`, `/sitemap.xml`, `/opensearch.xml`, `/seo/semantic-index.json`, `/seo/structured-data.json`
+- [x] Обновить nginx routes, production build, live SEO smoke и редиректы старых `suno-*` slugs на нейтральные canonical URL
+
+## Фаза 7: Будущее (TODO)
 - [ ] Batch upload (несколько треков за раз)
 - [ ] Drag-n-drop загрузка
 - [x] Добавление треков в плейлист из контекстного меню

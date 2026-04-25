@@ -1,12 +1,12 @@
 """
-MusicBox Auto-Ingest: Suno → MusicBox pipeline.
+MusicBox Auto-Ingest: source link → MusicBox pipeline.
 
 Scans /opt/musicbox/upmus/ for folders containing:
   - An audio file (mp3, wav, flac, ogg, m4a)
-  - info.txt with: line1 = Suno URL, line2 = artist name
+  - info.txt with: line1 = source URL, line2 = artist name
 
 For each folder:
-  1. Parses Suno page → title, lyrics, genres, description, cover
+  1. Parses source page → title, lyrics, genres, description, cover
   2. Uses OpenAI to determine tags (mood, vocal, energy, occasion, era, language)
   3. Processes audio (duration, waveform)
   4. Creates DB record with all metadata
@@ -325,7 +325,7 @@ def parse_info_txt(folder: Path) -> tuple[str, str]:
     info_path = folder / "info.txt"
     lines = info_path.read_text(encoding="utf-8").strip().splitlines()
     suno_url = lines[0].strip() if len(lines) >= 1 else ""
-    artist = lines[1].strip() if len(lines) >= 2 else "Suno AI"
+    artist = lines[1].strip() if len(lines) >= 2 else "MusicBox"
     return suno_url, artist
 
 
@@ -363,7 +363,7 @@ async def ingest_folder(folder: Path, db: AsyncSession) -> dict:
     # 1. Read info.txt
     suno_url, artist = parse_info_txt(folder)
     if not suno_url:
-        return {"folder": folder_name, "status": "error", "message": "No Suno URL in info.txt"}
+        return {"folder": folder_name, "status": "error", "message": "No source URL in info.txt"}
 
     audio_file = find_audio_file(folder)
     if not audio_file:

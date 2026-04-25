@@ -98,9 +98,9 @@ export default function Extension() {
                 <span className="text-zinc-500">{t('nav.favorites')}</span>
               </div>
               {[
-                { title: 'Midnight Drive', artist: 'Suno AI', duration: '3:24' },
-                { title: 'Electric Dreams', artist: 'Suno AI', duration: '2:58' },
-                { title: 'Summer Vibes', artist: 'Suno AI', duration: '4:12' },
+                { title: 'Midnight Drive', artist: 'MusicBox', duration: '3:24' },
+                { title: 'Electric Dreams', artist: 'MusicBox', duration: '2:58' },
+                { title: 'Summer Vibes', artist: 'MusicBox', duration: '4:12' },
               ].map((track, i) => (
                 <div key={track.title} className={`flex items-center gap-3 rounded-lg border border-white/5 bg-white/[.03] px-2 py-2 ${i === 0 ? 'opacity-100' : 'opacity-55'}`}>
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-cyan-400 text-slate-950' : 'bg-zinc-800 text-zinc-500'}`}>
@@ -118,7 +118,7 @@ export default function Extension() {
                   <div className="w-10 h-10 rounded-lg bg-[linear-gradient(135deg,#22d3ee,#a3e635)]" />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-semibold text-white">Midnight Drive</div>
-                    <div className="text-[10px] text-zinc-500">Suno AI</div>
+                    <div className="text-[10px] text-zinc-500">MusicBox</div>
                   </div>
                   <div className="flex items-center gap-1 text-zinc-400">
                     <SkipBack size={14} />

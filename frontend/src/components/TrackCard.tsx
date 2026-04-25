@@ -115,6 +115,12 @@ export default function TrackCard({ track, tracks, idx, showArtist = true, showC
       <div className="min-w-0 flex-1">
         <Link to={`/track/${track.slug}`} className={`block text-sm font-semibold truncate ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text)]'} hover:text-[var(--accent)] transition`}>{track.title}</Link>
         {showArtist && <Link to={`/browse?artist=${encodeURIComponent(track.artist)}`} className="block text-xs text-[var(--text-dim)] truncate hover:text-[var(--accent)] hover:underline transition">{track.artist}</Link>}
+        {track.search_snippet && (
+          <p className="mt-1 line-clamp-2 text-xs text-[var(--text-dim)]">
+            <span className="mr-1 text-[var(--accent)]">{t(`search.match.${track.search_match || 'lyrics'}`)}</span>
+            {track.search_snippet}
+          </p>
+        )}
       </div>
 
       {/* Genre pills */}

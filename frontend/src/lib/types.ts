@@ -17,6 +17,8 @@ export interface Track {
   tags: Tag[]
   is_favorite: boolean
   position?: number
+  search_match?: 'title' | 'artist' | 'description' | 'lyrics' | 'genre' | 'tag'
+  search_snippet?: string
 }
 
 export interface Genre {

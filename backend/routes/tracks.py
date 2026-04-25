@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func, desc, asc, case
+from sqlalchemy import select, func, desc, asc, case, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Optional
@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import os
 import tempfile
 import json
+import re
 
 from fastapi.responses import FileResponse
 
@@ -17,6 +18,7 @@ from auth import get_current_user, require_user
 from models import User, Favorite
 from audio import convert_audio, get_available_download_formats, FORMAT_MIME, CONVERTED_DIR, STREAM_QUALITIES
 from slugify import make_slug
+from search_utils import build_search_terms, detect_search_match, normalize_public_music_text
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
 
@@ -26,10 +28,10 @@ def track_to_dict(track: Track, is_favorite: bool = False) -> dict:
         "id": str(track.id),
         "slug": track.slug,
         "title": track.title,
-        "artist": track.artist,
+        "artist": normalize_public_music_text(track.artist),
         "duration_seconds": track.duration_seconds,
         "cover_path": f"/uploads/covers/{os.path.basename(track.cover_path)}" if track.cover_path else None,
-        "description": track.description,
+        "description": normalize_public_music_text(track.description) if track.description else None,
         "has_lyrics": bool(track.lyrics),
         "play_count": track.play_count,
         "download_count": track.download_count,
@@ -60,7 +62,10 @@ async def list_tracks(
     user: Optional[User] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Track).options(selectinload(Track.genres), selectinload(Track.tags))
+    query = select(Track).options(
+        selectinload(Track.genres),
+        selectinload(Track.tags).selectinload(Tag.category),
+    )
 
     # Include filter by IDs (AND logic — track must have ALL selected genres)
     if genre_ids:
@@ -119,11 +124,32 @@ async def list_tracks(
             query = query.where(Track.id.in_(tag_track_ids))
 
     # Search
+    search_terms: list[str] = []
     if search:
-        like = f"%{search}%"
-        query = query.where(
-            (Track.title.ilike(like)) | (Track.artist.ilike(like))
-        )
+        search_terms = build_search_terms(search)
+        conditions = []
+        for term in search_terms:
+            like = f"%{term}%"
+            genre_track_ids = (
+                select(TrackGenre.track_id)
+                .join(Genre, Genre.id == TrackGenre.genre_id)
+                .where(or_(Genre.name.ilike(like), Genre.slug.ilike(like)))
+            )
+            tag_track_ids = (
+                select(TrackTag.track_id)
+                .join(Tag, Tag.id == TrackTag.tag_id)
+                .where(or_(Tag.name.ilike(like), Tag.slug.ilike(like)))
+            )
+            conditions.extend([
+                Track.title.ilike(like),
+                Track.artist.ilike(like),
+                Track.description.ilike(like),
+                Track.lyrics.ilike(like),
+                Track.id.in_(genre_track_ids),
+                Track.id.in_(tag_track_ids),
+            ])
+        if conditions:
+            query = query.where(or_(*conditions))
 
     # Count total
     count_q = select(func.count()).select_from(query.subquery())
@@ -161,8 +187,18 @@ async def list_tracks(
         )
         fav_ids = {row[0] for row in fav_result.all()}
 
+    items = []
+    for track in tracks:
+        item = track_to_dict(track, track.id in fav_ids)
+        if search_terms:
+            match = detect_search_match(track, search_terms)
+            if match:
+                item["search_match"] = match[0]
+                item["search_snippet"] = normalize_public_music_text(match[1])
+        items.append(item)
+
     return {
-        "tracks": [track_to_dict(t, t.id in fav_ids) for t in tracks],
+        "tracks": items,
         "total": total,
         "page": page,
         "limit": limit,
@@ -180,7 +216,7 @@ async def popular_tracks(
     if period == "all":
         query = (
             select(Track)
-            .options(selectinload(Track.genres), selectinload(Track.tags))
+            .options(selectinload(Track.genres), selectinload(Track.tags).selectinload(Tag.category))
             .order_by(desc(Track.play_count + Track.download_count * 3))
             .limit(limit)
         )
@@ -216,7 +252,7 @@ async def popular_tracks(
 
         query = (
             select(Track)
-            .options(selectinload(Track.genres), selectinload(Track.tags))
+            .options(selectinload(Track.genres), selectinload(Track.tags).selectinload(Tag.category))
             .join(subq, Track.id == subq.c.track_id)
             .order_by(desc(subq.c.score))
         )
@@ -242,13 +278,19 @@ async def get_track(
     try:
         uid = UUID(track_id)
         result = await db.execute(
-            select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == uid)
+            select(Track).options(selectinload(Track.genres), selectinload(Track.tags).selectinload(Tag.category)).where(Track.id == uid)
         )
     except (ValueError, AttributeError):
         result = await db.execute(
-            select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.slug == track_id)
+            select(Track).options(selectinload(Track.genres), selectinload(Track.tags).selectinload(Tag.category)).where(Track.slug == track_id)
         )
     track = result.scalar_one_or_none()
+    if not track and "suno" in track_id.lower():
+        cleaned_slug = re.sub("suno", "musicbox", track_id, flags=re.IGNORECASE)
+        result = await db.execute(
+            select(Track).options(selectinload(Track.genres), selectinload(Track.tags).selectinload(Tag.category)).where(Track.slug == cleaned_slug)
+        )
+        track = result.scalar_one_or_none()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
 
@@ -260,7 +302,7 @@ async def get_track(
         is_fav = fav.scalar_one_or_none() is not None
 
     data = track_to_dict(track, is_fav)
-    data["description"] = track.description
+    data["description"] = normalize_public_music_text(track.description) if track.description else None
     data["lyrics"] = track.lyrics
     data["waveform_peaks"] = track.waveform_peaks
     return data
@@ -364,7 +406,7 @@ async def download_track(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Track).options(selectinload(Track.genres), selectinload(Track.tags)).where(Track.id == track_id)
+        select(Track).options(selectinload(Track.genres), selectinload(Track.tags).selectinload(Tag.category)).where(Track.id == track_id)
     )
     track = result.scalar_one_or_none()
     if not track:

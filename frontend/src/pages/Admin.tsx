@@ -641,7 +641,7 @@ function IngestTab() {
   const [error, setError] = useState('')
 
   // Form state
-  const [sunoUrl, setSunoUrl] = useState('')
+  const [sourceUrl, setSourceUrl] = useState('')
   const [artist, setArtist] = useState('')
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -660,18 +660,18 @@ function IngestTab() {
   }
 
   const handleUpload = async () => {
-    if (!audioFile || !sunoUrl.trim()) return
+    if (!audioFile || !sourceUrl.trim()) return
     setUploading(true)
     setError('')
     setResults([])
     try {
       const fd = new FormData()
       fd.append('audio', audioFile)
-      fd.append('suno_url', sunoUrl.trim())
-      fd.append('artist', artist.trim() || 'Suno AI')
+      fd.append('suno_url', sourceUrl.trim())
+      fd.append('artist', artist.trim() || 'MusicBox')
       const res = await api.post('/api/admin/ingest/upload', fd)
       setResults(res.data.results || [])
-      setSunoUrl('')
+      setSourceUrl('')
       setArtist('')
       setAudioFile(null)
       // Reset file input
@@ -699,11 +699,11 @@ function IngestTab() {
               className="w-full text-sm text-[var(--text)] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-[var(--accent)]/10 file:text-[var(--accent)] hover:file:bg-[var(--accent)]/20 file:cursor-pointer" />
           </div>
 
-          {/* Suno URL */}
+          {/* Source URL */}
           <div>
             <label className="block text-xs text-[var(--text-dim)] mb-1">{t('admin.ingestUrlLabel')}</label>
-            <input type="text" value={sunoUrl} onChange={e => setSunoUrl(e.target.value)}
-              placeholder="https://suno.com/song/..."
+            <input type="text" value={sourceUrl} onChange={e => setSourceUrl(e.target.value)}
+              placeholder="https://example.com/song/..."
               className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] placeholder:text-[var(--text-dim)]/50 focus:outline-none focus:border-[var(--accent)]" />
           </div>
 
@@ -711,11 +711,11 @@ function IngestTab() {
           <div>
             <label className="block text-xs text-[var(--text-dim)] mb-1">{t('admin.ingestArtistLabel')}</label>
             <input type="text" value={artist} onChange={e => setArtist(e.target.value)}
-              placeholder="Suno AI"
+              placeholder="MusicBox"
               className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-sm text-[var(--text)] placeholder:text-[var(--text-dim)]/50 focus:outline-none focus:border-[var(--accent)]" />
           </div>
 
-          <button onClick={handleUpload} disabled={uploading || !audioFile || !sunoUrl.trim()}
+          <button onClick={handleUpload} disabled={uploading || !audioFile || !sourceUrl.trim()}
             className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 text-sm font-medium flex items-center gap-2">
             {uploading ? (
               <><span className="animate-spin">⏳</span> {t('admin.ingestRunning')}</>

@@ -26,7 +26,7 @@ export default function Sidebar() {
         </span>
         <div className="min-w-0">
           <span className="block text-lg font-black leading-tight tracking-normal text-[var(--text)]">MusicBox</span>
-          <span className="studio-kicker block truncate text-[0.62rem]">{t('brand.tagline', { defaultValue: 'AI music studio' })}</span>
+          <span className="studio-kicker block truncate text-[0.62rem]">{t('brand.tagline', { defaultValue: 'Music studio' })}</span>
         </div>
       </Link>
 

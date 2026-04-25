@@ -18,7 +18,15 @@
     "more": "Plus"
   },
   "search": {
-    "placeholder": "Rechercher des pistes, artistes..."
+    "placeholder": "Rechercher chansons, artistes, paroles...",
+    "match": {
+      "title": "Titre :",
+      "artist": "Artiste :",
+      "description": "Description :",
+      "lyrics": "Paroles :",
+      "genre": "Genre :",
+      "tag": "Tag :"
+    }
   },
   "player": {
     "pause": "Pause",
@@ -129,7 +137,7 @@
     "libraryKicker": "Console de bibliothèque"
   },
   "home": {
-    "hero": "Votre collection de musique IA. Écoutez, créez des playlists et profitez du son.",
+    "hero": "Votre collection musicale. Écoutez, créez des playlists et profitez du son.",
     "listen": "Écouter",
     "popular": "Populaire",
     "day": "Aujourd'hui",
@@ -144,8 +152,8 @@
     "noTracksYet": "Pas encore de pistes",
     "uploadHint": "Téléchargez des pistes via le panneau d'administration",
     "deckKicker": "Studio Deck",
-    "deckTitle": "Bibliothèque de musique IA pour une écoute ciblée.",
-    "deckSubtitle": "Explorez les nouvelles générations, gardez vos favoris, créez des playlists et écoutez tout depuis une console claire.",
+    "deckTitle": "Bibliothèque musicale pour une écoute ciblée.",
+    "deckSubtitle": "Explorez les nouveaux morceaux, gardez vos favoris, créez des playlists et écoutez tout depuis une console claire.",
     "featured": "Piste en vedette",
     "collectionsSection": "Collections studio"
   },
@@ -283,16 +291,16 @@
     "saveTranslations": "Enregistrer les traductions",
     "saveError": "Erreur d'enregistrement",
     "tabIngest": "Auto-import",
-    "ingestTitle": "Auto-import depuis Suno",
-    "ingestDesc": "Scanne le dossier upmus/ sur le serveur. Chaque sous-dossier doit contenir un fichier audio et info.txt (ligne 1 = lien Suno, ligne 2 = artiste).",
-    "ingestInfoHint": "ligne 1: lien Suno, ligne 2: artiste",
+    "ingestTitle": "Auto-import musique",
+    "ingestDesc": "Scanne le dossier upmus/ sur le serveur. Chaque sous-dossier doit contenir un fichier audio et info.txt (ligne 1 = lien source, ligne 2 = artiste).",
+    "ingestInfoHint": "ligne 1: lien source, ligne 2: artiste",
     "ingestRunning": "Traitement...",
     "ingestBtn": "Lancer l'import",
     "ingestFormTitle": "Upload rapide",
-    "ingestFormDesc": "Télécharge l'audio, colle le lien Suno et clique — le morceau apparaîtra sur le site avec toutes les métadonnées.",
+    "ingestFormDesc": "Télécharge l'audio, colle le lien source et clique — le morceau apparaîtra sur le site avec toutes les métadonnées.",
     "ingestAudioLabel": "Fichier audio",
-    "ingestUrlLabel": "Lien Suno",
-    "ingestArtistLabel": "Artiste (par défaut — Suno AI)",
+    "ingestUrlLabel": "Lien source",
+    "ingestArtistLabel": "Artiste (par défaut — MusicBox)",
     "ingestUploadBtn": "Télécharger et traiter",
     "ingestHasCover": "couverture",
     "ingestHasLyrics": "paroles"
