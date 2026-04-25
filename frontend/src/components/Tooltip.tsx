@@ -8,10 +8,14 @@ interface Props {
 
 export default function Tooltip({ text, children, position = 'top' }: Props) {
   const [show, setShow] = useState(false)
-  const timeout = useRef<ReturnType<typeof setTimeout>>()
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const onEnter = () => { timeout.current = setTimeout(() => setShow(true), 300) }
-  const onLeave = () => { clearTimeout(timeout.current); setShow(false) }
+  const onLeave = () => {
+    if (timeout.current) clearTimeout(timeout.current)
+    timeout.current = null
+    setShow(false)
+  }
 
   return (
     <span className="relative inline-flex" onMouseEnter={onEnter} onMouseLeave={onLeave} onFocus={onEnter} onBlur={onLeave}>

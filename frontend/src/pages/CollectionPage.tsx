@@ -5,6 +5,7 @@ import { api } from '@/lib/api'
 import { usePlayerStore } from '@/stores/playerStore'
 import type { Collection } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
+import { Layers3, Play } from 'lucide-react'
 
 export default function CollectionPage() {
   const { slug } = useParams()
@@ -35,10 +36,10 @@ export default function CollectionPage() {
   if (!collection) return null
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+    <div className="studio-page max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row gap-4 items-start">
-        <div className="w-40 h-40 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-6xl shrink-0 shadow-lg overflow-hidden">
+      <div className="studio-panel p-5 md:p-6 flex flex-col md:flex-row gap-4 items-start">
+        <div className="w-44 h-44 rounded-[2rem] bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center shrink-0 studio-cover-glow overflow-hidden">
           {collection.covers?.filter(Boolean).length ? (
             <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-0.5">
               {(collection.covers.filter(Boolean) as string[]).slice(0, 4).map((c, i) => (
@@ -46,15 +47,15 @@ export default function CollectionPage() {
               ))}
             </div>
           ) : (
-            <span>{collection.icon}</span>
+            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,var(--accent),var(--accent-2))]"><Layers3 size={58} className="text-[#061018]" /></div>
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">
+          <p className="studio-kicker mb-2">
             {collection.group_key ? t(collection.group_key) : t('collections.title')}
           </p>
-          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">
-            {collection.icon} {displayName}
+          <h1 className="studio-title text-3xl md:text-5xl mb-2">
+            {displayName}
           </h1>
           <p className="text-sm text-[var(--text-dim)]">
             {collection.track_count} {t('common.track')}
@@ -62,7 +63,8 @@ export default function CollectionPage() {
 
           {collection.tracks && collection.tracks.length > 0 && (
             <button onClick={playAll}
-              className="mt-3 px-5 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition">
+              className="studio-primary-button mt-3">
+              <Play size={17} fill="currentColor" />
               {t('playlist.playAll')}
             </button>
           )}
@@ -71,7 +73,7 @@ export default function CollectionPage() {
 
       {/* Track list */}
       {collection.tracks && collection.tracks.length > 0 ? (
-        <div className="space-y-1">
+        <div className="studio-track-list">
           {collection.tracks.map((track, idx) => (
             <TrackCard
               key={track.id}

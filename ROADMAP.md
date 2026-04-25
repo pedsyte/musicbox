@@ -59,7 +59,16 @@
 - [x] Обновление главной страницы gornich.fun (слайд + карточка)
 - [x] Git commit + push на GitHub
 
-## Фаза 5: Будущее (TODO)
+## Фаза 5: Studio Deck Redesign
+- [x] Исправить baseline TypeScript build: frontend-типы, Tooltip ref, playlist track id, settings theme typing
+- [x] Добавить `lucide-react` и заменить emoji в публичной навигации, карточках, player/queue/action controls
+- [x] Пересобрать дизайн-систему в `main.css`: dark/light tokens, Studio Deck surfaces, reusable panel/button/list/card/input classes, focus/reduced-motion states
+- [x] Переделать публичный shell: Sidebar, Header, MobileNav, PlayerBar, MobilePlayer, QueuePanel, GenreSidebar
+- [x] Переделать публичные страницы: Home, Browse, Track, Explore, Playlists, Playlist, Collection, Favorites, Extension, Auth, Settings, Privacy, 404
+- [x] Обновить 6 локалей под новые видимые подписи и убрать старые emoji из публичных строк
+- [x] Проверить live deploy на `https://musicbox.gornich.fun/`: HTML/assets/API 200, browser smoke desktop/mobile, playback bar, queue, auth state, light/dark theme
+
+## Фаза 6: Будущее (TODO)
 - [ ] Batch upload (несколько треков за раз)
 - [ ] Drag-n-drop загрузка
 - [x] Добавление треков в плейлист из контекстного меню

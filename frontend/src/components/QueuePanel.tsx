@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 import { formatTime } from '@/lib/utils'
 import { useRef } from 'react'
-import type { Track } from '@/lib/types'
+import { GripVertical, ListMusic, Music2, Play, Trash2, X } from 'lucide-react'
 
 export default function QueuePanel() {
   const { showQueue, toggleQueue, currentTrack, queue, queueSource, clearQueue, removeFromQueue, reorderQueue, play } = usePlayerStore()
@@ -26,24 +26,34 @@ export default function QueuePanel() {
   return (
     <>
       {/* Backdrop on mobile */}
-      <div className="md:hidden fixed inset-0 z-[60] bg-black/50" onClick={toggleQueue} />
+      <div className="md:hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm" onClick={toggleQueue} />
 
-      <div className="fixed top-0 right-0 z-[61] w-full md:w-80 h-full bg-[var(--surface)] border-l border-[var(--border)] shadow-2xl flex flex-col md:bottom-20 md:h-auto" style={{ maxHeight: 'calc(100vh - 5rem)' }}>
+      <div className="fixed top-0 right-0 z-[61] w-full md:w-96 h-full bg-[var(--player-bg)] border-l border-[var(--border-strong)] shadow-2xl backdrop-blur-2xl flex flex-col md:bottom-20 md:h-auto md:rounded-l-2xl" style={{ maxHeight: 'calc(100vh - 5rem)' }}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h2 className="text-base font-semibold text-[var(--text)]">{t('queue.title')}</h2>
+          <div className="flex items-center gap-3">
+            <span className="studio-icon-button h-9 w-9 text-[var(--accent)]">
+              <ListMusic size={18} />
+            </span>
+            <div>
+              <p className="studio-kicker">{t('queue.title')}</p>
+              <h2 className="text-base font-semibold text-[var(--text)]">{t('queue.next', { count: queue.length })}</h2>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <Tooltip text={t('queue.clearTooltip')}>
-              <button onClick={clearQueue} className="text-xs text-[var(--text-dim)] hover:text-[var(--text)] transition px-2 py-1 rounded hover:bg-[var(--surface-hover)]">{t('queue.clear')}</button>
+              <button onClick={clearQueue} className="studio-secondary-button px-3 py-1.5 text-xs">{t('queue.clear')}</button>
             </Tooltip>
             <Tooltip text={t('queue.close')}>
-              <button onClick={toggleQueue} className="text-[var(--text-dim)] hover:text-[var(--text)] text-xl leading-none">✕</button>
+              <button onClick={toggleQueue} className="studio-icon-button h-9 w-9" aria-label={t('queue.close')}>
+                <X size={17} />
+              </button>
             </Tooltip>
           </div>
         </div>
 
         {queueSource && (
-          <div className="px-4 py-2 text-xs text-[var(--text-dim)] border-b border-[var(--border)]">
+          <div className="px-4 py-2 text-xs text-[var(--text-dim)] border-b border-[var(--border)] bg-[var(--surface-soft)]">
             {t('queue.source')} {queueSource}
           </div>
         )}
@@ -52,13 +62,13 @@ export default function QueuePanel() {
           {/* Now Playing */}
           {currentTrack && (
             <div className="px-4 pt-3 pb-1">
-              <p className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">{t('queue.nowPlaying')}</p>
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/30">
-                <div className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
+              <p className="studio-kicker mb-2">{t('queue.nowPlaying')}</p>
+              <div className="flex items-center gap-3 p-2 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 shadow-[inset_0_0_0_1px_rgba(255,255,255,.04)]">
+                <div className="w-11 h-11 rounded-lg overflow-hidden bg-[var(--surface-hover)] shrink-0">
                   {currentTrack.cover_path ? (
                     <img src={currentTrack.cover_path} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">🎵</div>
+                    <div className="w-full h-full flex items-center justify-center text-[var(--text-dim)]"><Music2 size={18} /></div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -73,24 +83,24 @@ export default function QueuePanel() {
           {/* Up Next */}
           {queue.length > 0 && (
             <div className="px-4 pt-3 pb-20 md:pb-4">
-              <p className="text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">{t('queue.next', { count: queue.length })}</p>
-              <div className="space-y-1">
+              <p className="studio-kicker mb-2">{t('queue.next', { count: queue.length })}</p>
+              <div className="space-y-1.5">
                 {queue.map((track, idx) => (
                   <div key={`${track.id}-${idx}`}
                     draggable
                     onDragStart={() => handleDragStart(idx)}
                     onDragOver={(e) => handleDragOver(e, idx)}
                     onDrop={handleDrop}
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--surface-hover)] group transition cursor-grab active:cursor-grabbing"
+                    className="flex items-center gap-2 p-2 rounded-xl border border-transparent hover:border-[var(--border)] hover:bg-[var(--surface-hover)] group transition cursor-grab active:cursor-grabbing"
                   >
                     <Tooltip text={t('queue.dragTooltip')}>
-                      <span className="text-[var(--text-dim)] text-sm cursor-grab">≡</span>
+                      <span className="text-[var(--text-dim)] cursor-grab"><GripVertical size={16} /></span>
                     </Tooltip>
-                    <div className="w-8 h-8 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0">
+                    <div className="w-9 h-9 rounded-lg overflow-hidden bg-[var(--surface-hover)] shrink-0">
                       {track.cover_path ? (
                         <img src={track.cover_path} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs">🎵</div>
+                        <div className="w-full h-full flex items-center justify-center text-[var(--text-dim)]"><Music2 size={15} /></div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -100,10 +110,14 @@ export default function QueuePanel() {
                     <span className="text-xs text-[var(--text-dim)]">{formatTime(track.duration_seconds)}</span>
                     <div className="flex md:hidden md:group-hover:flex items-center gap-1">
                       <Tooltip text={t('queue.playTooltip')}>
-                        <button onClick={() => play(track)} className="text-xs hover:text-[var(--accent)] transition">▶</button>
+                        <button onClick={() => play(track)} className="studio-icon-button h-7 w-7 text-[var(--accent)]" aria-label={t('queue.playTooltip')}>
+                          <Play size={13} fill="currentColor" />
+                        </button>
                       </Tooltip>
                       <Tooltip text={t('queue.removeTooltip')}>
-                        <button onClick={() => removeFromQueue(idx)} className="text-xs hover:text-red-400 transition">✕</button>
+                        <button onClick={() => removeFromQueue(idx)} className="studio-icon-button h-7 w-7 hover:text-red-400" aria-label={t('queue.removeTooltip')}>
+                          <Trash2 size={13} />
+                        </button>
                       </Tooltip>
                     </div>
                   </div>
@@ -113,8 +127,11 @@ export default function QueuePanel() {
           )}
 
           {queue.length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-[var(--text-dim)]">
-              {t('queue.empty')}
+            <div className="px-4 py-12 text-center text-sm text-[var(--text-dim)]">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] text-[var(--accent)]">
+                <ListMusic size={21} />
+              </div>
+              <p>{t('queue.empty')}</p>
             </div>
           )}
         </div>

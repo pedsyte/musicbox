@@ -7,6 +7,7 @@ import { usePlayerStore } from '@/stores/playerStore'
 import type { Playlist, Track } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
 import Tooltip from '@/components/Tooltip'
+import { Edit3, Library, Play, Trash2, X } from 'lucide-react'
 
 export default function PlaylistPage() {
   const { id } = useParams()
@@ -46,7 +47,7 @@ export default function PlaylistPage() {
     navigate('/playlists')
   }
 
-  const removeTrack = async (trackId: number) => {
+  const removeTrack = async (trackId: string) => {
     await api.delete(`/api/playlists/${id}/tracks/${trackId}`)
     fetchPlaylist()
   }
@@ -61,41 +62,43 @@ export default function PlaylistPage() {
   if (!playlist) return null
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
+    <div className="studio-page max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row gap-4 items-start">
-        <div className="w-40 h-40 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-6xl shrink-0 shadow-lg">📋</div>
+      <div className="studio-panel p-5 md:p-6 flex flex-col md:flex-row gap-4 items-start">
+        <div className="w-44 h-44 rounded-[2rem] bg-[linear-gradient(135deg,var(--accent),var(--accent-3))] border border-[var(--border)] flex items-center justify-center shrink-0 studio-cover-glow">
+          <Library size={58} className="text-white/90" />
+        </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">{playlist.is_public ? t('playlist.publicLabel') : t('playlist.privateLabel')}</p>
+          <p className="studio-kicker mb-2">{playlist.is_public ? t('playlist.publicLabel') : t('playlist.privateLabel')}</p>
           {editing ? (
             <div className="space-y-2 mb-3">
               <input value={editName} onChange={e => setEditName(e.target.value)}
-                className="w-full bg-[var(--bg)] border border-[var(--border)] rounded-lg px-3 py-2 text-lg text-[var(--text)] font-bold focus:outline-none focus:border-[var(--accent)]" />
+                className="studio-input w-full rounded-2xl px-3 py-2 text-lg text-[var(--text)] font-bold focus:outline-none" />
               <label className="flex items-center gap-2 text-sm text-[var(--text-dim)]">
                 <input type="checkbox" checked={editPublic} onChange={e => setEditPublic(e.target.checked)} className="accent-[var(--accent)]" />
                 {t('playlists.public')}
               </label>
               <div className="flex gap-2">
-                <button onClick={saveEdit} className="px-3 py-1.5 bg-[var(--accent)] text-white rounded-lg text-sm">{t('playlist.save')}</button>
-                <button onClick={() => setEditing(false)} className="px-3 py-1.5 border border-[var(--border)] text-[var(--text-dim)] rounded-lg text-sm">{t('playlist.cancel')}</button>
+                <button onClick={saveEdit} className="studio-primary-button min-h-0 px-3 py-1.5 text-sm">{t('playlist.save')}</button>
+                <button onClick={() => setEditing(false)} className="studio-secondary-button min-h-0 px-3 py-1.5 text-sm">{t('playlist.cancel')}</button>
               </div>
             </div>
           ) : (
-            <h1 className="text-2xl font-bold text-[var(--text)] mb-1">{playlist.name}</h1>
+            <h1 className="studio-title text-3xl md:text-5xl mb-2">{playlist.name}</h1>
           )}
           <p className="text-sm text-[var(--text-dim)]">{playlist.track_count ?? playlist.tracks?.length ?? 0} {t('common.track')}</p>
 
           <div className="flex flex-wrap gap-2 mt-3">
             {playlist.tracks && playlist.tracks.length > 0 && (
-              <button onClick={playAll} className="px-5 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition">{t('playlist.playAll')}</button>
+              <button onClick={playAll} className="studio-primary-button"><Play size={17} fill="currentColor" />{t('playlist.playAll')}</button>
             )}
             {isOwner && !editing && (
               <>
                 <Tooltip text={t('playlist.edit')}>
-                  <button onClick={() => setEditing(true)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition">✏️</button>
+                  <button onClick={() => setEditing(true)} className="studio-icon-button h-10 w-10"><Edit3 size={17} /></button>
                 </Tooltip>
                 <Tooltip text={t('playlist.deletePlaylist')}>
-                  <button onClick={deletePlaylist} className="w-10 h-10 rounded-full border border-red-500/30 text-red-400 hover:bg-red-500/10 flex items-center justify-center transition">🗑</button>
+                  <button onClick={deletePlaylist} className="studio-icon-button h-10 w-10 border-red-500/30 text-red-400 hover:bg-red-500/10"><Trash2 size={17} /></button>
                 </Tooltip>
               </>
             )}
@@ -105,13 +108,13 @@ export default function PlaylistPage() {
 
       {/* Tracks */}
       {playlist.tracks && playlist.tracks.length > 0 ? (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+        <div className="studio-track-list">
           {playlist.tracks.map((track, idx) => (
             <div key={track.id} className="flex items-center">
               <div className="flex-1"><TrackCard track={track} tracks={playlist.tracks} idx={idx} /></div>
               {isOwner && (
                 <Tooltip text={t('playlist.removeFromPlaylist')}>
-                  <button onClick={() => removeTrack(track.id)} className="px-3 text-sm text-red-400 hover:text-red-300 transition">✕</button>
+                  <button onClick={() => removeTrack(track.id)} className="px-3 text-sm text-red-400 hover:text-red-300 transition"><X size={16} /></button>
                 </Tooltip>
               )}
             </div>
@@ -119,7 +122,7 @@ export default function PlaylistPage() {
         </div>
       ) : (
         <div className="text-center py-12 text-[var(--text-dim)]">
-          <p className="text-3xl mb-2">📋</p>
+          <Library size={36} className="mx-auto mb-2 text-[var(--accent)]" />
           <p>{t('playlist.empty')}</p>
         </div>
       )}

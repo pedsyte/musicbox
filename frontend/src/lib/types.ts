@@ -43,6 +43,7 @@ export interface Tag {
   category_slug?: string
   category_icon?: string | null
   track_count?: number
+  translations?: Record<string, string>
 }
 
 export interface Comment {
@@ -50,11 +51,13 @@ export interface Comment {
   text: string
   username: string
   user_id: string
+  avatar?: string | null
   created_at: string
 }
 
 export interface Playlist {
   id: string
+  user_id?: string
   name: string
   description: string | null
   is_public: boolean
@@ -97,6 +100,9 @@ export interface AdminStats {
   total_plays: number
   total_genres: number
   playlists: number
+  total_tracks?: number
+  total_users?: number
+  total_playlists?: number
 }
 
 export type RepeatMode = 'off' | 'all' | 'one'

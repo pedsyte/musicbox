@@ -1,14 +1,18 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Home, ShieldCheck } from 'lucide-react'
 
 export default function Privacy() {
   const { t } = useTranslation()
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-[var(--text)] mb-6">{t('privacy.title')}</h1>
-      <p className="text-xs text-[var(--text-dim)] mb-6">{t('privacy.updated')}</p>
+    <div className="studio-page max-w-3xl mx-auto">
+      <div className="studio-panel p-6">
+        <p className="studio-kicker inline-flex items-center gap-2"><ShieldCheck size={14} />MusicBox</p>
+        <h1 className="studio-title mt-2">{t('privacy.title')}</h1>
+        <p className="text-xs text-[var(--text-dim)] mt-3">{t('privacy.updated')}</p>
+      </div>
 
-      <div className="space-y-6 text-sm text-[var(--text-dim)] leading-relaxed">
+      <div className="studio-panel-flat p-6 space-y-6 text-sm text-[var(--text-dim)] leading-relaxed">
 
         <section>
           <h2 className="text-base font-semibold text-[var(--text)] mb-2">{t('privacy.s1_title')}</h2>
@@ -119,9 +123,7 @@ export default function Privacy() {
         </section>
       </div>
 
-      <div className="mt-8 pt-4 border-t border-[var(--border)]">
-        <Link to="/" className="text-sm text-[var(--accent)] hover:underline">{t('privacy.backHome')}</Link>
-      </div>
+      <Link to="/" className="studio-secondary-button w-fit"><Home size={16} />{t('privacy.backHome')}</Link>
     </div>
   )
 }

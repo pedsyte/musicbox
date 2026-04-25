@@ -58,7 +58,7 @@
     "title": "Download",
     "formatTitle": "Download format",
     "original": "original",
-    "button": "⬇ Download"
+    "button": "Download"
   },
   "track": {
     "label": "Track",
@@ -81,14 +81,14 @@
     "playNext": "Play next",
     "addToQueue": "Add to queue",
     "waveform": "Waveform",
-    "characteristics": "🏷️ Characteristics",
+    "characteristics": "Characteristics",
     "editTags": "Edit characteristics",
     "selectTags": "Select characteristics:",
     "noTags": "No characteristics",
-    "noTagsAdmin": "No characteristics. Click ✏️ to add.",
+    "noTagsAdmin": "No characteristics. Use edit to add.",
     "other": "Other",
-    "lyrics": "📝 Lyrics",
-    "comments": "💬 Comments",
+    "lyrics": "Lyrics",
+    "comments": "Comments",
     "commentPlaceholder": "Write a comment...",
     "commentSend": "Send",
     "commentLoginPrompt": "to leave a comment",
@@ -116,8 +116,8 @@
     "byDuration": "By duration",
     "tracksBy": "Tracks: {{artist}}",
     "browseTitle": "Browse tracks",
-    "allTracks": "← All tracks",
-    "excludeGenres": "🚫 Exclude genres",
+    "allTracks": "All tracks",
+    "excludeGenres": "Exclude genres",
     "reset": "Reset",
     "resetTags": "Reset tags",
     "searchLabel": "Search:",
@@ -125,50 +125,59 @@
     "noTracks": "No tracks found",
     "tracks": "track",
     "tracks_few": "tracks",
-    "tracks_many": "tracks"
+    "tracks_many": "tracks",
+    "libraryKicker": "Library console"
   },
   "home": {
     "hero": "Your AI music collection. Listen, create playlists, and enjoy the sound.",
     "listen": "Listen",
-    "popular": "🔥 Popular",
+    "popular": "Popular",
     "day": "Today",
     "week": "This week",
     "month": "This month",
     "allTime": "All time",
     "noData": "No data for this period",
-    "new": "✨ New releases",
-    "allLink": "All →",
-    "playlistsSection": "📋 Playlists",
-    "genresSection": "🎭 Genres",
+    "new": "New releases",
+    "allLink": "All",
+    "playlistsSection": "Playlists",
+    "genresSection": "Genres",
     "noTracksYet": "No tracks yet",
-    "uploadHint": "Upload tracks via the admin panel"
+    "uploadHint": "Upload tracks via the admin panel",
+    "deckKicker": "Studio Deck",
+    "deckTitle": "AI music library for focused listening.",
+    "deckSubtitle": "Browse new generations, save favorites, build playlists and play every track from a clean studio console.",
+    "featured": "Featured track",
+    "collectionsSection": "Studio collections"
   },
   "explore": {
     "title": "Genres",
-    "empty": "No genres added yet"
+    "empty": "No genres added yet",
+    "kicker": "Discovery"
   },
   "favorites": {
-    "title": "❤️ Favorites",
+    "title": "Favorites",
     "empty": "You have no favorite tracks yet",
-    "hint": "Click ❤️ on any track"
+    "hint": "Use the heart button on any track",
+    "kicker": "Saved tracks"
   },
   "playlists": {
     "my": "My playlists",
-    "create": "+ Create",
+    "create": "Create",
     "nameLabel": "Name",
     "namePlaceholder": "My playlist",
     "public": "Public",
     "createBtn": "Create",
     "empty": "You have no playlists yet",
     "publicSection": "Public playlists",
-    "publicEmpty": "No public playlists yet"
+    "publicEmpty": "No public playlists yet",
+    "kicker": "Your library"
   },
   "playlist": {
     "publicLabel": "Public playlist",
     "privateLabel": "Private playlist",
     "save": "Save",
     "cancel": "Cancel",
-    "playAll": "▶ Play all",
+    "playAll": "Play all",
     "edit": "Edit",
     "deletePlaylist": "Delete playlist",
     "deleteConfirm": "Delete playlist?",
@@ -202,8 +211,8 @@
     "removeAvatar": "Remove photo",
     "user": "User",
     "theme": "Theme",
-    "dark": "🌙 Dark",
-    "light": "☀️ Light",
+    "dark": "Dark",
+    "light": "Light",
     "waveform": "Waveform in player",
     "waveformHint": "Show waveform instead of linear progress",
     "changePassword": "Change password",
@@ -289,7 +298,7 @@
     "ingestHasLyrics": "lyrics"
   },
   "cookie": {
-    "title": "🍪 Cookie usage",
+    "title": "Cookie usage",
     "text1": "We use <strong>essential</strong> data (localStorage) for authentication and saving your settings.",
     "text2": "Additional data helps us improve the service (remembering interface state).",
     "moreInfo": "More info in our",
@@ -299,23 +308,24 @@
   },
   "sidebar": {
     "filters": "Filters",
-    "genresTitle": "🎭 Genres",
+    "genresTitle": "Genres",
     "addFilter": "Add to filter",
-    "removeFilter": "Remove from filter"
+    "removeFilter": "Remove from filter",
+    "top": "Top"
   },
   "extension": {
-    "title": "🧩 Chrome Extension",
+    "title": "Chrome Extension",
     "subtitle": "Mini-player right in your browser. Listen to music without an open tab — like a real desktop app.",
     "downloadBtn": "Download extension",
-    "searchPlaceholder": "🔍 Search tracks...",
+    "searchPlaceholder": "Search tracks...",
     "all": "All",
-    "top": "🔥 Top",
+    "top": "Top",
     "features": "Features",
     "howToInstall": "How to install",
     "howToInstallHint": "6 simple steps — takes less than a minute",
     "compatibility": "Compatibility",
     "compatibilityHint": "Works in all Chromium browsers (Manifest V3)",
-    "downloadFinal": "📥 Download MusicBox Player",
+    "downloadFinal": "Download MusicBox Player",
     "feat_bg": "Background playback",
     "feat_bg_desc": "Music plays even when the popup is closed. Mini-player always on the browser panel.",
     "feat_playlists": "Playlists",
@@ -343,7 +353,7 @@
     "step5_title": "Load the extension",
     "step5_desc": "Click 'Load unpacked' and select the folder with the files",
     "step6_title": "Done! Enjoy the music",
-    "step6_desc": "The 🎵 icon will appear on the browser panel. Pin it for quick access."
+    "step6_desc": "The MusicBox icon will appear on the browser panel. Pin it for quick access."
   },
   "notFound": {
     "title": "Page not found",
@@ -395,7 +405,7 @@
     "s8_text": "We may update this Policy. For significant changes, we will notify users through the service interface. We recommend periodically checking the current version on this page.",
     "s9_title": "9. Contact",
     "s9_text": "If you have questions about this Policy or the processing of your data, contact the service administrator.",
-    "backHome": "← Back to home"
+    "backHome": "Back to home"
   },
   "tagCategories": {
     "language": "Language",
@@ -423,14 +433,17 @@
     "vocalMale": "Male Vocal",
     "vocalFemale": "Female Vocal",
     "instrumental": "Instrumental",
-    "groupPopular": "🔥 Popular",
-    "groupNew": "🆕 New Releases",
-    "groupMood": "😌 By Mood",
-    "groupGenre": "🎵 By Genre",
-    "groupLanguage": "🌍 By Language",
-    "groupEnergy": "⚡ By Energy",
-    "groupVocal": "🎤 By Vocal",
-    "groupEra": "📅 By Era",
-    "groupOccasion": "🎧 By Occasion"
+    "groupPopular": "Popular",
+    "groupNew": "New Releases",
+    "groupMood": "By Mood",
+    "groupGenre": "By Genre",
+    "groupLanguage": "By Language",
+    "groupEnergy": "By Energy",
+    "groupVocal": "By Vocal",
+    "groupEra": "By Era",
+    "groupOccasion": "By Occasion"
+  },
+  "brand": {
+    "tagline": "Studio deck"
   }
 }

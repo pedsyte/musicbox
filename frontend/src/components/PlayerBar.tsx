@@ -7,6 +7,7 @@ import Tooltip from './Tooltip'
 import Waveform from './Waveform'
 import DownloadMenu from './DownloadMenu'
 import api from '@/lib/api'
+import { ListMusic, Music2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from 'lucide-react'
 
 export default function PlayerBar() {
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -116,22 +117,22 @@ export default function PlayerBar() {
 
   if (!currentTrack) return <audio ref={audioRef} preload="auto" />
 
-  const repeatIcons: Record<string, string> = { off: '↻', all: '🔁', one: '🔂' }
   const repeatLabels: Record<string, string> = { off: t('player.repeatOff'), all: t('player.repeatQueue'), one: t('player.repeatTrack') }
+  const VolumeIcon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2
 
   return (
     <>
       <audio ref={audioRef} preload="auto" />
 
       {/* Desktop Player */}
-      <div className="hidden md:flex fixed bottom-0 left-0 right-0 z-50 h-20 bg-[var(--surface)] border-t border-[var(--border)] items-center justify-center px-4 gap-4">
+      <div className="hidden md:flex fixed bottom-0 left-0 right-0 z-50 h-[5.5rem] border-t border-[var(--border)] bg-[var(--player-bg)] items-center justify-center px-4 gap-4 backdrop-blur-2xl">
         {/* Track info */}
         <div className="flex items-center gap-3 w-64 min-w-0 shrink-0">
-          <div className="w-12 h-12 rounded-lg overflow-hidden bg-[var(--surface-hover)] shrink-0">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[var(--surface-hover)] shrink-0 studio-cover-glow">
             {currentTrack.cover_path ? (
               <img src={currentTrack.cover_path} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl">🎵</div>
+              <div className="w-full h-full flex items-center justify-center bg-[linear-gradient(135deg,var(--accent),var(--accent-3))]"><MusicFallback /></div>
             )}
           </div>
           <div className="min-w-0">
@@ -146,22 +147,22 @@ export default function PlayerBar() {
         <div className="flex-1 flex flex-col items-center gap-1 max-w-2xl">
           <div className="flex items-center gap-3">
             <Tooltip text={shuffle ? t('player.shuffleOn') : t('player.shuffle')}>
-              <button onClick={toggleShuffle} className={`p-1 text-sm transition ${shuffle ? '' : 'opacity-40 grayscale hover:opacity-70'}`}>🔀</button>
+              <button onClick={toggleShuffle} className={`studio-icon-button h-8 w-8 ${shuffle ? 'active text-[var(--accent)]' : ''}`}><Shuffle size={16} /></button>
             </Tooltip>
             <Tooltip text={t('player.prevTrack')}>
-              <button onClick={prev} className="p-1 text-lg text-[var(--text-dim)] hover:text-[var(--text)] transition">⏮</button>
+              <button onClick={prev} className="studio-icon-button h-8 w-8"><SkipBack size={17} /></button>
             </Tooltip>
             <Tooltip text={isPlaying ? t('player.pause') : t('player.play')}>
-              <button onClick={togglePlay} className="w-9 h-9 rounded-full bg-[var(--text)] text-[var(--bg)] flex items-center justify-center text-lg hover:scale-105 transition">
-                {isPlaying ? '⏸' : <span className="pl-0.5">▶</span>}
+              <button onClick={togglePlay} className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--accent),var(--accent-2))] text-[#061018] shadow-[0_0_28px_color-mix(in_srgb,var(--accent)_34%,transparent)] transition hover:scale-105">
+                {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
               </button>
             </Tooltip>
             <Tooltip text={t('player.nextTrack')}>
-              <button onClick={next} className="p-1 text-lg text-[var(--text-dim)] hover:text-[var(--text)] transition">⏭</button>
+              <button onClick={next} className="studio-icon-button h-8 w-8"><SkipForward size={17} /></button>
             </Tooltip>
             <Tooltip text={repeatLabels[repeat]}>
-              <button onClick={toggleRepeat} className={`p-1 text-sm transition ${repeat !== 'off' ? 'text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--text)]'}`}>
-                {repeatIcons[repeat]}
+              <button onClick={toggleRepeat} className={`studio-icon-button h-8 w-8 ${repeat !== 'off' ? 'active text-[var(--accent)]' : ''}`}>
+                {repeat === 'one' ? <Repeat1 size={16} /> : <Repeat size={16} />}
               </button>
             </Tooltip>
           </div>
@@ -172,8 +173,8 @@ export default function PlayerBar() {
               {showWaveform && peaks.length > 0 ? (
                 <Waveform peaks={peaks} currentTime={currentTime} duration={duration} onSeek={handleSeek} height={32} />
               ) : (
-                <div ref={progressRef} className="h-1.5 rounded-full bg-[var(--surface-hover)] cursor-pointer group relative" onClick={handleProgressClick}>
-                  <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }} />
+                <div ref={progressRef} className="h-1.5 rounded-full bg-[var(--waveform-dim)] cursor-pointer group relative overflow-hidden" onClick={handleProgressClick}>
+                  <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--accent),var(--accent-2))] transition-all" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }} />
                 </div>
               )}
             </div>
@@ -227,32 +228,32 @@ export default function PlayerBar() {
           </div>
           <Tooltip text={t('player.volume', { value: Math.round(volume * 100) })}>
             <div className="flex items-center gap-1">
-              <span className="text-sm">{volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}</span>
+              <VolumeIcon size={17} className="text-[var(--text-dim)]" />
               <input type="range" min="0" max="1" step="0.01" value={volume} onChange={e => setVolume(parseFloat(e.target.value))}
                 className="w-20 h-1 accent-[var(--accent)]" />
             </div>
           </Tooltip>
           <Tooltip text={t('player.queue')}>
-            <button onClick={toggleQueue} className={`p-1 text-sm transition ${showQueue ? 'text-[var(--accent)]' : 'text-[var(--text-dim)] hover:text-[var(--text)]'}`}>📋</button>
+            <button onClick={toggleQueue} className={`studio-icon-button h-8 w-8 ${showQueue ? 'active text-[var(--accent)]' : ''}`}><ListMusic size={16} /></button>
           </Tooltip>
           <Tooltip text={t('player.download')}>
-            <DownloadMenu trackId={currentTrack.id} originalFormat={currentTrack.original_format || 'wav'} compact />
+            <DownloadMenu trackId={currentTrack.id} originalFormat={currentTrack.original_format || 'wav'} compact className="h-8 w-8" />
           </Tooltip>
         </div>
       </div>
 
       {/* Mobile Player - compact bar */}
-      <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 bg-[var(--surface)] border-t border-[var(--border)]">
-        <div className="h-0.5 bg-[var(--surface-hover)]">
-          <div className="h-full bg-[var(--accent)]" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }} />
+      <div className="md:hidden fixed bottom-16 left-0 right-0 z-50 border-t border-[var(--border)] bg-[var(--player-bg)] backdrop-blur-2xl">
+        <div className="h-0.5 bg-[var(--waveform-dim)]">
+          <div className="h-full bg-[linear-gradient(90deg,var(--accent),var(--accent-2))]" style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }} />
         </div>
         <div className="flex items-center gap-2 p-2">
-          <div className="w-10 h-10 rounded overflow-hidden bg-[var(--surface-hover)] shrink-0"
+          <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--surface-hover)] shrink-0"
             onClick={() => setShowMobilePlayer(true)}>
             {currentTrack.cover_path ? (
               <img src={currentTrack.cover_path} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-lg">🎵</div>
+              <div className="w-full h-full flex items-center justify-center bg-[linear-gradient(135deg,var(--accent),var(--accent-3))]"><MusicFallback small /></div>
             )}
           </div>
           <div className="flex-1 min-w-0" onClick={() => setShowMobilePlayer(true)}>
@@ -261,12 +262,16 @@ export default function PlayerBar() {
               onClick={e => e.stopPropagation()}
               className="text-xs text-[var(--text-dim)] truncate block hover:text-[var(--accent)]">{currentTrack.artist}</a>
           </div>
-          <button onClick={(e) => { e.stopPropagation(); prev() }} className="p-1.5 text-lg text-[var(--text-dim)]">⏮</button>
-          <button onClick={(e) => { e.stopPropagation(); togglePlay() }} className="p-1.5 text-xl">{isPlaying ? '⏸' : '▶'}</button>
-          <button onClick={(e) => { e.stopPropagation(); next() }} className="p-1.5 text-lg text-[var(--text-dim)]">⏭</button>
-          <button onClick={(e) => { e.stopPropagation(); toggleQueue() }} className="p-1.5 text-sm text-[var(--text-dim)]">📋</button>
+          <button onClick={(e) => { e.stopPropagation(); prev() }} className="studio-icon-button h-9 w-9"><SkipBack size={17} /></button>
+          <button onClick={(e) => { e.stopPropagation(); togglePlay() }} className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--text)] text-[var(--bg)]">{isPlaying ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" className="ml-0.5" />}</button>
+          <button onClick={(e) => { e.stopPropagation(); next() }} className="studio-icon-button h-9 w-9"><SkipForward size={17} /></button>
+          <button onClick={(e) => { e.stopPropagation(); toggleQueue() }} className="studio-icon-button h-9 w-9"><ListMusic size={16} /></button>
         </div>
       </div>
     </>
   )
+}
+
+function MusicFallback({ small = false }: { small?: boolean }) {
+  return <Music2 className="text-white/90" size={small ? 18 : 24} />
 }

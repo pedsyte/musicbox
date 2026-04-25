@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import type { Track, Genre, SortOption, TagCategory } from '@/lib/types'
 import TrackCard from '@/components/TrackCard'
+import { ChevronLeft, ChevronRight, Filter, ListFilter, Music2, Search, X } from 'lucide-react'
 
 export default function Browse() {
   const { t, i18n } = useTranslation()
@@ -85,25 +86,33 @@ export default function Browse() {
   const [showFilters, setShowFilters] = useState(false)
 
   return (
-    <div className="p-4 md:p-6">
-      <h1 className="text-xl font-bold text-[var(--text)] mb-4">
-        {artistFilter ? t('browse.tracksBy', { artist: artistFilter }) : t('browse.browseTitle')}
-      </h1>
+    <div className="studio-page space-y-5">
+      <section className="studio-panel p-5 md:p-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="studio-kicker mb-2 flex items-center gap-2"><Music2 size={14} />{t('browse.libraryKicker', { defaultValue: 'Library console' })}</div>
+            <h1 className="studio-title text-2xl md:text-4xl">
+              {artistFilter ? t('browse.tracksBy', { artist: artistFilter }) : t('browse.browseTitle')}
+            </h1>
+          </div>
+          <div className="text-sm text-[var(--text-dim)]">{total} {t('common.track', { count: total })}</div>
+        </div>
+      </section>
       {artistFilter && (
         <button onClick={() => { const p = new URLSearchParams(params); p.delete('artist'); setParams(p) }}
-          className="mb-4 text-sm text-[var(--accent)] hover:underline">{t('browse.allTracks')}</button>
+          className="text-sm text-[var(--accent)] hover:underline">{t('browse.allTracks')}</button>
       )}
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="studio-panel-flat sticky top-[4.5rem] z-20 flex flex-wrap items-center gap-2 p-3">
         <select value={sort} onChange={e => { const p = new URLSearchParams(params); p.set('sort', e.target.value); setParams(p) }}
-          className="bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[var(--accent)]">
+          className="studio-input rounded-2xl px-3 py-2 text-sm focus:outline-none">
           {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
 
         <button onClick={() => setShowFilters(!showFilters)}
-          className={`px-3 py-2 text-sm rounded-lg border transition ${excludeGenres.length ? 'border-red-500/50 text-red-400 bg-red-500/10' : 'border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)]'}`}>
-          🚫 {t('browse.excludeGenres')} {excludeGenres.length > 0 && '(' + excludeGenres.length + ')'}
+          className={`studio-secondary-button min-h-0 px-3 py-2 text-sm ${excludeGenres.length ? 'border-red-500/50 text-red-400 bg-red-500/10' : ''}`}>
+          <ListFilter size={16} /> {t('browse.excludeGenres')} {excludeGenres.length > 0 && '(' + excludeGenres.length + ')'}
         </button>
 
         {includeGenres.length > 0 && (
@@ -114,7 +123,7 @@ export default function Browse() {
               return (
                 <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
                   {genre.name}
-                  <button onClick={() => toggleGenre(id, 'include')} className="hover:text-white transition">✕</button>
+                  <button onClick={() => toggleGenre(id, 'include')} className="hover:text-white transition"><X size={12} /></button>
                 </span>
               )
             })}
@@ -132,7 +141,7 @@ export default function Browse() {
                 <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-[var(--accent)]/15 text-[var(--accent)]">
                   {tag.translations?.[i18n.language] || tag.name}
                   <button onClick={() => { const p = new URLSearchParams(params); const cur = includeTags.filter(t => t !== id); if (cur.length) p.set('tags', cur.join(',')); else p.delete('tags'); setParams(p) }}
-                    className="hover:text-white transition">✕</button>
+                    className="hover:text-white transition"><X size={12} /></button>
                 </span>
               )
             })}
@@ -142,18 +151,19 @@ export default function Browse() {
         )}
 
         {q && (
-          <span className="text-sm text-[var(--text-dim)]">
+          <span className="text-sm text-[var(--text-dim)] inline-flex items-center gap-2">
+            <Search size={14} />
             {t('browse.searchLabel')} <span className="text-[var(--text)]">{q}</span>
           </span>
         )}
 
-        <span className="ml-auto text-sm text-[var(--text-dim)]">{total} {t('common.track', { count: total })}</span>
+        <span className="ml-auto hidden text-sm text-[var(--text-dim)] md:inline">{total} {t('common.track', { count: total })}</span>
       </div>
 
       {/* Genre filters */}
       {showFilters && (
-        <div className="mb-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl relative z-10">
-          <p className="text-xs text-[var(--text-dim)] mb-2">{t('browse.excludeHint')}</p>
+        <div className="p-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl relative z-10">
+          <p className="text-xs text-[var(--text-dim)] mb-2 flex items-center gap-2"><Filter size={14} />{t('browse.excludeHint')}</p>
           <div className="flex flex-wrap gap-1.5">
             {genres.map(genre => {
               const isExcluded = excludeGenres.includes(genre.id)
@@ -175,14 +185,14 @@ export default function Browse() {
           <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : tracks.length > 0 ? (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)]">
+        <div className="studio-track-list">
           {tracks.map((track, idx) => (
             <TrackCard key={track.id} track={track} tracks={tracks} idx={idx} />
           ))}
         </div>
       ) : (
         <div className="text-center py-16 text-[var(--text-dim)]">
-          <p className="text-3xl mb-2">🔍</p>
+          <Search size={36} className="mx-auto mb-2 text-[var(--accent)]" />
           <p>{t('browse.noTracks')}</p>
         </div>
       )}
@@ -191,10 +201,14 @@ export default function Browse() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button disabled={page <= 1} onClick={() => setPage(page - 1)}
-            className="px-3 py-1.5 text-sm rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)] disabled:opacity-30 transition">←</button>
+            className="studio-icon-button h-9 w-9 disabled:opacity-30" aria-label={t('nav.back')}>
+            <ChevronLeft size={16} />
+          </button>
           <span className="text-sm text-[var(--text-dim)]">{page} / {totalPages}</span>
           <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
-            className="px-3 py-1.5 text-sm rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-dim)] hover:bg-[var(--surface-hover)] disabled:opacity-30 transition">→</button>
+            className="studio-icon-button h-9 w-9 disabled:opacity-30" aria-label={t('nav.forward')}>
+            <ChevronRight size={16} />
+          </button>
         </div>
       )}
     </div>

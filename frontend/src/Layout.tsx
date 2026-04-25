@@ -12,7 +12,7 @@ export default function Layout() {
   const { currentTrack } = usePlayerStore()
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[var(--bg)]">
+    <div className="studio-shell flex flex-col h-screen overflow-hidden text-[var(--text)]">
       {/* Top area: sidebar + content */}
       <div className={`flex flex-1 min-h-0 ${currentTrack ? 'pb-20 md:pb-20 max-md:pb-[7.5rem]' : ''}`}>
         {/* Sidebar (desktop) */}
@@ -33,6 +33,7 @@ export default function Layout() {
 
       {/* Player */}
       <PlayerBar />
+      <MobilePlayer />
 
       {/* Queue panel */}
       <QueuePanel />

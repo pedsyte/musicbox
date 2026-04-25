@@ -9,6 +9,7 @@ import Tooltip from '@/components/Tooltip'
 import Waveform from '@/components/Waveform'
 import DownloadMenu from '@/components/DownloadMenu'
 import { formatTime } from '@/lib/utils'
+import { AudioWaveform as WaveformIcon, Calendar, Download, Edit3, Heart, MessageCircle, Music2, Pause, Play, Plus, SkipForward, Tags, Trash2, X } from 'lucide-react'
 
 export default function TrackPage() {
   const { slug } = useParams()
@@ -201,20 +202,20 @@ export default function TrackPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
+    <div className="studio-page max-w-5xl space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row gap-6 items-start">
-        <div className="w-52 h-52 md:w-64 md:h-64 rounded-2xl overflow-hidden bg-[var(--surface)] border border-[var(--border)] shrink-0 shadow-lg mx-auto md:mx-0">
+      <div className="studio-panel p-5 md:p-6 flex flex-col md:flex-row gap-6 items-start overflow-hidden">
+        <div className="w-56 h-56 md:w-72 md:h-72 rounded-[2rem] overflow-hidden bg-[var(--surface)] border border-[var(--border)] shrink-0 studio-cover-glow mx-auto md:mx-0">
           {track.cover_path ? (
             <img src={track.cover_path} alt={track.title} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-purple-600/20 to-fuchsia-600/20">🎵</div>
+            <div className="w-full h-full flex items-center justify-center bg-[linear-gradient(135deg,var(--accent),var(--accent-3))]"><Music2 size={72} className="text-white/90" /></div>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-[var(--text-dim)] uppercase tracking-wider mb-1">{t('track.label')}</p>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-1">{track.title}</h1>
+          <p className="studio-kicker mb-2">{t('track.label')}</p>
+          <h1 className="studio-title text-3xl md:text-5xl mb-2">{track.title}</h1>
           <a href={`/browse?artist=${encodeURIComponent(track.artist)}`}
             className="text-lg text-[var(--text-dim)] mb-3 hover:text-[var(--accent)] hover:underline transition block">{track.artist}</a>
 
@@ -238,7 +239,7 @@ export default function TrackPage() {
                 <Tooltip text={t('track.editGenres')}>
                   <button onClick={genreEditing ? () => setGenreEditing(false) : openGenreEditor}
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${genreEditing ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--surface)]'}`}>
-                    ✏️
+                    <Edit3 size={13} />
                   </button>
                 </Tooltip>
               )}
@@ -250,12 +251,13 @@ export default function TrackPage() {
                 <div className="flex flex-wrap gap-1.5">
                   {allGenres.map(g => (
                     <button key={g.id} onClick={() => toggleGenre(g.id)}
-                      className={`px-2.5 py-1 text-xs rounded-full border transition ${
+                      className={`px-2.5 py-1 text-xs rounded-full border transition inline-flex items-center gap-1 ${
                         trackGenreIds.has(g.id)
                           ? 'bg-[var(--accent)] border-[var(--accent)] text-white'
                           : 'bg-[var(--surface-hover)] border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
                       }`}>
-                      {trackGenreIds.has(g.id) ? `✕ ${g.name}` : `+ ${g.name}`}
+                      {trackGenreIds.has(g.id) ? <X size={11} /> : <Plus size={11} />}
+                      {g.name}
                     </button>
                   ))}
                 </div>
@@ -271,34 +273,34 @@ export default function TrackPage() {
 
           {/* Meta info row */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--text-dim)] mb-4">
-            <span>⏱ {formatTime(track.duration_seconds)}</span>
-            <span>▶ {track.play_count} {t('track.plays')}</span>
-            <span>📥 {track.download_count} {t('track.downloads')}</span>
-            <span>📅 {formatDate(track.uploaded_at)}</span>
-            <span className="uppercase">🎧 {track.original_format || 'wav'}</span>
+            <span>{formatTime(track.duration_seconds)}</span>
+            <span className="inline-flex items-center gap-1"><Play size={12} />{track.play_count} {t('track.plays')}</span>
+            <span className="inline-flex items-center gap-1"><Download size={12} />{track.download_count} {t('track.downloads')}</span>
+            <span className="inline-flex items-center gap-1"><Calendar size={12} />{formatDate(track.uploaded_at)}</span>
+            <span className="uppercase inline-flex items-center gap-1"><Music2 size={12} />{track.original_format || 'wav'}</span>
           </div>
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-2">
             <Tooltip text={isCurrent && isPlaying ? t('track.pauseBtn') : t('track.playBtn')}>
               <button onClick={() => play(track)}
-                className="px-6 py-2.5 bg-[var(--accent)] text-white rounded-full text-sm font-medium hover:opacity-90 transition flex items-center gap-2">
-                {isCurrent && isPlaying ? '⏸' : '▶'} {isCurrent && isPlaying ? t('track.pauseBtn') : t('track.playBtn')}
+                className="studio-primary-button">
+                {isCurrent && isPlaying ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />} {isCurrent && isPlaying ? t('track.pauseBtn') : t('track.playBtn')}
               </button>
             </Tooltip>
             {user && (
               <Tooltip text={isFav ? t('track.removeFav') : t('track.addFav')}>
                 <button onClick={toggleFav}
-                  className={`w-10 h-10 rounded-full border flex items-center justify-center transition ${isFav ? 'border-red-400 text-red-400' : 'border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)]'}`}>
-                  {isFav ? '❤️' : '🤍'}
+                  className={`studio-icon-button h-10 w-10 ${isFav ? 'border-[var(--accent-3)]/50 text-[var(--accent-3)]' : ''}`}>
+                  <Heart size={17} fill={isFav ? 'currentColor' : 'none'} />
                 </button>
               </Tooltip>
             )}
             <Tooltip text={t('track.playNext')}>
-              <button onClick={() => playNext(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">⏭</button>
+              <button onClick={() => playNext(track)} className="studio-icon-button h-10 w-10"><SkipForward size={17} /></button>
             </Tooltip>
             <Tooltip text={t('track.addToQueue')}>
-              <button onClick={() => addToQueue(track)} className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--text)] flex items-center justify-center transition text-sm">+</button>
+              <button onClick={() => addToQueue(track)} className="studio-icon-button h-10 w-10"><Plus size={17} /></button>
             </Tooltip>
             <DownloadMenu trackId={track.id} originalFormat={track.original_format || 'wav'} compact />
           </div>
@@ -307,21 +309,22 @@ export default function TrackPage() {
 
       {/* Waveform */}
       {peaks.length > 0 && (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4">
-          <p className="text-xs text-[var(--text-dim)] mb-2">{t('track.waveform')}</p>
+        <div className="studio-panel-flat p-4">
+          <p className="text-xs text-[var(--text-dim)] mb-2 inline-flex items-center gap-2"><WaveformIcon size={14} />{t('track.waveform')}</p>
           <Waveform peaks={peaks} currentTime={isCurrent ? currentTime : 0} duration={isCurrent ? duration : track.duration_seconds} onSeek={isCurrent ? seek : () => play(track)} height={80} />
         </div>
       )}
 
       {/* Tags / Characteristics */}
-      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5" ref={tagRef}>
+      <div className="studio-panel-flat p-5" ref={tagRef}>
         <div className="flex items-center gap-2 mb-3">
+          <Tags size={16} className="text-[var(--accent)]" />
           <h2 className="text-sm font-semibold text-[var(--text)]">{t('track.characteristics')}</h2>
           {user?.is_admin && (
             <Tooltip text={t('track.editTags')}>
               <button onClick={tagEditing ? () => setTagEditing(false) : openTagEditor}
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition ${tagEditing ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-dim)] hover:text-[var(--accent)] hover:bg-[var(--surface-hover)]'}`}>
-                ✏️
+                <Edit3 size={13} />
               </button>
             </Tooltip>
           )}
@@ -331,7 +334,7 @@ export default function TrackPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.entries(tagsByCategory).map(([key, cat]) => (
               <div key={key} className="flex items-start gap-2">
-                <span className="text-sm shrink-0 mt-0.5">{cat.icon || '🏷️'}</span>
+                <Tags size={15} className="text-[var(--text-dim)] shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs font-medium text-[var(--text-dim)] mb-1">{t('tagCategories.' + key, { defaultValue: cat.name })}</p>
                   <div className="flex flex-wrap gap-1">
@@ -355,16 +358,17 @@ export default function TrackPage() {
             <p className="text-xs text-[var(--text-dim)] font-medium">{t('track.selectTags')}</p>
             {allTagCategories.map(cat => (
               <div key={cat.id}>
-                <p className="text-xs font-medium text-[var(--text)] mb-1">{cat.icon || '🏷️'} {t('tagCategories.' + cat.slug, { defaultValue: cat.name })}</p>
+                <p className="text-xs font-medium text-[var(--text)] mb-1">{t('tagCategories.' + cat.slug, { defaultValue: cat.name })}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {cat.tags.map(tag => (
                     <button key={tag.id} onClick={() => toggleTag(tag, cat.slug, cat.icon, cat.name)}
-                      className={`px-2.5 py-1 text-xs rounded-full border transition ${
+                      className={`px-2.5 py-1 text-xs rounded-full border transition inline-flex items-center gap-1 ${
                         trackTagIds.has(tag.id)
                           ? 'bg-[var(--accent)] border-[var(--accent)] text-white'
                           : 'bg-[var(--surface-hover)] border-[var(--border)] text-[var(--text-dim)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
                       }`}>
-                      {trackTagIds.has(tag.id) ? `✕ ${tag.translations?.[i18n.language] || tag.name}` : `+ ${tag.translations?.[i18n.language] || tag.name}`}
+                      {trackTagIds.has(tag.id) ? <X size={11} /> : <Plus size={11} />}
+                      {tag.translations?.[i18n.language] || tag.name}
                     </button>
                   ))}
                 </div>
@@ -376,15 +380,16 @@ export default function TrackPage() {
 
       {/* Lyrics */}
       {track.lyrics && (
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+        <div className="studio-panel-flat p-6">
           <h2 className="text-sm font-semibold text-[var(--text)] mb-3">{t('track.lyrics')}</h2>
           <div className="text-sm text-[var(--text-dim)] whitespace-pre-wrap leading-relaxed">{track.lyrics}</div>
         </div>
       )}
 
       {/* Comments */}
-      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-5">
-        <h2 className="text-sm font-semibold text-[var(--text)] mb-4">
+      <div className="studio-panel-flat p-5">
+        <h2 className="text-sm font-semibold text-[var(--text)] mb-4 inline-flex items-center gap-2">
+          <MessageCircle size={16} className="text-[var(--accent)]" />
           {t('track.comments')} {commentTotal > 0 && <span className="text-[var(--text-dim)] font-normal">({commentTotal})</span>}
         </h2>
 
@@ -434,7 +439,7 @@ export default function TrackPage() {
                     <span className="text-[10px] text-[var(--text-dim)]">{formatCommentDate(c.created_at)}</span>
                     {(user?.is_admin || user?.id === c.user_id) && (
                       <button onClick={() => deleteComment(c.id)}
-                        className="text-[10px] text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition">🗑</button>
+                        className="text-[10px] text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition"><Trash2 size={12} /></button>
                     )}
                   </div>
                   <p className="text-sm text-[var(--text-dim)] break-words">{c.text}</p>

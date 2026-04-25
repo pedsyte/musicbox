@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Music2, UserPlus } from 'lucide-react'
 
 export default function Register() {
   const { register, error, loading } = useAuthStore()
@@ -22,10 +23,12 @@ export default function Register() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh] p-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <div className="flex items-center justify-center min-h-[70vh] p-4">
+      <form onSubmit={handleSubmit} className="studio-panel w-full max-w-sm space-y-4 p-6">
         <div className="text-center mb-6">
-          <img src="/logo.png" alt="MusicBox" className="w-20 h-20 mx-auto" />
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] text-[var(--accent)]">
+            <Music2 size={28} />
+          </div>
           <h1 className="text-xl font-bold text-[var(--text)] mt-2">{t('auth.registerTitle')}</h1>
         </div>
 
@@ -34,21 +37,22 @@ export default function Register() {
         <div>
           <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('auth.username')}</label>
           <input type="text" value={username} onChange={e => setUsername(e.target.value)} required autoFocus
-            className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition" />
+            className="studio-input" />
         </div>
         <div>
           <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('auth.password')}</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-            className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition" />
+            className="studio-input" />
         </div>
         <div>
           <label className="text-xs text-[var(--text-dim)] mb-1 block">{t('auth.repeatPassword')}</label>
           <input type="password" value={password2} onChange={e => setPassword2(e.target.value)} required
-            className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition" />
+            className="studio-input" />
         </div>
 
         <button type="submit" disabled={loading}
-          className="w-full bg-[var(--accent)] text-white rounded-lg py-3 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition">
+          className="studio-primary-button w-full justify-center disabled:opacity-50">
+          <UserPlus size={16} />
           {loading ? t('auth.creating') : t('auth.createAccount')}
         </button>
 

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Collection } from '@/lib/types'
+import { Layers3, Music2 } from 'lucide-react'
 
 function formatDuration(seconds: number, t: (key: string) => string): string {
   const h = Math.floor(seconds / 3600)
@@ -19,11 +20,11 @@ export default function CollectionCard({ collection }: { collection: Collection 
 
   return (
     <Link to={`/collection/${collection.slug}`}
-      className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 hover:bg-[var(--surface-hover)] hover:border-[var(--accent)]/30 transition group flex flex-col">
+      className="studio-grid-card p-3 group flex flex-col">
       {/* Cover */}
-      <div className="w-full aspect-square rounded-lg overflow-hidden mb-3 bg-[var(--surface-hover)] relative">
+      <div className="w-full aspect-square rounded-2xl overflow-hidden mb-3 bg-[var(--surface-hover)] relative studio-cover-glow">
         {covers.length === 0 && (
-          <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--surface-hover)]">{collection.icon}</div>
+          <div className="w-full h-full flex items-center justify-center bg-[linear-gradient(135deg,var(--accent),var(--accent-2))]"><Layers3 size={38} className="text-[#061018]" /></div>
         )}
         {covers.length === 1 && (
           <img src={covers[0]} alt="" className="w-full h-full object-cover" />
@@ -48,15 +49,15 @@ export default function CollectionCard({ collection }: { collection: Collection 
         {/* Badge */}
         {count > 0 && (
           <div className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1.5">
-            <span>{count} {t('common.track')}</span>
+            <span className="inline-flex items-center gap-1"><Music2 size={10} />{count} {t('common.track')}</span>
             {duration > 0 && <><span className="opacity-50">·</span><span>{formatDuration(duration, t)}</span></>}
           </div>
         )}
       </div>
 
       {/* Title */}
-      <p className="text-sm font-medium text-[var(--text)] group-hover:text-[var(--accent)] transition truncate">
-        {collection.icon} {displayName}
+      <p className="text-sm font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition truncate">
+        {displayName}
       </p>
 
       {/* Track previews */}

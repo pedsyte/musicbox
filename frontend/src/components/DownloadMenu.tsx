@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { Download, Loader2 } from 'lucide-react'
 
 interface Props {
   trackId: string
@@ -50,18 +51,24 @@ export default function DownloadMenu({ trackId, originalFormat, className = '', 
   }
 
   return (
-    <div className={`relative ${className}`} ref={ref}>
+    <div className={`relative ${compact ? className : ''}`} ref={ref}>
       <button
         onClick={loadFormats}
         className={compact
-          ? 'p-1 text-sm text-[var(--text-dim)] hover:text-[var(--text)] transition'
-          : 'w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition'}
+          ? `studio-icon-button h-10 w-10 ${className}`
+          : `w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-hover)] transition inline-flex items-center gap-2 ${className}`}
         title={t('download.title')}
+        aria-label={t('download.title')}
       >
-        {loading ? '...' : compact ? '⬇' : t('download.button')}
+        {loading ? <Loader2 size={compact ? 16 : 15} className="animate-spin" /> : (
+          <>
+            <Download size={compact ? 16 : 15} />
+            {!compact && <span>{t('download.button')}</span>}
+          </>
+        )}
       </button>
       {open && formats.length > 0 && (
-        <div className={`absolute ${compact ? 'right-0 bottom-8' : 'right-0 top-8'} w-52 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-xl z-[60] py-1 overflow-hidden`}>
+        <div className={`absolute ${compact ? 'right-0 bottom-11' : 'right-0 top-9'} w-56 bg-[var(--player-bg)] border border-[var(--border-strong)] rounded-xl shadow-2xl backdrop-blur-xl z-[60] py-1 overflow-hidden`}>
           <p className="px-3 py-1.5 text-[10px] text-[var(--text-dim)] uppercase tracking-wider">{t('download.formatTitle')}</p>
           {formats.map(fmt => (
             <a

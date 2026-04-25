@@ -1,5 +1,30 @@
 # MusicBox — Backlog
 
+## 2026-04-25 — v1.3: Studio Deck Redesign
+
+### Что сделано
+- **Baseline build fixes**: добавлены недостающие frontend-типы (`Tag.translations`, `Playlist.user_id`, `Comment.avatar`, optional admin stats aliases), исправлены `Tooltip` ref, тип ID удаления трека из плейлиста и тип темы в Settings.
+- **Studio Deck UI**: собраны новые dark/light tokens, фоновые слои, reusable `studio-*` классы для panels, buttons, inputs, track lists и cards.
+- **Lucide icons**: добавлен `lucide-react`; публичная навигация, player, queue, карточки, download menu и action controls переведены с emoji/символов на единые иконки.
+- **Public shell**: обновлены Sidebar, Header, MobileNav, PlayerBar, MobilePlayer, QueuePanel и GenreSidebar.
+- **Public pages**: переделаны Home dashboard, Browse library console, Track detail, Explore, Playlists, Playlist, Collection, Favorites, Extension, Login/Register, Settings, Privacy и 404.
+- **i18n**: обновлены RU/UK/EN/ES/DE/FR строки для новых видимых labels; старые emoji убраны из публичных текстов.
+- **Theme boot**: сохранённая light/dark тема теперь применяется на уровне `App` сразу при загрузке пользователя, а не только после захода в Settings.
+
+### Проверки
+- `npm install lucide-react@^1.11.0`
+- `npm run build -- --outDir /tmp/musicbox-redesign-check-dist`
+- `npm run build` в `/opt/musicbox/frontend` для production `dist`
+- JSON parse всех `frontend/src/i18n/locales/*.json`
+- Live HTTP 200: `/`, hashed JS, hashed CSS
+- Live API smoke: tracks, popular, genres, public playlists, collections
+- Browser smoke: desktop home, browse, track, queue/player; mobile home/player; authenticated Settings; real light theme and restore to dark
+
+### Замечания
+- Backend/API, nginx, uploads, auth, playlists, favorites, streaming и waveform не менялись.
+- Admin визуально не редизайнился, кроме shared type/style compatibility, как и планировалось.
+- Production build остаётся с Vite warning о JS chunk > 500 kB; это предупреждение о code splitting, не ошибка сборки.
+
 ## 2026-04-12 — v1.2: Комплексное тестирование + исправления
 
 ### Что сделано

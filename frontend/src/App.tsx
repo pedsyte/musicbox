@@ -21,11 +21,15 @@ import Privacy from '@/pages/Privacy'
 import NotFound from '@/pages/NotFound'
 
 export default function App() {
-  const { loadUser } = useAuthStore()
+  const { loadUser, user } = useAuthStore()
 
   useEffect(() => {
     loadUser()
   }, [])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', user?.theme || 'dark')
+  }, [user?.theme])
 
   return (
     <BrowserRouter>

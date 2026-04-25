@@ -58,7 +58,7 @@
     "title": "Télécharger",
     "formatTitle": "Format de téléchargement",
     "original": "original",
-    "button": "⬇ Télécharger"
+    "button": "Télécharger"
   },
   "track": {
     "label": "Piste",
@@ -81,14 +81,14 @@
     "playNext": "Lire ensuite",
     "addToQueue": "Ajouter à la file",
     "waveform": "Forme d'onde",
-    "characteristics": "🏷️ Caractéristiques",
+    "characteristics": "Caractéristiques",
     "editTags": "Modifier les caractéristiques",
     "selectTags": "Sélectionner les caractéristiques :",
     "noTags": "Aucune caractéristique",
-    "noTagsAdmin": "Aucune caractéristique. Cliquez sur ✏️ pour ajouter.",
+    "noTagsAdmin": "Aucune caractéristique. Utilisez la modification pour ajouter.",
     "other": "Autres",
-    "lyrics": "📝 Paroles",
-    "comments": "💬 Commentaires",
+    "lyrics": "Paroles",
+    "comments": "Commentaires",
     "commentPlaceholder": "Écrire un commentaire...",
     "commentSend": "Envoyer",
     "commentLoginPrompt": "pour laisser un commentaire",
@@ -116,8 +116,8 @@
     "byDuration": "Par durée",
     "tracksBy": "Pistes : {{artist}}",
     "browseTitle": "Parcourir les pistes",
-    "allTracks": "← Toutes les pistes",
-    "excludeGenres": "🚫 Exclure des genres",
+    "allTracks": "Toutes les pistes",
+    "excludeGenres": "Exclure des genres",
     "reset": "Réinitialiser",
     "resetTags": "Réinitialiser les tags",
     "searchLabel": "Recherche :",
@@ -125,50 +125,59 @@
     "noTracks": "Aucune piste trouvée",
     "tracks": "piste",
     "tracks_few": "pistes",
-    "tracks_many": "pistes"
+    "tracks_many": "pistes",
+    "libraryKicker": "Console de bibliothèque"
   },
   "home": {
     "hero": "Votre collection de musique IA. Écoutez, créez des playlists et profitez du son.",
     "listen": "Écouter",
-    "popular": "🔥 Populaire",
+    "popular": "Populaire",
     "day": "Aujourd'hui",
     "week": "Cette semaine",
     "month": "Ce mois",
     "allTime": "Tout le temps",
     "noData": "Pas de données pour cette période",
-    "new": "✨ Nouveautés",
-    "allLink": "Toutes →",
-    "playlistsSection": "📋 Playlists",
-    "genresSection": "🎭 Genres",
+    "new": "Nouveautés",
+    "allLink": "Toutes",
+    "playlistsSection": "Playlists",
+    "genresSection": "Genres",
     "noTracksYet": "Pas encore de pistes",
-    "uploadHint": "Téléchargez des pistes via le panneau d'administration"
+    "uploadHint": "Téléchargez des pistes via le panneau d'administration",
+    "deckKicker": "Studio Deck",
+    "deckTitle": "Bibliothèque de musique IA pour une écoute ciblée.",
+    "deckSubtitle": "Explorez les nouvelles générations, gardez vos favoris, créez des playlists et écoutez tout depuis une console claire.",
+    "featured": "Piste en vedette",
+    "collectionsSection": "Collections studio"
   },
   "explore": {
     "title": "Genres",
-    "empty": "Aucun genre ajouté pour l'instant"
+    "empty": "Aucun genre ajouté pour l'instant",
+    "kicker": "Découverte"
   },
   "favorites": {
-    "title": "❤️ Favoris",
+    "title": "Favoris",
     "empty": "Vous n'avez pas encore de pistes favorites",
-    "hint": "Cliquez sur ❤️ sur n'importe quelle piste"
+    "hint": "Utilisez le bouton cœur sur une piste",
+    "kicker": "Pistes enregistrées"
   },
   "playlists": {
     "my": "Mes playlists",
-    "create": "+ Créer",
+    "create": "Créer",
     "nameLabel": "Nom",
     "namePlaceholder": "Ma playlist",
     "public": "Publique",
     "createBtn": "Créer",
     "empty": "Vous n'avez pas encore de playlists",
     "publicSection": "Playlists publiques",
-    "publicEmpty": "Pas encore de playlists publiques"
+    "publicEmpty": "Pas encore de playlists publiques",
+    "kicker": "Votre bibliothèque"
   },
   "playlist": {
     "publicLabel": "Playlist publique",
     "privateLabel": "Playlist privée",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "playAll": "▶ Tout lire",
+    "playAll": "Tout lire",
     "edit": "Modifier",
     "deletePlaylist": "Supprimer la playlist",
     "deleteConfirm": "Supprimer la playlist ?",
@@ -202,8 +211,8 @@
     "removeAvatar": "Supprimer la photo",
     "user": "Utilisateur",
     "theme": "Thème",
-    "dark": "🌙 Sombre",
-    "light": "☀️ Clair",
+    "dark": "Sombre",
+    "light": "Clair",
     "waveform": "Forme d'onde dans le lecteur",
     "waveformHint": "Afficher la forme d'onde au lieu de la progression linéaire",
     "changePassword": "Changer le mot de passe",
@@ -289,7 +298,7 @@
     "ingestHasLyrics": "paroles"
   },
   "cookie": {
-    "title": "🍪 Utilisation des cookies",
+    "title": "Utilisation des cookies",
     "text1": "Nous utilisons des données <strong>essentielles</strong> (localStorage) pour l'authentification et la sauvegarde de vos paramètres.",
     "text2": "Les données supplémentaires nous aident à améliorer le service (mémorisation de l'état de l'interface).",
     "moreInfo": "Plus d'infos dans notre",
@@ -299,23 +308,24 @@
   },
   "sidebar": {
     "filters": "Filtres",
-    "genresTitle": "🎭 Genres",
+    "genresTitle": "Genres",
     "addFilter": "Ajouter au filtre",
-    "removeFilter": "Retirer du filtre"
+    "removeFilter": "Retirer du filtre",
+    "top": "Top"
   },
   "extension": {
-    "title": "🧩 Extension Chrome",
+    "title": "Extension Chrome",
     "subtitle": "Mini-lecteur directement dans votre navigateur. Écoutez de la musique sans onglet ouvert — comme une vraie app de bureau.",
     "downloadBtn": "Télécharger l'extension",
-    "searchPlaceholder": "🔍 Rechercher des pistes...",
+    "searchPlaceholder": "Rechercher des pistes...",
     "all": "Toutes",
-    "top": "🔥 Top",
+    "top": "Top",
     "features": "Fonctionnalités",
     "howToInstall": "Comment installer",
     "howToInstallHint": "6 étapes simples — moins d'une minute",
     "compatibility": "Compatibilité",
     "compatibilityHint": "Fonctionne dans tous les navigateurs Chromium (Manifest V3)",
-    "downloadFinal": "📥 Télécharger MusicBox Player",
+    "downloadFinal": "Télécharger MusicBox Player",
     "feat_bg": "Lecture en arrière-plan",
     "feat_bg_desc": "La musique continue même quand le popup est fermé. Mini-lecteur toujours dans la barre du navigateur.",
     "feat_playlists": "Playlists",
@@ -343,7 +353,7 @@
     "step5_title": "Charger l'extension",
     "step5_desc": "Cliquez sur « Charger l'extension non empaquetée » et sélectionnez le dossier avec les fichiers",
     "step6_title": "C'est fait ! Profitez de la musique",
-    "step6_desc": "L'icône 🎵 apparaîtra dans la barre du navigateur. Épinglez-la pour un accès rapide."
+    "step6_desc": "L'icône MusicBox apparaîtra dans la barre du navigateur. Épinglez-la pour un accès rapide."
   },
   "notFound": {
     "title": "Page introuvable",
@@ -395,7 +405,7 @@
     "s8_text": "Nous pouvons mettre à jour cette Politique. Pour les changements importants, nous informerons les utilisateurs via l'interface du service. Nous recommandons de vérifier périodiquement la version actuelle sur cette page.",
     "s9_title": "9. Contact",
     "s9_text": "Si vous avez des questions sur cette Politique ou le traitement de vos données, contactez l'administrateur du service.",
-    "backHome": "← Retour à l'accueil"
+    "backHome": "Retour à l'accueil"
   },
   "tagCategories": {
     "language": "Langue",
@@ -423,14 +433,17 @@
     "vocalMale": "Voix masculine",
     "vocalFemale": "Voix féminine",
     "instrumental": "Instrumental",
-    "groupPopular": "🔥 Populaire",
-    "groupNew": "🆕 Nouveautés",
-    "groupMood": "😌 Par humeur",
-    "groupGenre": "🎵 Par genre",
-    "groupLanguage": "🌍 Par langue",
-    "groupEnergy": "⚡ Par énergie",
-    "groupVocal": "🎤 Par voix",
-    "groupEra": "📅 Par époque",
-    "groupOccasion": "🎧 Par occasion"
+    "groupPopular": "Populaire",
+    "groupNew": "Nouveautés",
+    "groupMood": "Par ambiance",
+    "groupGenre": "Par genre",
+    "groupLanguage": "Par langue",
+    "groupEnergy": "Par énergie",
+    "groupVocal": "Par voix",
+    "groupEra": "Par époque",
+    "groupOccasion": "Par occasion"
+  },
+  "brand": {
+    "tagline": "Console studio"
   }
 }
